@@ -1,0 +1,8 @@
+## Interface: 70300
+## Title: WQAchievements
+## Author: Urtgard
+## Version: r11
+## SavedVariables: WQADB
+
+embeds.xml
+WQAchievements.lua
