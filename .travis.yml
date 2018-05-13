@@ -8,3 +8,7 @@ addons:
  
 script: curl -sO https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh
 after_script: bash release.sh -g 7.3.5
+
+branches:
+  only:
+  - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
