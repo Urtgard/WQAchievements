@@ -1,5 +1,5 @@
 package-as: WQAchievements
-enable-nolib-creation: yes
+enable-nolib-creation: no
 
 externals:
   Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
