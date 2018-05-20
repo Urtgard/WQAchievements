@@ -1,5 +1,5 @@
 # WQAchievements
-Notifies you if a achievement related worldquest is up.
+Notifies you if an achievement related worldquest is up.
 
 Supported achievements:
 * Battle on the Broken Isles
