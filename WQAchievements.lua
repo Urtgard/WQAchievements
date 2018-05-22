@@ -323,7 +323,7 @@ function WQA:OnEnable()
 	self.event = CreateFrame("Frame")
 	self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self.event:SetScript("OnEvent", function (...)
-		_, name, id = ...
+		local _, name, id = ...
 		if name == "PLAYER_ENTERING_WORLD" then
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
 			self:ScheduleTimer("buildQList", 5)
