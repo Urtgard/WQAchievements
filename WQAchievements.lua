@@ -90,7 +90,7 @@ WQA.Argus.Mounts = {
 	{itemID = 152814, spellID = 253058, questID = 48695, wqID = 48696},
 	{itemID = 152905, spellID = 253661, questID = 49183, wqID = 47561},
 	{itemID = 152904, spellID = 253662, questID = 48721, wqID = 48740},
-	{itemID = 152903, spellID = 253660, questID = 48810, wqID = 48465},
+	{itemID = 152903, spellID = 253660, {{questID = 48810, wqID = 48465}, {questID = 48809, wqID = 48467}}},
 	{itemID = 152790, spellID = 243652, questID = 48821, wqID = 48835},
 	{itemID = 152844, spellID = 253107, questID = 48705, wqID = 48725},
 	--Egg
