@@ -1,9 +1,17 @@
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
 WQA = WQAchievements
+WQA.cache = {}
+WQA.data = {}
+WQA.watched = {}
+WQA.questList = {}
+
+
+function WQA:OnInitialize()
+	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
+end
 
 -- Blizzard
 local IsActive = C_TaskQuest.IsActive
-local GetQuestInfoByQuestID = C_TaskQuest.GetQuestInfoByQuestID
 
 -- Defaults
 local defaults = {
@@ -63,186 +71,225 @@ function WQA:slash(input)
 	end
 end
 
-WQA.aL = {}
-WQA.aL.pvp = {11475, 11476, 11477, 11478}
-WQA.aL.ff = {9686, 9687, 9688, 9689, 9690, 9691, 9692, 9693, 9694, 9695}
-WQA.aL.botbi = {10876}
-WQA.aL.fishing = {10598}
-WQA.trainerList = {42159, 40299, 40277, 42442, 40298, 40280, 40282, 41687, 40278, 41944, 41895, 40337, 41990, 40279, 41860}
-WQA.fishQList = {}
-WQA.fishQList[1] = {41612, 41613, 41270}
-WQA.fishQList[3] = {41604, 41605, 41279}
-WQA.fishQList[4] = {41598, 41599, 41264}
-WQA.fishQList[7] = {41611, 41265, 41610}
-WQA.fishQList[8] = {41617, 41280, 41616}
-WQA.fishQList[9] = {41597, 41244, 41596}
-WQA.fishQList[10] = {41602, 41274, 41603}
-WQA.fishQList[11] = {41609, 41243}
-WQA.fishQList[14] = {41615, 41275, 41614}
-WQA.fishQList[19] = {41269, 41600, 41601}
-WQA.watched = {}
+------------------
+-- 	Data
+------------------
+--	Legion
+do
+	local legion = {}
+	local trainer = {42159, 40299, 40277, 42442, 40298, 40280, 40282, 41687, 40278, 41944, 41895, 40337, 41990, 40279, 41860}
+	legion = {
+		name = "Legion",
+		achievements = {
+			{name = "Free For All, More For Me", id = 11474, criteriaType = "ACHIEVEMENT", criteria = {
+				{id = 11475, notAccountwide = true},
+				{id = 11476, notAccountwide = true},
+				{id = 11477, notAccountwide = true},
+				{id = 11478, notAccountwide = true}}
+			},
+			{name = "Family Familiar", id = 9696, criteriaType = "ACHIEVEMENT", criteria = {
+				{id = 9686, criteriaType = QUESTS, criteria = trainer},
+				{id = 9687, criteriaType = QUESTS, criteria = trainer},
+				{id = 9688, criteriaType = QUESTS, criteria = trainer},
+				{id = 9689, criteriaType = QUESTS, criteria = trainer},
+				{id = 9690, criteriaType = QUESTS, criteria = trainer},
+				{id = 9691, criteriaType = QUESTS, criteria = trainer},
+				{id = 9692, criteriaType = QUESTS, criteria = trainer},
+				{id = 9693, criteriaType = QUESTS, criteria = trainer},
+				{id = 9694, criteriaType = QUESTS, criteria = trainer},
+				{id = 9695, criteriaType = QUESTS, criteria = trainer}}
+			},
+			{name = "Battle on the Broken Isles", id = 10876},
+			{name = "Fishing \'Round the Isles", id = 10598, criteriaType = 1, criteria = {
+				{41612, 41613, 41270},
+				nil,
+				{41604, 41605, 41279},
+				{41598, 41599, 41264},
+				nil,
+				nil,
+				{41611, 41265, 41610},
+				{41617, 41280, 41616},
+				{41597, 41244, 41596},
+				{41602, 41274, 41603},
+				{41609, 41243},
+				nil,
+				nil,
+				{41615, 41275, 41614},
+				nil,
+				nil,
+				nil,
+				nil,
+				{41269, 41600, 41601}},
+			}
+		},
+		mounts = {
+			{itemID = 152814, spellID = 253058, quest = {{trackingID = 48695, wqID = 48696}}},
+			{itemID = 152905, spellID = 253661, quest = {{trackingID = 49183, wqID = 47561}}},
+			{itemID = 152904, spellID = 253662, quest = {{trackingID = 48721, wqID = 48740}}},
+			{itemID = 152790, spellID = 243652, quest = {{trackingID = 48821, wqID = 48835}}},
+			{itemID = 152844, spellID = 253107, quest = {{trackingID = 48705, wqID = 48725}}},
+			{itemID = 152903, spellID = 253660, quest = {{trackingID = 48810, wqID = 48465}, {trackingID = 48809, wqID = 48467}}},
+			--Egg
+			{itemID = 152842, spellID = 253106, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}},
+			{itemID = 152841, spellID = 253108, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}},
+			{itemID = 152840, spellID = 253109, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}},
+			{itemID = 152843, spellID = 235764, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}},
+		},
+		pets = {
+			{itemID = 153056, creatureID = 128159, quest = {{trackingID = 0, wqID = 48729}}},
+			--Egg
+			{itemID = 153055, creatureID = 128158, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}},
+			{itemID = 153054, creatureID = 128157, quest = {{trackingID = 48667, wqID = 48502}, {trackingID = 48712, wqID = 48732}, {trackingID = 48812, wqID = 48827}}}
+		},
+		toys = {
+			{itemID = 153183, quest = {{trackingID = 0, wqID = 48724}, {trackingID = 0, wqID = 48723}}},
+			{itemID = 153126, quest = {{trackingID = 0, wqID = 48829}}},
+			{itemID = 153124, quest = {{trackingID = 0, wqID = 48512}}},
+			{itemID = 153180, quest = {{trackingID = 48718, wqID = 48737}}},
+			{itemID = 153181, quest = {{trackingID = 48718, wqID = 48737}}},
+			{itemID = 153179, quest = {{trackingID = 48718, wqID = 48737}}},
+			{itemID = 153193, quest = {{trackingID = 0, wqID = 48701}}},
+		}
+	}
+	WQA.data.legion = legion
+end
+-- Battle for Azeroth
+do
+	local bfa = {}
+	bfa = {
+		name = "Battle for Azeroth",
+		achievements = {
+			{name = "Adept Sandfisher", id = 13009, criteriaType = "QUEST_SINGLE", criteria = 51173},
+			{name = "Scourge of Zem'lan", id = 13011, criteriaType = 1, criteria = {{51763, 51783}}},
+			{name = "Vorrik's Champion", id = 13014, criteriaType = "QUESTS", criteria = {51957, 51983}},
+			{name = "Revenge is Best Served Speedily", id = 13022, criteriaType = "QUEST_SINGLE", criteria = 50786},
+			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUEST_SINGLE", criteria = 50559},
+			{name = "Zandalari Spycatcher", id = 13025, criteriaType = "QUEST_SINGLE", criteria = 50717},
+			{name = "7th Legion Spycatcher", id = 13026, criteriaType = "QUEST_SINGLE", criteria = 50899},
+			{name = "By de Power of de Loa!", id = 13035, criteriaType = "QUEST_SINGLE", criteria = 51178},
+			{name = "Bless the Rains Down in Freehold", id = 13050, criteriaType = "QUEST_SINGLE", criteria = 53196},
+			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994,0,53189}},	-- Frozen Freestyle
+			{name = "Battle on Zandalar and Kul Tiras", id = 12936},
+			{name =  "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665}
+		},
+		mounts = {
+		},
+		pets = {
+		},
+		toys = {
+		}
+	}
+	WQA.data.bfa = bfa
+end
 
 -- Terrors of the Shore
 -- Commander of Argus
 
-WQA.Argus = {}
-WQA.Argus.Mounts = {
-	{itemID = 152814, spellID = 253058, questID = 48695, wqID = 48696},
-	{itemID = 152905, spellID = 253661, questID = 49183, wqID = 47561},
-	{itemID = 152904, spellID = 253662, questID = 48721, wqID = 48740},
-	{itemID = 152903, spellID = 253660, {{questID = 48810, wqID = 48465}, {questID = 48809, wqID = 48467}}},
-	{itemID = 152790, spellID = 243652, questID = 48821, wqID = 48835},
-	{itemID = 152844, spellID = 253107, questID = 48705, wqID = 48725},
-	--Egg
-	{itemID = 152842, spellID = 253106, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}},
-	{itemID = 152841, spellID = 253108, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}},
-	{itemID = 152840, spellID = 253109, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}},
-	{itemID = 152843, spellID = 235764, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}},
-}
+function WQA:buildBeta()
+	for _,v in pairs(self.data.legion.achievements) do
+		self:AddAchievement(v)
+	end
+	self:AddMounts(self.data.legion.mounts)
+	self:AddPets(self.data.legion.pets)
+	self:AddToys(self.data.legion.toys)
+	for _,v in pairs(self.data.bfa.achievements) do
+		self:AddAchievement(v)
+	end
+	self:Cache()
+end
 
-WQA.Argus.Pets = {
-	{itemID = 153056, creatureID = 128159, questID = 0, wqID = 48729},
-	--Egg
-	{itemID = 153055, creatureID = 128158, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}},
-	{itemID = 153054, creatureID = 128157, {{questID = 48667, wqID = 48502}, {questID = 48712, wqID = 48732}, {questID = 48812, wqID = 48827}}}
-}
-
-WQA.Argus.Toys = {
-	{itemID = 153183, {{questID = 0, wqID = 48724}, {questID = 0, wqID = 48723}}},
-	{itemID = 153126, questID = 0, wqID = 48829},
-	{itemID = 153124, questID = 0, wqID = 48512},
-	{itemID = 153180, questID = 48718, wqID = 48737},
-	{itemID = 153181, questID = 48718, wqID = 48737},
-	{itemID = 153179, questID = 48718, wqID = 48737},
-	{itemID = 153193, questID = 0, wqID = 48701},
-}
-
-
-function WQA:buildQList()
-	self.questList = {}
-	for k,v in pairs(self.db.char.achievements) do
-		if k == "pvp" then
-			local _,_,_,completed = GetAchievementInfo(11474)
-			if completed then
-				v.status = false
+function WQA:AddAchievement(achievement)
+	local id = achievement.id
+	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
+	if (achievement.notAccountwide and not wasEarnedByMe) or not completed then
+		if achievement.criteriaType == "ACHIEVEMENT" then
+			for _,v in pairs(achievement.criteria) do
+				self:AddAchievement(v)
 			end
-		end
-		if v.status == true then
-			for _,id in pairs(self.aL[k]) do
-				local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
-				if completed == false or (k == "pvp" and not wasEarnedByMe) then
-					for i=1, GetAchievementNumCriteria(id) do
-						local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
-						if completed == false then
-							if id == 10598 and t == 0 then
-								for _,questID in pairs(self.fishQList[i]) do
-							 		if not self.questList[questID] then self.questList[questID] = {} end
-							 		local l = self.questList[questID]
-									l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
-									GetAchievementLink(id)
-								end
-							else
-								if t == 158 then questID = self.trainerList[i] end
-								if not self.questList[questID] then self.questList[questID] = {} end
-								local l = self.questList[questID]
-								l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
-								GetAchievementLink(id)
-							end
+		elseif achievement.criteriaType == "QUEST_SINGLE" then
+			if not self.questList[achievement.criteria] then self.questList[achievement.criteria] = {} end
+			local l = self.questList[achievement.criteria]
+			l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+		else
+			for i=1, GetAchievementNumCriteria(id) do
+				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
+				if not completed then
+					if achievement.criteriaType == "QUESTS" then
+						questID = achievement.criteria[i] or 0			
+						if not self.questList[questID] then self.questList[questID] = {} end
+						local l = self.questList[questID]
+						l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+					elseif achievement.criteriaType == 1 and t == 0 then
+						for _,questID in pairs(achievement.criteria[i]) do
+					 		if not self.questList[questID] then self.questList[questID] = {} end
+					 		local l = self.questList[questID]
+							l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
 						end
+					else
+						if not self.questList[questID] then self.questList[questID] = {} end
+						local l = self.questList[questID]
+						l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
 					end
 				end
-			end
+			end	
 		end
-	end
-	if not self.db.char.argus then
-		self:checkWQ()
-		return
-	else
-		self:BuildArgus()
 	end
 end
 
-WQA.cache = {}
-function WQA:BuildArgus()
+function WQA:AddMounts(mounts)
 	for i,id in pairs(C_MountJournal.GetMountIDs()) do
 		local n, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
 		if not isCollected then
-			for _, v in pairs(WQA.Argus.Mounts) do
-				if spellID == v.spellID then
-					if v.questID then
-						if not IsQuestFlaggedCompleted(v.questID) then
+			for _,mount in pairs(mounts) do
+				if spellID == mount.spellID then
+					for _,v  in pairs(mount.quest) do
+						if not IsQuestFlaggedCompleted(v.trackingID) then
 							if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
 					 		local l = self.questList[v.wqID]
-							l[#l + 1] = { id = v.itemID, type = "MOUNT"}
-							GetItemInfo(v.itemID)
-							self.cache[v.itemID] = true
-						end
-					else
-						for _, vv in pairs(v[1]) do
-							if not IsQuestFlaggedCompleted(vv.questID) then
-								if not self.questList[vv.wqID] then self.questList[vv.wqID] = {} end
-						 		local l = self.questList[vv.wqID]
-								l[#l + 1] = { id = v.itemID, type = "MOUNT"}
-								GetItemInfo(v.itemID)
-								self.cache[v.itemID] = true
-							end
+							l[#l + 1] = { id = mount.itemID, type = "MOUNT"}
+							self.cache[mount.itemID] = true
 						end
 					end
 				end
 			end
 		end
 	end
+end
 
+function WQA:AddPets(pets)
 	local total = C_PetJournal.GetNumPets()
  	for i = 1, total do
   		local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
   		if not owned then
-  			for _, v in pairs(self.Argus.Pets) do
-  				if companionID == v.creatureID then
-  					if v.questID then
-						if not IsQuestFlaggedCompleted(v.questID) then
+  			for _,pet in pairs(pets) do
+  				if companionID == pet.creatureID then
+					for _,v in pairs(pet.quest) do
+						if not IsQuestFlaggedCompleted(v.trackingID) then
 							if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
-					 		local l = self.questList[v.wqID]
-							l[#l + 1] = { id = v.itemID, type = "PET"}
-							self.cache[v.itemID] = true
+							local l = self.questList[v.wqID]
+							l[#l + 1] = { id = pet.itemID, type = "PET"}
+							self.cache[pet.itemID] = true
 						end
-					else
-						for _, vv in pairs(v[1]) do
-							if not IsQuestFlaggedCompleted(vv.questID) then
-								if not self.questList[vv.wqID] then self.questList[vv.wqID] = {} end
-						 		local l = self.questList[vv.wqID]
-								l[#l + 1] = { id = v.itemID, type = "PET"}
-								self.cache[v.itemID] = true
-							end
-						end
-					end
-  				end
+	  				end
+	  			end
   			end
   		end
   	end
+end
 
-	for _, v in pairs(self.Argus.Toys) do
-		if not PlayerHasToy(v.itemID) then
-			if v.questID then
-				if not IsQuestFlaggedCompleted(v.questID) then
+function WQA:AddToys(toys)
+	for _,toy in pairs(toys) do
+		if not PlayerHasToy(toy.itemID) then
+			for _,v in pairs(toy.quest) do
+				if not IsQuestFlaggedCompleted(v.trackingID) then
 					if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
 			 		local l = self.questList[v.wqID]
-					l[#l + 1] = { id = v.itemID, type = "TOY"}
-					self.cache[v.itemID] = true
-				end
-			else
-				for _, vv in pairs(v[1]) do
-					if not IsQuestFlaggedCompleted(vv.questID) then
-						if not self.questList[vv.wqID] then self.questList[vv.wqID] = {} end
-				 		local l = self.questList[vv.wqID]
-						l[#l + 1] = { id = v.itemID, type = "TOY"}
-						self.cache[v.itemID] = true
-					end
+					l[#l + 1] = { id = toy.itemID, type = "TOY"}
+					self.cache[toy.itemID] = true
 				end
 			end
 		end
 	end
-	self:Cache()
 end
 
 WQA.links = {}
@@ -309,15 +356,11 @@ function WQA:link(x)
 	if x.type == "ACHIEVEMENT" then
 		return GetAchievementLink(x.id)
 	elseif x.type == "PET" or x.type == "MOUNT" or x.type == "TOY" then
-		--local _, link = GetItemInfo(x.id)
 		return self.links[x.id]
 	end
 end
 
-function WQA:OnInitialize()
-	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
 
-end
 
 function WQA:OnEnable()
 	self.event = CreateFrame("Frame")
@@ -326,15 +369,11 @@ function WQA:OnEnable()
 		local _, name, id = ...
 		if name == "PLAYER_ENTERING_WORLD" then
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			self:ScheduleTimer("buildQList", 5)
-			--self:ScheduleTimer("BuildArgus", 6)
-			--self:ScheduleTimer("checkWQ", 15)
+			self:ScheduleTimer("buildBeta", 5)
 			self:ScheduleTimer(function ()
 				self:checkWQ("new")
 				self:ScheduleRepeatingTimer("checkWQ",30*60,"new")
 			end, (32-(date("%M") % 30))*60)
 		end
 	end)
-
-	--self:ScheduleRepeatingTimer("checkWQ",300,"new")
 end
