@@ -1,7 +1,7 @@
 # WQAchievements
 Notifies you if an achievement related World Quest is up.
 
-Supports the following achievements:
+Supports tracking of the following things:
 * Battle for Azeroth
   * Adept Sandfisher
   * Scourge of Zem'lan
@@ -22,5 +22,6 @@ Supports the following achievements:
   * Fishing 'Round the Isles
   * All World Quests on Argus with a chance for a mount, pet or toy.
 
+And you can add any World Quest you want.
 ## Download
 https://www.curseforge.com/wow/addons/wqachievements
