@@ -1,5 +1,5 @@
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
-WQA = WQAchievements
+local WQA = WQAchievements
 WQA.cache = {}
 WQA.data = {}
 WQA.watched = {}
@@ -554,11 +554,13 @@ function WQA:AddToys(toys)
 end
 
 function WQA:AddCustom()
-	for k,v in pairs(self.db.global.custom) do
-		if not self.questList[k] then self.questList[k] = {} end
- 		local l = self.questList[k]
-		l[#l + 1] = { id = v.rewardID, type = v.rewardType}
-		if v.rewardType == "item" then self.cache[v.rewardID] = true end
+	if type(self.db.global.custom) == "table" then
+		for k,v in pairs(self.db.global.custom) do
+			if not self.questList[k] then self.questList[k] = {} end
+	 		local l = self.questList[k]
+			l[#l + 1] = { id = v.rewardID, type = v.rewardType}
+			if v.rewardType == "item" then self.cache[v.rewardID] = true end
+		end
 	end
 end
 
