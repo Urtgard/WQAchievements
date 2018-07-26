@@ -731,10 +731,11 @@ end
 
 function WQA:AnnouncePopUp(activeQuests, silent)
 	if self.db.char.options.PopUp == false then return end
+	local f = self:CreatePopUp()
+	f.ScrollingMessageFrame:Clear()
 	local i = 1
 	if next(activeQuests) == nil then
 		if silent ~= true then
-			local f = self:CreatePopUp()
 			f.ScrollingMessageFrame:SetJustifyH("CENTER")
 			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
 			f:SetHeight(28+i*16)
@@ -744,7 +745,6 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 		return
 	end
 
-	local f = self:CreatePopUp()
 	f.ScrollingMessageFrame:SetJustifyH("LEFT")
 	f.ScrollingMessageFrame:AddMessage(L["WQChat"])
 	for questID,_ in pairs(activeQuests) do
