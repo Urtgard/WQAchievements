@@ -13,6 +13,7 @@ local IsActive = C_TaskQuest.IsActive
 local locale = GetLocale()
 WQA.L = {}
 local L = WQA.L
+L["NO_QUESTS"] = "No interesting World Quests active!"
 L["WQChat"] = "Interesting World Quests are active:"
 L["WQforAch"] = "%s for %s"
 L["achievements"] = "Achievements"
@@ -36,6 +37,15 @@ end
 WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none"}
 
 function WQA:OnInitialize()
+	-- Defaults
+	local defaults = {
+		char = {
+			options = {
+				chat = true,
+				PopUp = false,
+			}
+		}
+	}
 	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
 
 	------------------
@@ -103,6 +113,41 @@ function WQA:OnInitialize()
 					--Configure
 					header2 = { type = "header", name = "Configure custom World Quests", order = newOrder(), },
 				}
+			},
+			options = {
+				order = 3,
+				type = "group",
+				name = "Options",
+				args = {
+					desc1 = { type = "description", fontSize = "medium", name = "Select where WQA is allowed to post", order = newOrder(), },
+					chat = {
+						type = "toggle",
+						name = "Chat",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.chat = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.chat
+				    	end,
+					    order = newOrder()
+					},
+					PopUp = {
+						type = "toggle",
+						name = "PopUp",
+						width = "double",
+						handler = WQA,
+						set = function(info, val)
+							WQA.db.char.options.PopUp = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.PopUp
+				    	end,
+					    order = newOrder()
+					}
+				}
 			}
 		},
 	}
@@ -127,8 +172,6 @@ function WQA:OnInitialize()
 end
 
 function WQA:OnEnable()
-	
-
 	------------------
 	-- 	Options
 	------------------
@@ -144,15 +187,12 @@ function WQA:OnEnable()
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
 			self:ScheduleTimer("CreateQuestList", 5)
 			self:ScheduleTimer(function ()
-				self:checkWQ("new")
-				self:ScheduleRepeatingTimer("checkWQ",30*60,"new")
+				self:CheckWQ("new")
+				self:ScheduleRepeatingTimer("CheckWQ",30*60,"new")
 			end, (32-(date("%M") % 30))*60)
 		end
 	end)
 end
-
-
-
 
 function WQA:ToggleSet(info, val)
 	--print(info[#info-2],info[#info-1],info[#info])
@@ -281,19 +321,6 @@ function WQA:UpdateCustomQuests()
 		}
 	end
  end
--- Defaults
-local defaults = {
-	char = {
-		achievements = {
-			pvp = {id = 11474, status = true},
-			ff = {id = 9696, status = true},
-			botbi = {id = 10876, status = true},
-			fishing = {id = 10598, status = true}
-		},
-			argus = true
-	}
-}
-
 
 WQA:RegisterChatCommand("wqa", "slash")
 
@@ -302,30 +329,11 @@ function WQA:slash(input)
 
 	if arg1 == "" then
 		self:CreateQuestList()
-		self:checkWQ()
+		--self:CheckWQ()
+	elseif arg1 == "new" then
+		self:CheckWQ("new")
 	elseif arg1 == "details" then
 		self:checkWQ("details")
-	elseif self.db.char.achievements[arg1] then
-		print("Tracking of "..GetAchievementLink(self.db.char.achievements[arg1].id).." is now "..tostring(not self.db.char.achievements[arg1].status))
-		self.db.char.achievements[arg1].status = not self.db.char.achievements[arg1].status
-		self.qList = {}
-		self:buildQList()
-		self:BuildArgus()
-	elseif arg1 == "argus" then
-		self.db.char.argus = not self.db.char.argus
-		self.qList = {}
-		self:buildQList()
-		self:BuildArgus()	
-	elseif arg1 == "chat" then
-		self.db.char.chat = not self.db.char.chat
-	elseif arg1 == "?" then
-		for k,v in pairs(self.db.char.achievements) do
-			print("Tracking of "..GetAchievementLink(v.id).." is "..tostring(v.status))
-			print("Toggle tracking with /wqa "..k)
-		end
-		print("Tracking of Argus is "..tostring(self.db.char.argus))
-		print("Toggle tracking with /wqa argus")
-		--print("Toggle chat output with /wqa chat")
 	end
 end
 
@@ -346,16 +354,16 @@ do
 				{id = 11478, notAccountwide = true}}
 			},
 			{name = "Family Familiar", id = 9696, criteriaType = "ACHIEVEMENT", criteria = {
-				{id = 9686, criteriaType = QUESTS, criteria = trainer},
-				{id = 9687, criteriaType = QUESTS, criteria = trainer},
-				{id = 9688, criteriaType = QUESTS, criteria = trainer},
-				{id = 9689, criteriaType = QUESTS, criteria = trainer},
-				{id = 9690, criteriaType = QUESTS, criteria = trainer},
-				{id = 9691, criteriaType = QUESTS, criteria = trainer},
-				{id = 9692, criteriaType = QUESTS, criteria = trainer},
-				{id = 9693, criteriaType = QUESTS, criteria = trainer},
-				{id = 9694, criteriaType = QUESTS, criteria = trainer},
-				{id = 9695, criteriaType = QUESTS, criteria = trainer}}
+				{id = 9686, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9687, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9688, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9689, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9690, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9691, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9692, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9693, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9694, criteriaType = "QUESTS", criteria = trainer},
+				{id = 9695, criteriaType = "QUESTS", criteria = trainer}}
 			},
 			{name = "Battle on the Broken Isles", id = 10876},
 			{name = "Fishing \'Round the Isles", id = 10598, criteriaType = 1, criteria = {
@@ -453,7 +461,7 @@ function WQA:CreateQuestList()
 end
 
 function WQA:AddAchievement(achievement)
-	if self.db.char.achievements and self.db.char.achievements[achievement.name] == true then return end
+	if self.db.char.achievements and (self.db.char.achievements[achievement.name] == true) then return end
 	local id = achievement.id
 	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
 	if (achievement.notAccountwide and not wasEarnedByMe) or not completed then
@@ -573,7 +581,6 @@ function WQA:Cache()
 		local link = select(2,GetItemInfo(id))
 		if link then
 			self.links[id] = link
-			--print(id)
 			n = n - 1
 			self.cache[id] = nil
 		end
@@ -583,9 +590,41 @@ function WQA:Cache()
 			self:Cache()
 		end, 2)
 	else
-		self:checkWQ("new")
+		self:CheckWQ("new")
 	end
 end	
+
+WQA.first = false
+function WQA:CheckWQ(mode)
+	local activeQuests = {}
+	local newQuests = {}
+	for questID,qList in pairs(self.questList) do
+		if IsActive(questID) then
+			local questLink = GetQuestLink(questID)
+			if not questLink then
+				self:ScheduleTimer("CheckWQ", .5, mode)
+				return
+			end
+			activeQuests[questID] = true
+			if not self.watched[questID] then
+				newQuests[questID] = true
+			end
+		end
+	end
+
+	for id,_ in pairs(newQuests) do
+		self.watched[id] = true
+	end
+
+	if mode == "new" then
+		self:AnnounceChat(newQuests, self.first)
+		self:AnnouncePopUp(newQuests, self.first)
+		self.first = true
+	else
+		self:AnnounceChat(activeQuests)
+		self:AnnouncePopUp(activeQuests)
+	end
+end
 
 function WQA:checkWQ(mode)
 	local first = false
@@ -634,4 +673,85 @@ function WQA:link(x)
 	else
 		return ""
 	end
+end
+
+function WQA:AnnounceChat(activeQuests, silent)
+	if self.db.char.options.chat == false then return end
+	if next(activeQuests) == nil then
+		if silent ~= true then
+			print(L["NO_QUESTS"])
+		end
+		return
+	end
+
+	local output = L["WQChat"]
+	for questID,_ in pairs(activeQuests) do
+		output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+	end
+	print(output)
+end
+
+function WQA:CreatePopUp()
+	if self.PopUp then return self.PopUp end
+	local f = CreateFrame("Frame","WQAchievementsPopUp",UIParent)
+	f:SetFrameStrata("BACKGROUND")
+	f:SetWidth(500)
+	f:SetPoint("TOP",0,-200)
+
+	local FrameBackdrop = {
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+		tile = true, tileSize = 32, edgeSize = 32,
+		insets = { left = 8, right = 8, top = 8, bottom = 8 }
+	}
+	f:SetBackdrop(FrameBackdrop)
+	f:SetBackdropColor(0, 0, 0, 1)
+	
+	f.ScrollingMessageFrame = CreateFrame("ScrollingMessageFrame", "PopUpScroll", f)
+	f.ScrollingMessageFrame:SetHyperlinksEnabled(true)
+	f.ScrollingMessageFrame:SetWidth(470)
+	f.ScrollingMessageFrame:SetPoint("TOP",f,"TOP",0,-14)
+	f.ScrollingMessageFrame:SetFontObject(GameFontNormalLarge)
+	f.ScrollingMessageFrame:SetFading(false)
+	f.ScrollingMessageFrame:SetScript("OnHyperlinkEnter", function(_,_,link,line)
+		GameTooltip_SetDefaultAnchor(GameTooltip, line)
+		GameTooltip:ClearLines()
+		GameTooltip:ClearAllPoints()
+		GameTooltip:SetPoint("BOTTOM", line, "TOP", 0, 0)
+		GameTooltip:SetHyperlink(link)
+		GameTooltip:Show() end)
+	f.ScrollingMessageFrame:SetScript("OnHyperlinkLeave", function() GameTooltip:Hide() end)
+	f.ScrollingMessageFrame:SetJustifyV("CENTER")
+
+	f.CloseButton = CreateFrame("Button", "CloseButton", f, "UIPanelCloseButton")
+	f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT")--, -6, -6)
+	self.PopUp = f
+	return f
+end
+
+function WQA:AnnouncePopUp(activeQuests, silent)
+	if self.db.char.options.PopUp == false then return end
+	local i = 1
+	if next(activeQuests) == nil then
+		if silent ~= true then
+			local f = self:CreatePopUp()
+			f.ScrollingMessageFrame:SetJustifyH("CENTER")
+			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
+			f:SetHeight(28+i*16)
+			f.ScrollingMessageFrame:SetHeight(16*i)
+			f:Show()
+		end
+		return
+	end
+
+	local f = self:CreatePopUp()
+	f.ScrollingMessageFrame:SetJustifyH("LEFT")
+	f.ScrollingMessageFrame:AddMessage(L["WQChat"])
+	for questID,_ in pairs(activeQuests) do
+		f.ScrollingMessageFrame:AddMessage(string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1])))
+		i = i+1
+	end
+	f:SetHeight(28+i*16)
+	f.ScrollingMessageFrame:SetHeight(16*i)
+	f:Show()
 end
