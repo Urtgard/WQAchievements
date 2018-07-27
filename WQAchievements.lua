@@ -1,10 +1,9 @@
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
 local WQA = WQAchievements
-WQA.cache = {}
 WQA.data = {}
 WQA.watched = {}
 WQA.questList = {}
-
+WQA.links = {}
 
 -- Blizzard
 local IsActive = C_TaskQuest.IsActive
@@ -185,10 +184,10 @@ function WQA:OnEnable()
 		local _, name, id = ...
 		if name == "PLAYER_ENTERING_WORLD" then
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			self:ScheduleTimer("CreateQuestList", 5)
+			self:ScheduleTimer("Show", 5)
 			self:ScheduleTimer(function ()
-				self:CheckWQ("new")
-				self:ScheduleRepeatingTimer("CheckWQ",30*60,"new")
+				self:Show("new")
+				self:ScheduleRepeatingTimer("Show",30*60,"new")
 			end, (32-(date("%M") % 30))*60)
 		end
 	end)
@@ -328,10 +327,10 @@ function WQA:slash(input)
 	local arg1 = string.lower(input)
 
 	if arg1 == "" then
-		self:CreateQuestList()
+		self:Show()
 		--self:CheckWQ()
 	elseif arg1 == "new" then
-		self:CheckWQ("new")
+		self:Show("new")
 	elseif arg1 == "details" then
 		self:checkWQ("details")
 	end
@@ -457,7 +456,6 @@ function WQA:CreateQuestList()
 		self:AddAchievement(v)
 	end
 	self:AddCustom()
-	self:Cache()
 end
 
 function WQA:AddAchievement(achievement)
@@ -511,7 +509,6 @@ function WQA:AddMounts(mounts)
 								if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
 						 		local l = self.questList[v.wqID]
 								l[#l + 1] = { id = mount.itemID, type = "ITEM"}
-								self.cache[mount.itemID] = true
 							end
 						end
 					end
@@ -534,7 +531,6 @@ function WQA:AddPets(pets)
 								if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
 								local l = self.questList[v.wqID]
 								l[#l + 1] = { id = pet.itemID, type = "ITEM"}
-								self.cache[pet.itemID] = true
 							end
 		  				end
 		  			end
@@ -553,7 +549,6 @@ function WQA:AddToys(toys)
 						if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
 				 		local l = self.questList[v.wqID]
 						l[#l + 1] = { id = toy.itemID, type = "ITEM"}
-						self.cache[toy.itemID] = true
 					end
 				end
 			end
@@ -567,41 +562,26 @@ function WQA:AddCustom()
 			if not self.questList[k] then self.questList[k] = {} end
 	 		local l = self.questList[k]
 			l[#l + 1] = { id = v.rewardID, type = v.rewardType}
-			if v.rewardType == "item" then self.cache[v.rewardID] = true end
 		end
 	end
 end
 
-WQA.links = {}
-WQA.cacheStart = GetTime()
-function WQA:Cache()
-	local n = 0
-	for id, _ in pairs(self.cache) do
-		n = n + 1;
-		local link = select(2,GetItemInfo(id))
-		if link then
-			self.links[id] = link
-			n = n - 1
-			self.cache[id] = nil
-		end
-	end
-	if n > 0 and (GetTime() - self.cacheStart < 20) then
-		self:ScheduleTimer(function ()
-			self:Cache()
-		end, 2)
-	else
-		self:CheckWQ("new")
-	end
-end	
-
 WQA.first = false
+function WQA:Show(mode)
+	self:CreateQuestList()
+	self:CheckWQ(mode)
+	self.first = true
+end
+
+
 function WQA:CheckWQ(mode)
 	local activeQuests = {}
 	local newQuests = {}
 	for questID,qList in pairs(self.questList) do
 		if IsActive(questID) then
 			local questLink = GetQuestLink(questID)
-			if not questLink then
+			local link = self:link(self.questList[questID][1])
+			if not questLink or not link then
 				self:ScheduleTimer("CheckWQ", .5, mode)
 				return
 			end
@@ -619,7 +599,6 @@ function WQA:CheckWQ(mode)
 	if mode == "new" then
 		self:AnnounceChat(newQuests, self.first)
 		self:AnnouncePopUp(newQuests, self.first)
-		self.first = true
 	else
 		self:AnnounceChat(activeQuests)
 		self:AnnouncePopUp(activeQuests)
@@ -669,7 +648,7 @@ function WQA:link(x)
 	if t == "ACHIEVEMENT" then
 		return GetAchievementLink(x.id)
 	elseif t == "ITEM" then
-		return self.links[x.id]
+		return select(2,GetItemInfo(x.id))--self.links[x.id]
 	else
 		return ""
 	end
