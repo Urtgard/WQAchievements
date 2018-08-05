@@ -20,7 +20,7 @@ L["mounts"] = "Mounts"
 L["pets"] = "Pets"
 L["toys"] = "Toys"
 if locale == "deDE" then
-	L["WQChat"] = "Interessante Weltquests sind verfügbar:"
+	L["WQChat"] = "Interessante Weltquests verfügbar:"
 	L["WQforAch"] = "%s für %s"
 end
 
@@ -314,7 +314,7 @@ function WQA:UpdateCustomQuests()
 		}
 		args[id.."space"] = {
 			name =" ",
-			width = .5,
+			width = .4,
 			order = newOrder(),
 			type = "description"
 		}
@@ -385,7 +385,8 @@ do
 				nil,
 				nil,
 				{41269, 41600, 41601}},
-			}
+			},
+			{name = "Crate Expectations", id = 11681, criteriaType = "QUEST_SINGLE", criteria = 45542}
 		},
 		mounts = {
 			{name = "Maddened Chaosrunner", itemID = 152814, spellID = 253058, quest = {{trackingID = 48695, wqID = 48696}}},
@@ -559,9 +560,11 @@ end
 function WQA:AddCustom()
 	if type(self.db.global.custom) == "table" then
 		for k,v in pairs(self.db.global.custom) do
-			if not self.questList[k] then self.questList[k] = {} end
-	 		local l = self.questList[k]
-			l[#l + 1] = { id = v.rewardID, type = v.rewardType}
+			if not (self.db.char.custom and self.db.char.custom[tostring(k)] == true) then
+				if not self.questList[k] then self.questList[k] = {} end
+	 			local l = self.questList[k]
+				l[#l + 1] = { id = v.rewardID, type = v.rewardType}
+			end
 		end
 	end
 end
@@ -672,24 +675,45 @@ end
 
 function WQA:CreatePopUp()
 	if self.PopUp then return self.PopUp end
-	local f = CreateFrame("Frame","WQAchievementsPopUp",UIParent)
+	local f = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
 	f:SetFrameStrata("BACKGROUND")
 	f:SetWidth(500)
 	f:SetPoint("TOP",0,-200)
 
-	local FrameBackdrop = {
-		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-		tile = true, tileSize = 32, edgeSize = 32,
-		insets = { left = 8, right = 8, top = 8, bottom = 8 }
-	}
-	f:SetBackdrop(FrameBackdrop)
-	f:SetBackdropColor(0, 0, 0, 1)
+	-- Move and resize
+	f:SetMovable(true)
+	f:EnableMouse(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", function(self)
+		self.moving = true
+        self:StartMoving()
+	end)
+	f:SetScript("OnDragStop", function(self)
+		self.moving = nil
+        self:StopMovingOrSizing()
+	end)
+
+	f.ResizeButton = CreateFrame("Button", f:GetName().."ResizeButton", f)
+	f.ResizeButton:SetWidth(16)
+	f.ResizeButton:SetHeight(16)
+	f.ResizeButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT")
+	f.ResizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+
+	f.Title:SetText("WQAchievements")
+	f.Title:SetFontObject(GameFontNormalLarge)
+--	local FrameBackdrop = {
+--		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+--		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+--		tile = true, tileSize = 32, edgeSize = 32,
+--		insets = { left = 8, right = 8, top = 8, bottom = 8 }
+--	}
+--	f:SetBackdrop(FrameBackdrop)
+--	f:SetBackdropColor(0, 0, 0, 1)
 	
 	f.ScrollingMessageFrame = CreateFrame("ScrollingMessageFrame", "PopUpScroll", f)
 	f.ScrollingMessageFrame:SetHyperlinksEnabled(true)
 	f.ScrollingMessageFrame:SetWidth(470)
-	f.ScrollingMessageFrame:SetPoint("TOP",f,"TOP",0,-14)
+	f.ScrollingMessageFrame:SetPoint("TOP",f,"TOP",0,-28)
 	f.ScrollingMessageFrame:SetFontObject(GameFontNormalLarge)
 	f.ScrollingMessageFrame:SetFading(false)
 	f.ScrollingMessageFrame:SetScript("OnHyperlinkEnter", function(_,_,link,line)
@@ -702,8 +726,30 @@ function WQA:CreatePopUp()
 	f.ScrollingMessageFrame:SetScript("OnHyperlinkLeave", function() GameTooltip:Hide() end)
 	f.ScrollingMessageFrame:SetJustifyV("CENTER")
 
-	f.CloseButton = CreateFrame("Button", "CloseButton", f, "UIPanelCloseButton")
-	f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT")--, -6, -6)
+	f.ScrollingMessageFrame:SetInsertMode(1)
+
+	f.ScrollingMessageFrame:SetScript("OnMouseWheel", function(self, delta)
+		if ( delta > 0 ) then
+			self:ScrollDown()
+		else
+			self:ScrollUp()
+		end
+	end)
+
+	--f.CloseButton = CreateFrame("Button", "CloseButton", f, "UIPanelCloseButton")
+	--f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT")
+--[[
+	f.ScrollToBottomButton = CreateFrame("Button", f:GetName().."ScrollToBottomButton", f)
+	f.ScrollToBottomButton:SetWidth(20)
+	f.ScrollToBottomButton:SetHeight(20)
+	f.ScrollToBottomButton:SetPoint("CENTER", f, "BOTTOM")
+	f.ScrollToBottomButton:SetNormalFontObject(GameFontNormalLarge)
+	local font = f.ScrollToBottomButton:GetNormalFontObject()
+	font:SetTextColor(1, 1, 1)
+	f.ScrollToBottomButton:SetNormalFontObject(font);
+	f.ScrollToBottomButton:SetText("v")
+	f.ScrollToBottomButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+--]]
 	self.PopUp = f
 	return f
 end
@@ -717,20 +763,58 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 		if silent ~= true then
 			f.ScrollingMessageFrame:SetJustifyH("CENTER")
 			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
-			f:SetHeight(28+i*16)
-			f.ScrollingMessageFrame:SetHeight(16*i)
 			f:Show()
 		end
-		return
-	end
+	else
+		f.ScrollingMessageFrame:SetJustifyH("LEFT")
+		local Message = {}
+		for questID,_ in pairs(activeQuests) do
+			Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+			i = i+1
+		end
+		for j=#Message,1,-1 do
+			f.ScrollingMessageFrame:AddMessage(Message[j])
+		end
+		f.ScrollingMessageFrame:AddMessage(L["WQChat"])
 
-	f.ScrollingMessageFrame:SetJustifyH("LEFT")
-	f.ScrollingMessageFrame:AddMessage(L["WQChat"])
-	for questID,_ in pairs(activeQuests) do
-		f.ScrollingMessageFrame:AddMessage(string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1])))
-		i = i+1
+		f:Show()
 	end
-	f:SetHeight(28+i*16)
+	f:SetHeight(38+i*16)
 	f.ScrollingMessageFrame:SetHeight(16*i)
-	f:Show()
 end
+
+
+---- by reward
+--  GetQuestsForPlayerByMapID
+--[[
+--list of all zone ids
+WorldQuestTracker.MapData.ZoneIDs = {
+	--Legion
+		ARGUS = 		905, --905
+		BROKENISLES = 	619, --
+		AZSUNA = 		630, --631 632 633
+		VALSHARAH = 	641, --642 643 644
+		HIGHMONTAIN = 	650, --
+		DALARAN = 	625,
+		SURAMAR =		680,
+		STORMHEIM = 	634,
+		BROKENSHORE = 	646,
+		EYEAZSHARA = 	790,
+		ANTORAN = 	885,
+		KROKUUN = 	830,
+		MCCAREE = 	882,
+		
+	--BFA
+		DARKSHORE = 	62,
+		ARATHI =		14,
+		ZANDALAR = 	875,
+		KULTIRAS = 	876,
+		ZULDAZAAR = 	862,
+		NAZMIR = 		863,
+		VOLDUN = 		864,
+		TIRAGARDE = 	895,
+		STORMSONG = 	942,
+		DRUSTVAR = 	896,
+	
+}
+--]]
