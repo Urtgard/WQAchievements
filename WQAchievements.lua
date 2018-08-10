@@ -1,3 +1,6 @@
+local timer
+
+
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
 local WQA = WQAchievements
 WQA.data = {}
@@ -189,6 +192,12 @@ function WQA:OnEnable()
 				self:Show("new")
 				self:ScheduleRepeatingTimer("Show",30*60,"new")
 			end, (32-(date("%M") % 30))*60)
+		end
+		if name == "QUEST_LOG_UPDATE" then
+			self.event:UnregisterEvent("QUEST_LOG_UPDATE")
+			self.waitforevent = false
+			self:CancelTimer(timer)
+			self:Reward()
 		end
 	end)
 end
@@ -457,6 +466,7 @@ function WQA:CreateQuestList()
 		self:AddAchievement(v)
 	end
 	self:AddCustom()
+	self:Reward()
 end
 
 function WQA:AddAchievement(achievement)
@@ -578,6 +588,10 @@ end
 
 
 function WQA:CheckWQ(mode)
+	if self.rewards ~= true then
+		self:ScheduleTimer("CheckWQ", .4, mode)
+		return
+	end
 	local activeQuests = {}
 	local newQuests = {}
 	for questID,qList in pairs(self.questList) do
@@ -647,14 +661,56 @@ function WQA:checkWQ(mode)
 end
 
 function WQA:link(x)
+	if not x then return "" end
 	local t = string.upper(x.type)
 	if t == "ACHIEVEMENT" then
 		return GetAchievementLink(x.id)
 	elseif t == "ITEM" then
 		return select(2,GetItemInfo(x.id))--self.links[x.id]
+	elseif t == "ITEMPERCENTUPGRADE" then
+		if x.itemLink then
+			return x.itemLink.."|cFF00FF00 +"..x.upgrade.."%"
+		else	
+			return select(2,GetItemInfo(x.id)).."|cFF00FF00 +"..x.upgrade.."%"
+		end
+	elseif t == "ITEMLEVELUPGRADE" then
+		if x.itemLink then
+			return x.itemLink.."|cFF00FF00 +"..x.upgrade.." iLvl"
+		else	
+			return select(2,GetItemInfo(x.id)).."|cFF00FF00 +"..x.upgrade.." iLvl"
+		end
+	elseif t == "TRANSMOG" then
+		return x.itemLink.."Transmog"
+	elseif t == "UNIQUETRANSMOG" then
+		return x.itemLink.."unique Transmog"
 	else
 		return ""
 	end
+end
+
+local icons = {
+	unknown = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t",
+	known = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t",
+}
+
+function WQA:GetRewardForID(questID)
+	local l = self.questList[questID].rewards
+	local r = ""
+	if l and l.item then
+		if l.item.bonus.itemLevelUpgrade then
+			r = r.."|cFF00FF00+"..l.item.bonus.itemLevelUpgrade.." iLvl|r"
+		end
+		if l.item.bonus.itemPercentUpgrade then
+			if r ~= "" then r = r.."," end
+			r = r.."|cFF00FF00+".. l.item.bonus.itemPercentUpgrade.."%|r"
+		end
+		if l.item.bonus.transmog then
+			if r ~= "" then r = r.." " end
+			r = r..icons[l.item.bonus.transmog]
+		end
+		r = l.item.itemLink.." "..r
+	end
+	return r
 end
 
 function WQA:AnnounceChat(activeQuests, silent)
@@ -667,8 +723,13 @@ function WQA:AnnounceChat(activeQuests, silent)
 	end
 
 	local output = L["WQChat"]
+	local r
 	for questID,_ in pairs(activeQuests) do
-		output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+		if not self.questList[questID].rewards then
+			output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+		else
+			output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
+		end
 	end
 	print(output)
 end
@@ -701,14 +762,6 @@ function WQA:CreatePopUp()
 
 	f.Title:SetText("WQAchievements")
 	f.Title:SetFontObject(GameFontNormalLarge)
---	local FrameBackdrop = {
---		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
---		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
---		tile = true, tileSize = 32, edgeSize = 32,
---		insets = { left = 8, right = 8, top = 8, bottom = 8 }
---	}
---	f:SetBackdrop(FrameBackdrop)
---	f:SetBackdropColor(0, 0, 0, 1)
 	
 	f.ScrollingMessageFrame = CreateFrame("ScrollingMessageFrame", "PopUpScroll", f)
 	f.ScrollingMessageFrame:SetHyperlinksEnabled(true)
@@ -738,18 +791,7 @@ function WQA:CreatePopUp()
 
 	--f.CloseButton = CreateFrame("Button", "CloseButton", f, "UIPanelCloseButton")
 	--f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT")
---[[
-	f.ScrollToBottomButton = CreateFrame("Button", f:GetName().."ScrollToBottomButton", f)
-	f.ScrollToBottomButton:SetWidth(20)
-	f.ScrollToBottomButton:SetHeight(20)
-	f.ScrollToBottomButton:SetPoint("CENTER", f, "BOTTOM")
-	f.ScrollToBottomButton:SetNormalFontObject(GameFontNormalLarge)
-	local font = f.ScrollToBottomButton:GetNormalFontObject()
-	font:SetTextColor(1, 1, 1)
-	f.ScrollToBottomButton:SetNormalFontObject(font);
-	f.ScrollToBottomButton:SetText("v")
-	f.ScrollToBottomButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
---]]
+
 	self.PopUp = f
 	return f
 end
@@ -757,11 +799,13 @@ end
 function WQA:AnnouncePopUp(activeQuests, silent)
 	if self.db.char.options.PopUp == false then return end
 	local f = self:CreatePopUp()
-	f.ScrollingMessageFrame:Clear()
+	if f:IsShown() ~= true then
+		f.ScrollingMessageFrame:Clear()
+	end
 	local i = 1
 	if next(activeQuests) == nil then
 		if silent ~= true then
-			f.ScrollingMessageFrame:SetJustifyH("CENTER")
+--			f.ScrollingMessageFrame:SetJustifyH("CENTER")
 			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
 			f:Show()
 		end
@@ -769,7 +813,11 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 		f.ScrollingMessageFrame:SetJustifyH("LEFT")
 		local Message = {}
 		for questID,_ in pairs(activeQuests) do
-			Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+			if not self.questList[questID].rewards then
+				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+			else
+				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
+			end			
 			i = i+1
 		end
 		for j=#Message,1,-1 do
@@ -779,8 +827,167 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 
 		f:Show()
 	end
+	i = math.max(3,i)
 	f:SetHeight(38+i*16)
 	f.ScrollingMessageFrame:SetHeight(16*i)
+end
+
+
+local inspectScantip = CreateFrame("GameTooltip", "WorldQuestListInspectScanningTooltip", nil, "GameTooltipTemplate")
+inspectScantip:SetOwner(UIParent, "ANCHOR_NONE")
+
+local EquipLocToSlot1 = 
+{
+	INVTYPE_HEAD = 1,
+	INVTYPE_NECK = 2,
+	INVTYPE_SHOULDER = 3,
+	INVTYPE_BODY = 4,
+	INVTYPE_CHEST = 5,
+	INVTYPE_ROBE = 5,
+	INVTYPE_WAIST = 6,
+	INVTYPE_LEGS = 7,
+	INVTYPE_FEET = 8,
+	INVTYPE_WRIST = 9,
+	INVTYPE_HAND = 10,
+	INVTYPE_FINGER = 11,
+	INVTYPE_TRINKET = 13,
+	INVTYPE_CLOAK = 15,
+	INVTYPE_WEAPON = 16,
+	INVTYPE_SHIELD = 17,
+	INVTYPE_2HWEAPON = 16,
+	INVTYPE_WEAPONMAINHAND = 16,
+	INVTYPE_RANGED = 16,
+	INVTYPE_RANGEDRIGHT = 16,
+	INVTYPE_WEAPONOFFHAND = 17,
+	INVTYPE_HOLDABLE = 17,
+	INVTYPE_TABARD = 19,
+}
+local EquipLocToSlot2 = 
+{
+	INVTYPE_FINGER = 12,
+	INVTYPE_TRINKET = 14,
+	INVTYPE_WEAPON = 17,
+}
+
+ItemTooltipScan = CreateFrame ("GameTooltip", "WQTItemTooltipScan", UIParent, "InternalEmbeddedItemTooltipTemplate")
+   	ItemTooltipScan.texts = {
+   		_G ["WQTItemTooltipScanTooltipTextLeft1"],
+   		_G ["WQTItemTooltipScanTooltipTextLeft2"],
+   		_G ["WQTItemTooltipScanTooltipTextLeft3"],
+   		_G ["WQTItemTooltipScanTooltipTextLeft4"],
+  }
+	ItemTooltipScan.patern = ITEM_LEVEL:gsub ("%%d", "(%%d+)") --from LibItemUpgradeInfo-1.0
+
+WQA.waitforevent = false
+function WQA:Reward()
+	self.rewards = false
+	if self.waitforevent == true then
+		self.rewards = true
+		self.waitforevent = false
+		return
+	end
+	self.event:RegisterEvent("QUEST_LOG_UPDATE")
+	self.waitforevent = true
+	for k,mapID in pairs({
+		--Legion
+		ARGUS = 		905, --905
+		BROKENISLES = 	619, --
+		AZSUNA = 		630, --631 632 633
+		VALSHARAH = 	641, --642 643 644
+		HIGHMONTAIN = 	650, --
+		DALARAN = 	625,
+		SURAMAR =		680,
+		STORMHEIM = 	634,
+		BROKENSHORE = 	646,
+		EYEAZSHARA = 	790,
+		ANTORAN = 	885,
+		KROKUUN = 	830,
+		MCCAREE = 	882,
+		
+	--BFA
+		DARKSHORE = 	62,
+		ARATHI =		14,
+		ZANDALAR = 	875,
+		KULTIRAS = 	876,
+		ZULDAZAAR = 	862,
+		NAZMIR = 		863,
+		VOLDUN = 		864,
+		TIRAGARDE = 	895,
+		STORMSONG = 	942,
+		DRUSTVAR = 	896,
+
+		
+	}) do 
+		quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+		for i=1,#quests do
+			local questID = quests[i].questId
+			local numQuestRewards = GetNumQuestLogRewards (questID)
+			--	print( GetNumQuestLogRewards (questID))
+				if (numQuestRewards > 0) then
+				local itemName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(1, questID)
+			--	print(GetQuestLogRewardInfo(1, questID))
+				if itemID then
+					inspectScantip:SetQuestLogItem("reward", 1, questID)
+					itemLink = select(2,inspectScantip:GetItem())
+					local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo (itemLink)
+
+					-- Ask Pawn if this is an Upgrade
+					if PawnIsItemAnUpgrade then
+						local Item = PawnGetItemData(itemLink)
+						if Item then
+							local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
+							if UpgradeInfo then
+								if not self.questList[questID] then self.questList[questID] = {} end
+						 		local l = self.questList[questID]
+						 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
+								l.rewards.item.bonus.itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)
+							end
+						end
+					end
+
+					-- Upgrade by itemLevel
+					if not PawnIsItemAnUpgrade or itemEquipLoc == INVTYPE_TRINKET then
+						local itemLevel1, itemLevel2
+						if EquipLocToSlot1[itemEquipLoc] then
+							itemLevel1 = GetDetailedItemLevelInfo(GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc]))
+						else
+							itemLevel1 = 10000
+						end
+						if EquipLocToSlot2[itemEquipLoc] then
+							itemLevel2 = GetDetailedItemLevelInfo(GetInventoryItemLink("player", EquipLocToSlot2[itemEquipLoc]))
+						else
+							itemLevel2 = 10000
+						end
+						itemLevel = GetDetailedItemLevelInfo(itemLink)
+						if itemLevel > math.min(itemLevel1, itemLevel2) then
+							if not self.questList[questID] then self.questList[questID] = {} end
+					 		local l = self.questList[questID]
+					 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
+							l.rewards.item.bonus.itemLevelUpgrade = itemLevel - math.min(itemLevel1, itemLevel2)
+						end
+					end
+
+					-- Transmog
+					if CanIMogIt then
+						if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+							if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
+								if not self.questList[questID] then self.questList[questID] = {} end
+								local l = self.questList[questID]
+								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
+								l.rewards.item.bonus.transmog = "unknown"
+							elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink)  then
+								if not self.questList[questID] then self.questList[questID] = {} end
+								local l = self.questList[questID]
+								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
+								l.rewards.item.bonus.transmog = "known"
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	timer = self:ScheduleTimer(function() self:Reward() end, .5)
 end
 
 
