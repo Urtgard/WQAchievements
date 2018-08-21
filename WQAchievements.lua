@@ -723,15 +723,15 @@ function WQA:AnnounceChat(activeQuests, silent)
 	end
 
 	local output = L["WQChat"]
-	local r
+	print(output)
 	for questID,_ in pairs(activeQuests) do
 		if not self.questList[questID].rewards then
-			output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
 		else
-			output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
+			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
 		end
+		print(output)
 	end
-	print(output)
 end
 
 function WQA:CreatePopUp()
@@ -886,8 +886,7 @@ function WQA:Reward()
 		self.waitforevent = false
 		return
 	end
-	self.event:RegisterEvent("QUEST_LOG_UPDATE")
-	self.waitforevent = true
+	
 	for k,mapID in pairs({
 		--Legion
 		ARGUS = 		905, --905
@@ -918,13 +917,15 @@ function WQA:Reward()
 
 		
 	}) do 
-		quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+		local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+		if quests then
 		for i=1,#quests do
 			local questID = quests[i].questId
 			local numQuestRewards = GetNumQuestLogRewards (questID)
 			--	print( GetNumQuestLogRewards (questID))
 				if (numQuestRewards > 0) then
 				local itemName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(1, questID)
+			--	if not itemName then print(itemID) end
 			--	print(GetQuestLogRewardInfo(1, questID))
 				if itemID then
 					inspectScantip:SetQuestLogItem("reward", 1, questID)
@@ -946,26 +947,32 @@ function WQA:Reward()
 					end
 
 					-- Upgrade by itemLevel
-					if not PawnIsItemAnUpgrade or itemEquipLoc == INVTYPE_TRINKET then
+					--if not PawnIsItemAnUpgrade or itemEquipLoc == INVTYPE_TRINKET then
+
 						local itemLevel1, itemLevel2
 						if EquipLocToSlot1[itemEquipLoc] then
-							itemLevel1 = GetDetailedItemLevelInfo(GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc]))
-						else
-							itemLevel1 = 10000
+							local itemLink1 = GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc])
+							--print(itemLink1)
+							if itemLink1 then
+								itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+							end
 						end
 						if EquipLocToSlot2[itemEquipLoc] then
-							itemLevel2 = GetDetailedItemLevelInfo(GetInventoryItemLink("player", EquipLocToSlot2[itemEquipLoc]))
-						else
-							itemLevel2 = 10000
+							local itemLink2 = GetInventoryItemLink("player", EquipLocToSlot2[itemEquipLoc])
+							if itemLink2 then
+								itemLevel2 = GetDetailedItemLevelInfo(itemLink2)
+							end
 						end
+						--print(itemEquipLoc, EquipLocToSlot1[itemEquipLoc], itemLink1, itemLink2)
 						itemLevel = GetDetailedItemLevelInfo(itemLink)
-						if itemLevel > math.min(itemLevel1, itemLevel2) then
+						local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
+						if itemLevel > itemLevelEquipped then
 							if not self.questList[questID] then self.questList[questID] = {} end
 					 		local l = self.questList[questID]
 					 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-							l.rewards.item.bonus.itemLevelUpgrade = itemLevel - math.min(itemLevel1, itemLevel2)
+							l.rewards.item.bonus.itemLevelUpgrade = itemLevel - itemLevelEquipped
 						end
-					end
+					--end
 
 					-- Transmog
 					if CanIMogIt then
@@ -987,13 +994,31 @@ function WQA:Reward()
 			end
 		end
 	end
+	 end
 	timer = self:ScheduleTimer(function() self:Reward() end, .5)
+	self.event:RegisterEvent("QUEST_LOG_UPDATE")
+	self.waitforevent = true
 end
 
 
 ---- by reward
 --  GetQuestsForPlayerByMapID
 --[[
+
+print( "\124Hmylinktype:myfunc\124h\124T"..(select(3,GetSpellInfo(12345)))..":16\124t\124h" ) 
+
+Now since your defining your own link type, you need to intercept the default chat link handler and replace it with your own. You save the old function in case the link isn't one of yours so it can be handled as normal. 
+
+local OldSetItemRef = SetItemRef 
+function SetItemRef(link, text, button, chatFrame) 
+local func = strmatch(link, "^mylinktype:(%a+)") 
+if func == "myfunc" then 
+print(random(1, 10)) 
+else 
+OldSetItemRef(link, text, button, chatFrame) 
+end 
+end 
+
 --list of all zone ids
 WorldQuestTracker.MapData.ZoneIDs = {
 	--Legion
