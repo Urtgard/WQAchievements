@@ -7,4 +7,7 @@
 
 embeds.xml
 WQAchievements.lua
+Options.lua<<<<<<< HEAD
+=======
 Options.lua
+>>>>>>> b02982334c0652f7d28a4d7a2fa2c1b98ad3ea77
