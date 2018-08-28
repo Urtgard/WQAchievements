@@ -45,133 +45,26 @@ function WQA:OnInitialize()
 			options = {
 				chat = true,
 				PopUp = false,
+				rewards = {
+					gear = {
+						itemLevelUpgrade = true,
+						itemLevelUpgradeMin = 0,
+						PawnUpgrade = true,
+						PawnUpgradeMin = 0,
+						unknownAppearance = true,
+						unknownSource = false,
+					}
+				}
 			}
 		}
 	}
 	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
-
-	------------------
-	-- 	Options Table
-	------------------
-	WQA.options = {
-		type = "group",
-		childGroups = "tab",
-		args = {
-			general = {
-				order = 1,
-				type = "group",
-				childGroups = "tree",
-				name = "General",
-				args = {}
-			},
-			custom = {
-				order = 2,
-				type = "group",
-				childGroups = "tree",
-				name = "Custom",
-				args = {
-					--Add WQ
-					header1 = { type = "header", name = "Add a World Quest", order = newOrder(), },
-					addWQ = {
-						name = "WorldQuestID",
-						--desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
-						type = "input",
-						order = newOrder(),
-						width = .6,
-						set = function(info,val)
-				   			WQA.data.custom.wqID = val
-				   		end,
-				    	get = function() return tostring(WQA.data.custom.wqID )  end
-					},
-					rewardID = {
-						name = "Reward (optional)",
-						desc = "Enter an achievementID or itemID",
-						type = "input",
-						width = .6,
-						order = newOrder(),
-						set = function(info,val)
-				   			WQA.data.custom.rewardID = val
-				   		end,
-				    	get = function() return tostring(WQA.data.custom.rewardID )  end
-					},
-					rewardType = {
-						name = "Reward type",
-						order = newOrder(),
-						type = "select",
-						values = {item = "Item", achievement = "Achievement", none = "none"},
-						width = .6,
-						set = function(info,val)
-				   			WQA.data.custom.rewardType = val
-				   		end,
-				    	get = function() return WQA.data.custom.rewardType end
-					},
-					button = {
-						order = newOrder(),
-						type = "execute",
-						name = "Add",
-						width = .3,
-						func = function() WQA:CreateCustomQuest() end
-					},
-					--Configure
-					header2 = { type = "header", name = "Configure custom World Quests", order = newOrder(), },
-				}
-			},
-			options = {
-				order = 3,
-				type = "group",
-				name = "Options",
-				args = {
-					desc1 = { type = "description", fontSize = "medium", name = "Select where WQA is allowed to post", order = newOrder(), },
-					chat = {
-						type = "toggle",
-						name = "Chat",
-						width = "double",
-						set = function(info, val)
-							WQA.db.char.options.chat = val
-						end,
-						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.char.options.chat
-				    	end,
-					    order = newOrder()
-					},
-					PopUp = {
-						type = "toggle",
-						name = "PopUp",
-						width = "double",
-						handler = WQA,
-						set = function(info, val)
-							WQA.db.char.options.PopUp = val
-						end,
-						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.char.options.PopUp
-				    	end,
-					    order = newOrder()
-					}
-				}
-			}
-		},
-	}
-
-	for i = 1, 2 do
-		local v = self.data[i]
-		self.options.args.general.args[v.name] = {
-			order = i,
-			name = v.name,
-			type = "group",
-			inline = true,
-			args = {
-			}
-		}
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "achievements")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "mounts")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "pets")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "toys")
-	end
-
-	self:UpdateCustomQuests()
+	self:UpdateOptions()
 end
+
+WQA.optionsRewards = {
+	
+}
 
 function WQA:OnEnable()
 	------------------
@@ -201,134 +94,6 @@ function WQA:OnEnable()
 		end
 	end)
 end
-
-function WQA:ToggleSet(info, val)
-	--print(info[#info-2],info[#info-1],info[#info])
-	local expansion = info[#info-2]
-	local category = info[#info-1]
-	local option = info[#info]
-	--if not WQA.db.char[expansion] then WQA.db.char[expansion] = {} end
-	if not WQA.db.char[category] then WQA.db.char[category] = {} end
-	if not val == true then
-		WQA.db.char[category][option] = true
-	else
-		WQA.db.char[category][option] = nil
-	end
-end
-
-function WQA:ToggleGet()
-end
-
-function WQA:CreateGroup(options, data, groupName)
-	if data[groupName] then
-		options[groupName] = {
-			order = 1,
-			name = L[groupName],
-			type = "group",
-			args = {
-			}
-		}
-		local args = options[groupName].args
-		local expansion = data.name
-		local data = data[groupName]
-		for _,object in pairs(data) do
-			args[object.name] = {
-				type = "toggle",
-				name = object.name,
-				width = "double",
-				handler = WQA,
-				set = "ToggleSet",
-				descStyle = "inline",
-			    get = function()
-			    	if not WQA.db.char[groupName] then return true end
-			    	if not WQA.db.char[groupName][object.name]  then return true end
-			    	return false
-		    	end,
-			    order = newOrder()	
-			}
-			if object.itemID then
-				args[object.name].name = select(2,GetItemInfo(object.itemID)) or object.name
-			else
-				args[object.name].name = GetAchievementLink(object.id) or object.name
-			end
-		end
-	end
-end
-
-function WQA:CreateCustomQuest()
- 	if not self.db.global.custom then self.db.global.custom = {} end
- 	self.db.global.custom[tonumber(self.data.custom.wqID)] = {rewardID = tonumber(self.data.custom.rewardID), rewardType = self.data.custom.rewardType}
- 	self:UpdateCustomQuests()
- end
-
-function WQA:UpdateCustomQuests()
- 	local data = self.db.global.custom
- 	if type(data) ~= "table" then return false end
- 	local args = self.options.args.custom.args
- 	for id,object in pairs(data) do
-		args[tostring(id)] = {
-			type = "toggle",
-			name = GetQuestLink(id) or tostring(id),
-			width = "double",
-			handler = WQA,
-			set = "ToggleSet",
-			descStyle = "inline",
-		    get = function()
-		    	if not WQA.db.char.custom then return true end
-		    	if not WQA.db.char.custom[tostring(id)]  then return true end
-		    	return false
-	    	end,
-		    order = newOrder(),
-		    width = 1.2
-		}
-		args[id.."Reward"] = {
-			name = "Reward (optional)",
-			desc = "Enter an achievementID or itemID",
-			type = "input",
-			width = .6,
-			order = newOrder(),
-			set = function(info,val)
-				self.db.global.custom[id].rewardID = tonumber(val)
-			end,
-			get = function() return
-				tostring(self.db.global.custom[id].rewardID or "")
-			end
-		}
-		args[id.."RewardType"] = {
-			name = "Reward type",
-			order = newOrder(),
-			type = "select",
-			values = {item = "Item", achievement = "Achievement", none = "none"},
-			width = .6,
-			set = function(info,val)
-				self.db.global.custom[id].rewardType = val
-			end,
-			get = function() return self.db.global.custom[id].rewardType or nil end
-		}
-		args[id.."Delete"] = {
-			order = newOrder(),
-			type = "execute",
-			name = "Delete",
-			width = .5,
-			func = function()
-				args[tostring(id)] = nil
-				args[id.."Reward"] = nil
-				args[id.."RewardType"] = nil
-				args[id.."Delete"] = nil
-				args[id.."space"] = nil
-				self.db.global.custom[id] = nil
-				self:UpdateCustomQuests()
-				GameTooltip:Hide()
-			end
-		}
-		args[id.."space"] = {
-			name =" ",
-			width = .4,
-			order = newOrder(),
-			type = "description"
-		}
-	end
- end
 
 WQA:RegisterChatCommand("wqa", "slash")
 
@@ -395,7 +160,8 @@ do
 				nil,
 				{41269, 41600, 41601}},
 			},
-			{name = "Crate Expectations", id = 11681, criteriaType = "QUEST_SINGLE", criteria = 45542}
+			{name = "Crate Expectations", id = 11681, criteriaType = "QUEST_SINGLE", criteria = 45542},
+			{name = "They See Me Rolling", id = 11607, criteriaType = "QUEST_SINGLE", criteria = 46175}
 		},
 		mounts = {
 			{name = "Maddened Chaosrunner", itemID = 152814, spellID = 253058, quest = {{trackingID = 48695, wqID = 48696}}},
@@ -445,7 +211,8 @@ do
 			{name = "Bless the Rains Down in Freehold", id = 13050, criteriaType = "QUEST_SINGLE", criteria = 53196},
 			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994,0,53189}},	-- Frozen Freestyle
 			{name = "Battle on Zandalar and Kul Tiras", id = 12936},
-			{name =  "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665}
+			{name = "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665},
+			{name = "Adventurer of Zuldazar", id = 12944, criteriaType = "QUESTS", criteria = {50864, 50877, {51085, 51087}, 51081, {50287, 51374, 50866}, 50885, 50863, 50862, 50861, 50859, 50845, 50857, nil, 50875, 50874, nil, 50872, 50876, 50871, 50870, 50869, 50868, 50867}}
 		},
 	}
 	WQA.data[2] = bfa
@@ -487,10 +254,18 @@ function WQA:AddAchievement(achievement)
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
 				if not completed then
 					if achievement.criteriaType == "QUESTS" then
-						questID = achievement.criteria[i] or 0			
-						if not self.questList[questID] then self.questList[questID] = {} end
-						local l = self.questList[questID]
-						l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+						if type(achievement.criteria[i]) == "table" then
+							for _,questID in pairs(achievement.criteria[i]) do
+						 		if not self.questList[questID] then self.questList[questID] = {} end
+						 		local l = self.questList[questID]
+								l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+							end
+						else
+							questID = achievement.criteria[i] or 0
+							if not self.questList[questID] then self.questList[questID] = {} end
+							local l = self.questList[questID]
+							l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+						end
 					elseif achievement.criteriaType == 1 and t == 0 then
 						for _,questID in pairs(achievement.criteria[i]) do
 					 		if not self.questList[questID] then self.questList[questID] = {} end
@@ -702,11 +477,26 @@ function WQA:GetRewardForID(questID)
 		end
 		if l.item.bonus.itemPercentUpgrade then
 			if r ~= "" then r = r.."," end
-			r = r.."|cFF00FF00+".. l.item.bonus.itemPercentUpgrade.."%|r"
+			r = r.."|cFF00FF00+"..l.item.bonus.itemPercentUpgrade.."%|r"
 		end
 		if l.item.bonus.transmog then
 			if r ~= "" then r = r.." " end
 			r = r..icons[l.item.bonus.transmog]
+		end
+		if l.item.bonus.AzeriteArmorCache then
+			for i=1,5,2 do
+				local upgrade = l.item.bonus.AzeriteArmorCache[i]
+				if upgrade > 0 then
+					r = r.."|cFF00FF00+"..upgrade.." iLvl|r"
+				elseif upgrade < 0 then
+					r = r.."|cFFFF0000-"..upgrade.." iLvl|r"
+				else
+					r = r.."±"..upgrade
+				end
+				if i ~= 5 then
+					r = r.." / "
+				end
+			end
 		end
 		r = l.item.itemLink.." "..r
 	end
@@ -725,8 +515,11 @@ function WQA:AnnounceChat(activeQuests, silent)
 	local output = L["WQChat"]
 	print(output)
 	for questID,_ in pairs(activeQuests) do
-		if not self.questList[questID].rewards then
+		if self.questList[questID][1] then
 			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
+			if self.questList[questID].rewards then
+				output = output.." & "..self:GetRewardForID(questID)
+			end
 		else
 			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
 		end
@@ -794,6 +587,10 @@ function WQA:CreatePopUp()
 
 	self.PopUp = f
 	return f
+end
+
+function WQA:p()
+	print("pp")
 end
 
 function WQA:AnnouncePopUp(activeQuests, silent)
@@ -933,11 +730,11 @@ function WQA:Reward()
 					local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo (itemLink)
 
 					-- Ask Pawn if this is an Upgrade
-					if PawnIsItemAnUpgrade then
+					if PawnIsItemAnUpgrade and self.db.char.options.rewards.gear.PawnUpgrade then
 						local Item = PawnGetItemData(itemLink)
 						if Item then
 							local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
-							if UpgradeInfo then
+							if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.char.options.rewards.gear.PawnUpgradeMin then
 								if not self.questList[questID] then self.questList[questID] = {} end
 						 		local l = self.questList[questID]
 						 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
@@ -946,9 +743,12 @@ function WQA:Reward()
 						end
 					end
 
-					-- Upgrade by itemLevel
-					--if not PawnIsItemAnUpgrade or itemEquipLoc == INVTYPE_TRINKET then
+					--StatWeightScore
+					--local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore")
+					--local ScoreModule = StatWeightScore:GetModule("StatWeightScoreScore")
 
+					-- Upgrade by itemLevel
+					if self.db.char.options.rewards.gear.itemLevelUpgrade then
 						local itemLevel1, itemLevel2
 						if EquipLocToSlot1[itemEquipLoc] then
 							local itemLink1 = GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc])
@@ -963,26 +763,46 @@ function WQA:Reward()
 								itemLevel2 = GetDetailedItemLevelInfo(itemLink2)
 							end
 						end
-						--print(itemEquipLoc, EquipLocToSlot1[itemEquipLoc], itemLink1, itemLink2)
 						itemLevel = GetDetailedItemLevelInfo(itemLink)
 						local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
-						if itemLevel > itemLevelEquipped then
+						if itemLevel > itemLevelEquipped and itemLevel - itemLevelEquipped >= self.db.char.options.rewards.gear.itemLevelUpgradeMin then
 							if not self.questList[questID] then self.questList[questID] = {} end
 					 		local l = self.questList[questID]
 					 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
 							l.rewards.item.bonus.itemLevelUpgrade = itemLevel - itemLevelEquipped
 						end
-					--end
+					end
+
+					-- Azerite Armor Cache
+					if itemID == 163857 then
+						itemLevel = GetDetailedItemLevelInfo(itemLink)
+						local AzeriteArmorCacheIsUpgrade = false
+						local AzeriteArmorCache = {}
+						for i=1,5,2 do
+							local itemLink1 = GetInventoryItemLink("player", i)
+							itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+							AzeriteArmorCache[i] = itemLevel - itemLevel1
+							if itemLevel - itemLevel1 > 0 then
+								AzeriteArmorCacheIsUpgrade = true
+							end
+						end
+						if AzeriteArmorCacheIsUpgrade == true then
+							if not self.questList[questID] then self.questList[questID] = {} end
+							local l = self.questList[questID]
+							if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
+							l.rewards.item.bonus.AzeriteArmorCache = AzeriteArmorCache
+						end
+					end
 
 					-- Transmog
-					if CanIMogIt then
+					if CanIMogIt and self.db.char.options.rewards.gear.unknownAppearance then
 						if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
 							if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
 								if not self.questList[questID] then self.questList[questID] = {} end
 								local l = self.questList[questID]
 								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
 								l.rewards.item.bonus.transmog = "unknown"
-							elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink)  then
+							elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.char.options.rewards.gear.unknownSource then
 								if not self.questList[questID] then self.questList[questID] = {} end
 								local l = self.questList[questID]
 								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
