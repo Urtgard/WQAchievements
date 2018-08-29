@@ -780,10 +780,12 @@ function WQA:Reward()
 						local AzeriteArmorCache = {}
 						for i=1,5,2 do
 							local itemLink1 = GetInventoryItemLink("player", i)
-							itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
-							AzeriteArmorCache[i] = itemLevel - itemLevel1
-							if itemLevel - itemLevel1 > 0 then
-								AzeriteArmorCacheIsUpgrade = true
+							if itemLink1 then
+								local itemLevel1 = GetDetailedItemLevelInfo(itemLink1) or 0
+								AzeriteArmorCache[i] = itemLevel - itemLevel1
+								if itemLevel - itemLevel1 > 0 then
+									AzeriteArmorCacheIsUpgrade = true
+								end
 							end
 						end
 						if AzeriteArmorCacheIsUpgrade == true then
