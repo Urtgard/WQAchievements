@@ -1,6 +1,3 @@
-local timer
-
-
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
 local WQA = WQAchievements
 WQA.data = {}
@@ -45,26 +42,26 @@ function WQA:OnInitialize()
 			options = {
 				chat = true,
 				PopUp = false,
-				rewards = {
+				zone = { ['*'] = true},
+				reward = {
 					gear = {
 						itemLevelUpgrade = true,
-						itemLevelUpgradeMin = 0,
+						itemLevelUpgradeMin = 1,
 						PawnUpgrade = true,
-						PawnUpgradeMin = 0,
+						PawnUpgradeMin = 1,
 						unknownAppearance = true,
 						unknownSource = false,
-					}
+					},
+					reputation = { ['*'] = false},
+					currency = {},
 				}
-			}
+			},
+			['*'] = { ['*'] = true}
 		}
 	}
 	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
 	self:UpdateOptions()
 end
-
-WQA.optionsRewards = {
-	
-}
 
 function WQA:OnEnable()
 	------------------
@@ -72,7 +69,6 @@ function WQA:OnEnable()
 	------------------
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("WQAchievements", self.options)
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
-	
 
 	self.event = CreateFrame("Frame")
 	self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -86,11 +82,15 @@ function WQA:OnEnable()
 				self:ScheduleRepeatingTimer("Show",30*60,"new")
 			end, (32-(date("%M") % 30))*60)
 		end
-		if name == "QUEST_LOG_UPDATE" then
+		if name == "QUEST_LOG_UPDATE" or name == "GET_ITEM_INFO_RECEIVED" then
 			self.event:UnregisterEvent("QUEST_LOG_UPDATE")
-			self.waitforevent = false
-			self:CancelTimer(timer)
-			self:Reward()
+			self.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+			self:CancelTimer(self.timer)
+			if GetTime() - self.start > 1 then
+				self:Reward()
+			else
+				self:ScheduleTimer("Reward", 1)
+			end
 		end
 	end)
 end
@@ -212,7 +212,13 @@ do
 			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994,0,53189}},	-- Frozen Freestyle
 			{name = "Battle on Zandalar and Kul Tiras", id = 12936},
 			{name = "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665},
-			{name = "Adventurer of Zuldazar", id = 12944, criteriaType = "QUESTS", criteria = {50864, 50877, {51085, 51087}, 51081, {50287, 51374, 50866}, 50885, 50863, 50862, 50861, 50859, 50845, 50857, nil, 50875, 50874, nil, 50872, 50876, 50871, 50870, 50869, 50868, 50867}}
+			-- Thanks NatalieWright
+			{name = "Adventurer of Zuldazar", id = 12944, criteriaType = "QUESTS", criteria = {50864, 50877, {51085, 51087}, 51081, {50287, 51374, 50866}, 50885, 50863, 50862, 50861, 50859, 50845, 50857, nil, 50875, 50874, nil, 50872, 50876, 50871, 50870, 50869, 50868, 50867}},
+			{name = "Adventurer of Vol'dun", id = 12943, criteriaType = "QUESTS", criteria = {51105, 51095, 51096, 51117, nil, 51118, 51120, 51098, 51121, 51099, 51108, 51100, 51125, 51102, 51429, 51103, 51124, 51107, 51122, 51123, 51104, 51116, 51106, 51119, 51112, 51113, 51114, 51115}},
+			{name = "Adventurer of Nazmir", id = 12942, criteriaType = "QUESTS", criteria = {50488, 50570, 50564, nil, 50490, 50506, 50568, 50491, 50492, 50499, 50496, 50498, 50501, nil, 50502, 50503, 50505, 50507, 50566, 50511, 50512, nil, 50513, 50514, nil, 50515, 50516, 50489, 50519, 50518, 50509, 50517}},
+			{name = "Adventurer of Drustvar", id = 12941, criteriaType = "QUESTS", criteria = {51469, 51505, 51506, 51508, 51468, 51972, nil, nil, nil, 51897, 51457, nil, 51909, 51507, 51917, nil, 51919, 51908, 51491, 51512, 51527, 51461, 51467, 51528, 51466, 51541, 51542, 51884, 51874, 51906, 51887, 51989, 51988}},
+			{name = "Adventurer of Tiragarde Sound", id = 12939, criteriaType = "QUESTS", criteria = {51653, 51652, 51666, 51669, 51841, 51665, 51848, 51842, 51654, 51662, 51844, 51664, 51670, 51895, nil, 51659, 51843, 51660, 51661, 51890, 51656, 51893, 51892, 51651, 51839, 51891, 51849, 51894, 51655, 51847, nil, 51657}},
+			{name = "Adventurer of Stormsong Valley", id = 12940, criteriaType = "QUESTS", criteria = {52452, 52315, 51759, {51976, 51977, 51978}, 52476, 51774, 51921, nil, 51776, 52459, 52321, 51781, nil, 51886, 51779, 51778, 52306, 52310, 51901, 51777, 52301, nil, 52463, nil, 52328, 51782, 52299, nil, 52300, nil, 52464, 52309, 52322, nil}},
 		},
 	}
 	WQA.data[2] = bfa
@@ -222,6 +228,7 @@ end
 -- Commander of Argus
 
 function WQA:CreateQuestList()
+	self:Debug("CreateQuestList")
 	self.questList = {}
 	for _,v in pairs(self.data[1].achievements) do
 		self:AddAchievement(v)
@@ -237,7 +244,7 @@ function WQA:CreateQuestList()
 end
 
 function WQA:AddAchievement(achievement)
-	if self.db.char.achievements and (self.db.char.achievements[achievement.name] == true) then return end
+	if self.db.char.achievements[achievement.name] == false then return end
 	local id = achievement.id
 	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
 	if (achievement.notAccountwide and not wasEarnedByMe) or not completed then
@@ -288,7 +295,7 @@ function WQA:AddMounts(mounts)
 		local n, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
 		if not isCollected then
 			for _,mount in pairs(mounts) do
-				if not (self.db.char.mounts and self.db.char.mounts[mount.name] == true) then
+				if self.db.char.mounts[mount.name] == true then
 					if spellID == mount.spellID then
 						for _,v  in pairs(mount.quest) do
 							if not IsQuestFlaggedCompleted(v.trackingID) then
@@ -310,7 +317,7 @@ function WQA:AddPets(pets)
   		local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
   		if not owned then
   			for _,pet in pairs(pets) do
-  				if not (self.db.char.pets and self.db.char.pets[pet.name] == true) then
+  				if self.db.char.pets[pet.name] == true then
 	  				if companionID == pet.creatureID then
 						for _,v in pairs(pet.quest) do
 							if not IsQuestFlaggedCompleted(v.trackingID) then
@@ -328,7 +335,7 @@ end
 
 function WQA:AddToys(toys)
 	for _,toy in pairs(toys) do
-		if not (self.db.char.toys and self.db.char.toys[toy.name] == true) then
+		if self.db.char.toys[toy.name] == true then
 			if not PlayerHasToy(toy.itemID) then
 				for _,v in pairs(toy.quest) do
 					if not IsQuestFlaggedCompleted(v.trackingID) then
@@ -345,7 +352,7 @@ end
 function WQA:AddCustom()
 	if type(self.db.global.custom) == "table" then
 		for k,v in pairs(self.db.global.custom) do
-			if not (self.db.char.custom and self.db.char.custom[tostring(k)] == true) then
+			if self.db.char.custom[k] == true then
 				if not self.questList[k] then self.questList[k] = {} end
 	 			local l = self.questList[k]
 				l[#l + 1] = { id = v.rewardID, type = v.rewardType}
@@ -356,6 +363,7 @@ end
 
 WQA.first = false
 function WQA:Show(mode)
+	self:Debug("Show", mode)
 	self:CreateQuestList()
 	self:CheckWQ(mode)
 	self.first = true
@@ -363,6 +371,7 @@ end
 
 
 function WQA:CheckWQ(mode)
+	self:Debug("CheckWQ")
 	if self.rewards ~= true then
 		self:ScheduleTimer("CheckWQ", .4, mode)
 		return
@@ -469,36 +478,43 @@ local icons = {
 }
 
 function WQA:GetRewardForID(questID)
-	local l = self.questList[questID].rewards
+	local l = self.questList[questID].reward
 	local r = ""
-	if l and l.item then
-		if l.item.bonus.itemLevelUpgrade then
-			r = r.."|cFF00FF00+"..l.item.bonus.itemLevelUpgrade.." iLvl|r"
-		end
-		if l.item.bonus.itemPercentUpgrade then
-			if r ~= "" then r = r.."," end
-			r = r.."|cFF00FF00+"..l.item.bonus.itemPercentUpgrade.."%|r"
-		end
-		if l.item.bonus.transmog then
-			if r ~= "" then r = r.." " end
-			r = r..icons[l.item.bonus.transmog]
-		end
-		if l.item.bonus.AzeriteArmorCache then
-			for i=1,5,2 do
-				local upgrade = l.item.bonus.AzeriteArmorCache[i]
-				if upgrade > 0 then
-					r = r.."|cFF00FF00+"..upgrade.." iLvl|r"
-				elseif upgrade < 0 then
-					r = r.."|cFFFF0000-"..upgrade.." iLvl|r"
-				else
-					r = r.."±"..upgrade
+	if l then
+		if l.item then
+			if l.item.bonus then
+				if l.item.bonus.itemLevelUpgrade then
+					r = r.."|cFF00FF00+"..l.item.bonus.itemLevelUpgrade.." iLvl|r"
 				end
-				if i ~= 5 then
-					r = r.." / "
+				if l.item.bonus.itemPercentUpgrade then
+					if r ~= "" then r = r.."," end
+					r = r.."|cFF00FF00+"..l.item.bonus.itemPercentUpgrade.."%|r"
+				end
+				if l.item.bonus.transmog then
+					if r ~= "" then r = r.." " end
+					r = r..icons[l.item.bonus.transmog]
+				end
+				if l.item.bonus.AzeriteArmorCache then
+					for i=1,5,2 do
+						local upgrade = l.item.bonus.AzeriteArmorCache[i]
+						if upgrade > 0 then
+							r = r.."|cFF00FF00+"..upgrade.." iLvl|r"
+						elseif upgrade < 0 then
+							r = r.."|cFFFF0000-"..upgrade.." iLvl|r"
+						else
+							r = r.."±"..upgrade
+						end
+						if i ~= 5 then
+							r = r.." / "
+						end
+					end
 				end
 			end
+			r = l.item.itemLink.." "..r
 		end
-		r = l.item.itemLink.." "..r
+		if l.currency then
+			r = r..l.currency.amount.." "..l.currency.name
+		end
 	end
 	return r
 end
@@ -517,7 +533,7 @@ function WQA:AnnounceChat(activeQuests, silent)
 	for questID,_ in pairs(activeQuests) do
 		if self.questList[questID][1] then
 			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
-			if self.questList[questID].rewards then
+			if self.questList[questID].reward then
 				output = output.." & "..self:GetRewardForID(questID)
 			end
 		else
@@ -610,7 +626,7 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 		f.ScrollingMessageFrame:SetJustifyH("LEFT")
 		local Message = {}
 		for questID,_ in pairs(activeQuests) do
-			if not self.questList[questID].rewards then
+			if not self.questList[questID].reward then
 				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
 			else
 				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
@@ -675,140 +691,187 @@ ItemTooltipScan = CreateFrame ("GameTooltip", "WQTItemTooltipScan", UIParent, "I
   }
 	ItemTooltipScan.patern = ITEM_LEVEL:gsub ("%%d", "(%%d+)") --from LibItemUpgradeInfo-1.0
 
-WQA.waitforevent = false
+local ReputationItemList = {
+	[152957] = 2165, -- Army of the Light Insignia
+	[152960] = 2170, -- Argussian Reach Insignia
+}
+
+local ReputationCurrencyList = {
+	[1579] = 2164, -- Champions of Azeroth
+	[1598] = 2163, -- Tortollan Seekers
+	[1593] = 2160, -- Proudmoore Admiralty
+	[1592] = 2161, -- Order of Embers
+	[1594] = 2162, -- Storm's Wake
+	[1599] = 2159, -- 7th Legion
+	[1597] = 2103, -- Zandalari Empire
+	[1595] = 2156, -- Talanji's Expedition
+	[1596] = 2158, -- Voldunai
+	[1600] = 2157, -- The Honorbound
+}
+
 function WQA:Reward()
+	self:Debug("Reward")
+
+	self.event:UnregisterEvent("QUEST_LOG_UPDATE")
+	self.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
 	self.rewards = false
-	if self.waitforevent == true then
-		self.rewards = true
-		self.waitforevent = false
-		return
-	end
-	
-	for k,mapID in pairs({
-		--Legion
-		ARGUS = 		905, --905
-		BROKENISLES = 	619, --
-		AZSUNA = 		630, --631 632 633
-		VALSHARAH = 	641, --642 643 644
-		HIGHMONTAIN = 	650, --
-		DALARAN = 	625,
-		SURAMAR =		680,
-		STORMHEIM = 	634,
-		BROKENSHORE = 	646,
-		EYEAZSHARA = 	790,
-		ANTORAN = 	885,
-		KROKUUN = 	830,
-		MCCAREE = 	882,
-		
-	--BFA
-		DARKSHORE = 	62,
-		ARATHI =		14,
-		ZANDALAR = 	875,
-		KULTIRAS = 	876,
-		ZULDAZAAR = 	862,
-		NAZMIR = 		863,
-		VOLDUN = 		864,
-		TIRAGARDE = 	895,
-		STORMSONG = 	942,
-		DRUSTVAR = 	896,
+	local retry = false
 
-		
-	}) do 
-		local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
-		if quests then
-		for i=1,#quests do
-			local questID = quests[i].questId
-			local numQuestRewards = GetNumQuestLogRewards (questID)
-			--	print( GetNumQuestLogRewards (questID))
-				if (numQuestRewards > 0) then
-				local itemName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(1, questID)
-			--	if not itemName then print(itemID) end
-			--	print(GetQuestLogRewardInfo(1, questID))
-				if itemID then
-					inspectScantip:SetQuestLogItem("reward", 1, questID)
-					itemLink = select(2,inspectScantip:GetItem())
-					local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo (itemLink)
-
-					-- Ask Pawn if this is an Upgrade
-					if PawnIsItemAnUpgrade and self.db.char.options.rewards.gear.PawnUpgrade then
-						local Item = PawnGetItemData(itemLink)
-						if Item then
-							local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
-							if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.char.options.rewards.gear.PawnUpgradeMin then
-								if not self.questList[questID] then self.questList[questID] = {} end
-						 		local l = self.questList[questID]
-						 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-								l.rewards.item.bonus.itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)
+	for i=1,#self.ZoneIDList do
+		for _,mapID in pairs(self.ZoneIDList[i]) do
+			if self.db.char.options.zone[mapID] == true then
+				local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+				if quests then
+					for i=1,#quests do
+						local questID = quests[i].questId
+						if self.db.char.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true then
+							if HaveQuestData(questID) and not HaveQuestRewardData(questID) then
+								C_TaskQuest.RequestPreloadRewardData(questID)
+								retry = true
 							end
-						end
-					end
 
-					--StatWeightScore
-					--local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore")
-					--local ScoreModule = StatWeightScore:GetModule("StatWeightScoreScore")
+							local numQuestRewards = GetNumQuestLogRewards(questID)
+							if numQuestRewards > 0 then
+								local itemName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(1, questID)
+								if itemID then
+									inspectScantip:SetQuestLogItem("reward", 1, questID)
+									itemLink = select(2,inspectScantip:GetItem())
+									local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo(itemLink)
 
-					-- Upgrade by itemLevel
-					if self.db.char.options.rewards.gear.itemLevelUpgrade then
-						local itemLevel1, itemLevel2
-						if EquipLocToSlot1[itemEquipLoc] then
-							local itemLink1 = GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc])
-							--print(itemLink1)
-							if itemLink1 then
-								itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
-							end
-						end
-						if EquipLocToSlot2[itemEquipLoc] then
-							local itemLink2 = GetInventoryItemLink("player", EquipLocToSlot2[itemEquipLoc])
-							if itemLink2 then
-								itemLevel2 = GetDetailedItemLevelInfo(itemLink2)
-							end
-						end
-						itemLevel = GetDetailedItemLevelInfo(itemLink)
-						local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
-						if itemLevel > itemLevelEquipped and itemLevel - itemLevelEquipped >= self.db.char.options.rewards.gear.itemLevelUpgradeMin then
-							if not self.questList[questID] then self.questList[questID] = {} end
-					 		local l = self.questList[questID]
-					 		if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-							l.rewards.item.bonus.itemLevelUpgrade = itemLevel - itemLevelEquipped
-						end
-					end
+									-- Ask Pawn if this is an Upgrade
+									if PawnIsItemAnUpgrade and self.db.char.options.reward.gear.PawnUpgrade then
+										local Item = PawnGetItemData(itemLink)
+										if Item then
+											local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
+											if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.char.options.reward.gear.PawnUpgradeMin then
+												if not self.questList[questID] then self.questList[questID] = {} end
+										 		local l = self.questList[questID]
+										 		if not l.reward then l.reward = {} end
+												if not l.reward.item then l.reward.item = {} end
+												if not l.reward.item.bonus then l.reward.item.bonus = {} end
+												l.reward.item.itemLink = itemLink
+												l.reward.item.bonus.itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)
+											end
+										end
+									end
 
-					-- Azerite Armor Cache
-					if itemID == 163857 then
-						itemLevel = GetDetailedItemLevelInfo(itemLink)
-						local AzeriteArmorCacheIsUpgrade = false
-						local AzeriteArmorCache = {}
-						for i=1,5,2 do
-							local itemLink1 = GetInventoryItemLink("player", i)
-							if itemLink1 then
-								local itemLevel1 = GetDetailedItemLevelInfo(itemLink1) or 0
-								AzeriteArmorCache[i] = itemLevel - itemLevel1
-								if itemLevel - itemLevel1 > 0 then
-									AzeriteArmorCacheIsUpgrade = true
+									--StatWeightScore
+									--local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore")
+									--local ScoreModule = StatWeightScore:GetModule("StatWeightScoreScore")
+
+									-- Upgrade by itemLevel
+									if self.db.char.options.reward.gear.itemLevelUpgrade then
+										local itemLevel1, itemLevel2 = nil, nil
+										if EquipLocToSlot1[itemEquipLoc] then
+											local itemLink1 = GetInventoryItemLink("player", EquipLocToSlot1[itemEquipLoc])
+											if itemLink1 then
+												itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+											end
+										end
+										if EquipLocToSlot2[itemEquipLoc] then
+											local itemLink2 = GetInventoryItemLink("player", EquipLocToSlot2[itemEquipLoc])
+											if itemLink2 then
+												itemLevel2 = GetDetailedItemLevelInfo(itemLink2)
+											end
+										end
+										itemLevel = GetDetailedItemLevelInfo(itemLink)
+										local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
+										if itemLevel - itemLevelEquipped >= self.db.char.options.reward.gear.itemLevelUpgradeMin then
+											if not self.questList[questID] then self.questList[questID] = {} end
+									 		local l = self.questList[questID]
+									 		if not l.reward then l.reward = {} end
+											if not l.reward.item then l.reward.item = {} end
+											if not l.reward.item.bonus then l.reward.item.bonus = {} end
+											l.reward.item.itemLink = itemLink
+											l.reward.item.bonus.itemLevelUpgrade = itemLevel - itemLevelEquipped
+										end
+									end
+
+									-- Azerite Armor Cache
+									if itemID == 163857 and self.db.char.options.reward.gear.AzeriteArmorCache then
+										itemLevel = GetDetailedItemLevelInfo(itemLink)
+										local AzeriteArmorCacheIsUpgrade = false
+										local AzeriteArmorCache = {}
+										for i=1,5,2 do
+											local itemLink1 = GetInventoryItemLink("player", i)
+											if itemLink1 then
+												local itemLevel1 = GetDetailedItemLevelInfo(itemLink1) or 0
+												AzeriteArmorCache[i] = itemLevel - itemLevel1
+												if itemLevel > itemLevel1 and itemLevel - itemLevel1 >= self.db.char.options.reward.gear.itemLevelUpgradeMin then
+													AzeriteArmorCacheIsUpgrade = true
+												end
+											end
+										end
+										if AzeriteArmorCacheIsUpgrade == true then
+											if not self.questList[questID] then self.questList[questID] = {} end
+											local l = self.questList[questID]
+											if not l.reward then l.reward = {} end
+											if not l.reward.item then l.reward.item = {} end
+											if not l.reward.item.bonus then l.reward.item.bonus = {} end
+											l.reward.item.itemLink = itemLink
+											l.reward.item.bonus.AzeriteArmorCache = AzeriteArmorCache
+										end
+									end
+
+									-- Transmog
+									if CanIMogIt and self.db.char.options.reward.gear.unknownAppearance then
+										if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+											if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
+												if not self.questList[questID] then self.questList[questID] = {} end
+												local l = self.questList[questID]
+												if not l.reward then l.reward = {} end
+												if not l.reward.item then l.reward.item = {} end
+												if not l.reward.item.bonus then l.reward.item.bonus = {} end
+												l.reward.item.itemLink = itemLink
+												l.reward.item.bonus.transmog = "unknown"
+											elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.char.options.reward.gear.unknownSource then
+												if not self.questList[questID] then self.questList[questID] = {} end
+												local l = self.questList[questID]
+												if not l.reward then l.reward = {} end
+												if not l.reward.item then l.reward.item = {} end
+												if not l.reward.item.bonus then l.reward.item.bonus = {} end
+												l.reward.item.itemLink = itemLink
+												l.reward.item.bonus.transmog = "known"
+											end
+										end
+									end
+
+									-- Reputation Token
+									local factionID = ReputationItemList[itemID] or nil
+									if factionID then
+										if self.db.char.options.reward.reputation[factionID] == true then
+											if not self.questList[questID] then self.questList[questID] = {} end
+											local l = self.questList[questID]
+											if not l.reward then l.reward = {} end
+											if not l.reward.item then l.reward.item = {} end
+											l.reward.item.itemLink = itemLink
+										end
+									end
+								else
+									retry = true
 								end
 							end
-						end
-						if AzeriteArmorCacheIsUpgrade == true then
-							if not self.questList[questID] then self.questList[questID] = {} end
-							local l = self.questList[questID]
-							if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-							l.rewards.item.bonus.AzeriteArmorCache = AzeriteArmorCache
-						end
-					end
 
-					-- Transmog
-					if CanIMogIt and self.db.char.options.rewards.gear.unknownAppearance then
-						if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
-							if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
-								if not self.questList[questID] then self.questList[questID] = {} end
-								local l = self.questList[questID]
-								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-								l.rewards.item.bonus.transmog = "unknown"
-							elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.char.options.rewards.gear.unknownSource then
-								if not self.questList[questID] then self.questList[questID] = {} end
-								local l = self.questList[questID]
-								if not l.rewards then l.rewards = {item = {itemLink = itemLink, bonus = {}}} end
-								l.rewards.item.bonus.transmog = "known"
+							local numQuestCurrencies = GetNumQuestLogRewardCurrencies(questID)
+							for i = 1, numQuestCurrencies do
+								local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
+								if self.db.char.options.reward.currency[currencyID] then
+									if not self.questList[questID] then self.questList[questID] = {} end
+						 			local l = self.questList[questID]
+						 			if not l.reward then l.reward = {currency = {}} end
+						 			l.reward.currency = {name = name, amount = numItems}
+						 		end
+
+						 		-- Reputation Currency
+						 		local factionID = ReputationCurrencyList[currencyID] or nil
+						 		if factionID then
+						 			if self.db.char.options.reward.reputation[factionID] == true then
+						 				if not self.questList[questID] then self.questList[questID] = {} end
+							 			local l = self.questList[questID]
+							 			if not l.reward then l.reward = {currency = {}} end
+							 			l.reward.currency = {name = name, amount = numItems}
+						 			end
+						 		end
 							end
 						end
 					end
@@ -816,10 +879,16 @@ function WQA:Reward()
 			end
 		end
 	end
-	 end
-	timer = self:ScheduleTimer(function() self:Reward() end, .5)
-	self.event:RegisterEvent("QUEST_LOG_UPDATE")
-	self.waitforevent = true
+
+	if retry == true then
+		self.Debug("|cFFFF0000<<<RETRY>>>|r")
+		self.start = GetTime()
+		self.timer = self:ScheduleTimer(function() self:Reward() end, 2)
+		self.event:RegisterEvent("QUEST_LOG_UPDATE")
+		self.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+	else
+		self.rewards = true
+	end
 end
 
 
@@ -872,3 +941,9 @@ WorldQuestTracker.MapData.ZoneIDs = {
 	
 }
 --]]
+WQA.debug = false
+function WQA:Debug(...)
+	if self.debug == true
+		then print(GetTime(),GetFramerate(),...)
+	end
+end
