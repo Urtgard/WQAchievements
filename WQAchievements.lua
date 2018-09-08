@@ -34,6 +34,7 @@ do
 end
 
 WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none"}
+--WQA.data.customReward = 0
 
 function WQA:OnInitialize()
 	-- Defaults
@@ -54,7 +55,9 @@ function WQA:OnInitialize()
 					},
 					reputation = { ['*'] = false},
 					currency = {},
-				}
+					craftingreagent = { ['*'] = false},
+					['*'] = { ['*'] = true},		
+				},
 			},
 			['*'] = { ['*'] = true}
 		}
@@ -139,7 +142,7 @@ do
 				{id = 9695, criteriaType = "QUESTS", criteria = trainer}}
 			},
 			{name = "Battle on the Broken Isles", id = 10876},
-			{name = "Fishing \'Round the Isles", id = 10598, criteriaType = 1, criteria = {
+			{name = "Fishing \'Round the Isles", id = 10598, criteriaType = "QUESTS", criteria = {
 				{41612, 41613, 41270},
 				nil,
 				{41604, 41605, 41279},
@@ -201,7 +204,7 @@ do
 		name = "Battle for Azeroth",
 		achievements = {
 			{name = "Adept Sandfisher", id = 13009, criteriaType = "QUEST_SINGLE", criteria = 51173},
-			{name = "Scourge of Zem'lan", id = 13011, criteriaType = 1, criteria = {{51763, 51783}}},
+			{name = "Scourge of Zem'lan", id = 13011, criteriaType = "QUESTS", criteria = {{51763, 51783}}},
 			{name = "Vorrik's Champion", id = 13014, criteriaType = "QUESTS", criteria = {51957, 51983}},
 			{name = "Revenge is Best Served Speedily", id = 13022, criteriaType = "QUEST_SINGLE", criteria = 50786},
 			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUEST_SINGLE", criteria = 50559},
@@ -209,7 +212,7 @@ do
 			{name = "7th Legion Spycatcher", id = 13026, criteriaType = "QUEST_SINGLE", criteria = 50899},
 			{name = "By de Power of de Loa!", id = 13035, criteriaType = "QUEST_SINGLE", criteria = 51178},
 			{name = "Bless the Rains Down in Freehold", id = 13050, criteriaType = "QUEST_SINGLE", criteria = 53196},
-			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994,0,53189}},	-- Frozen Freestyle
+			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994, 53188, 53189}},	-- Frozen Freestyle
 			{name = "Battle on Zandalar and Kul Tiras", id = 12936},
 			{name = "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665},
 			-- Thanks NatalieWright
@@ -219,6 +222,9 @@ do
 			{name = "Adventurer of Drustvar", id = 12941, criteriaType = "QUESTS", criteria = {51469, 51505, 51506, 51508, 51468, 51972, nil, nil, nil, 51897, 51457, nil, 51909, 51507, 51917, nil, 51919, 51908, 51491, 51512, 51527, 51461, 51467, 51528, 51466, 51541, 51542, 51884, 51874, 51906, 51887, 51989, 51988}},
 			{name = "Adventurer of Tiragarde Sound", id = 12939, criteriaType = "QUESTS", criteria = {51653, 51652, 51666, 51669, 51841, 51665, 51848, 51842, 51654, 51662, 51844, 51664, 51670, 51895, nil, 51659, 51843, 51660, 51661, 51890, 51656, 51893, 51892, 51651, 51839, 51891, 51849, 51894, 51655, 51847, nil, 51657}},
 			{name = "Adventurer of Stormsong Valley", id = 12940, criteriaType = "QUESTS", criteria = {52452, 52315, 51759, {51976, 51977, 51978}, 52476, 51774, 51921, nil, 51776, 52459, 52321, 51781, nil, 51886, 51779, 51778, 52306, 52310, 51901, 51777, 52301, nil, 52463, nil, 52328, 51782, 52299, nil, 52300, nil, 52464, 52309, 52322, nil}},
+			{name = "Sabertron Assemble", id = 13054, criteriaType = "QUESTS", criteria = {nil, nil, nil, 51976, nil}}
+			-- Sabertron Assemble
+			-- green 51976
 		},
 	}
 	WQA.data[2] = bfa
@@ -736,7 +742,7 @@ function WQA:Reward()
 								if itemID then
 									inspectScantip:SetQuestLogItem("reward", 1, questID)
 									itemLink = select(2,inspectScantip:GetItem())
-									local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo(itemLink)
+									local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID, _, expacID = GetItemInfo(itemLink)
 
 									-- Ask Pawn if this is an Upgrade
 									if PawnIsItemAnUpgrade and self.db.char.options.reward.gear.PawnUpgrade then
@@ -847,6 +853,39 @@ function WQA:Reward()
 											l.reward.item.itemLink = itemLink
 										end
 									end
+
+									-- Recipe
+									if itemClassID == 9 then
+										if self.db.char.options.reward.recipe[expacID] == true then
+											if not self.questList[questID] then self.questList[questID] = {} end
+									 		local l = self.questList[questID]
+									 		if not l.reward then l.reward = {} end
+											if not l.reward.item then l.reward.item = {} end
+											l.reward.item.itemLink = itemLink
+										end
+									end
+
+									-- Crafting Reagent
+									--[[
+									if self.db.char.options.reward.craftingreagent[itemID] == true then
+										if not self.questList[questID] then self.questList[questID] = {} end
+								 		local l = self.questList[questID]
+								 		if not l.reward then l.reward = {} end
+										if not l.reward.item then l.reward.item = {} end
+										l.reward.item.itemLink = itemLink
+									end--]]
+
+									-- Custom itemID
+									if self.db.global.customReward[itemID] == true then
+										if self.db.char.customReward[itemID] == true then
+											if not self.questList[questID] then self.questList[questID] = {} end
+									 		local l = self.questList[questID]
+									 		if not l.reward then l.reward = {} end
+											if not l.reward.item then l.reward.item = {} end
+											l.reward.item.itemLink = itemLink
+										end
+									end
+
 								else
 									retry = true
 								end

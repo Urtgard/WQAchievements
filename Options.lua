@@ -6,6 +6,11 @@ local ExpansionList = {
 	[2] = "Battle for Azeroth",
 }
 
+local ExpansionIDList = {
+	[1] = 6, -- Legion
+	[2] = 7, -- Battle for Azeroth
+}
+
 local CurrencyIDList = {
 	[1] = {
 		1220, -- Order Resources
@@ -16,6 +21,53 @@ local CurrencyIDList = {
 	[2] = {
 		1553, -- Azerite
 		1560, -- War Ressource
+	}
+}
+
+local CraftingReagentIDList = {
+	[1] = {
+		124124, -- Blood of Sargeras
+		133680, -- Slice of Bacon
+
+		124444, -- Infernal Brimstone
+		151564, -- Empyrium
+		123919, -- Felslate
+		123918, -- Leystone Ore
+
+		124116, -- Felhide
+		136533, -- Dreadhide Leather
+		151566, -- Fiendish Leather
+		124113, -- Stonehide Leather
+		124115, -- Stormscale
+
+		124106, -- Felwort
+		124101, -- Aethril
+		124102, -- Dreamleaf
+		124103, -- Foxflower
+		124104, -- Fjarnskaggl
+		124105, -- Starlight Rose
+		151565, -- Astral Glory
+	},
+	[2] = {
+		152513, -- Platinum Ore
+		152512, -- Monelite Ore
+		152579, -- Storm Silver Ore
+
+		152542, -- Hardened Tempest Hide
+		153051, -- Mistscale
+		154165, -- Calcified Bone
+		154722, -- Tempest Hide
+		152541, -- Coarse Leather
+		153050, -- Shimmerscale
+		154164, -- Blood-Stained Bone
+
+		152510, -- Anchor Weed
+		152505, -- Riverbud
+		152506, -- Star Moss
+		152507, -- Akunda's Bite
+		152508, -- Winter's Kiss
+		152509, -- Siren's Pollen
+		152511, -- Sea Stalk
 	}
 }
 
@@ -207,50 +259,88 @@ function WQA:UpdateOptions()
 				childGroups = "tree",
 				name = "Custom",
 				args = {
-					--Add WQ
-					header1 = { type = "header", name = "Add a World Quest", order = newOrder(), },
-					addWQ = {
-						name = "WorldQuestID",
-						--desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
-						type = "input",
+					quest = {
 						order = newOrder(),
-						width = .6,
-						set = function(info,val)
-				   			WQA.data.custom.wqID = val
-				   		end,
-				    	get = function() return tostring(WQA.data.custom.wqID )  end
+						name = "World Quest",
+						type = "group",
+						inline = true,
+						args = {
+							--Add WQ
+							header1 = { type = "header", name = "Add a World Quest you want to track", order = newOrder(), },
+							addWQ = {
+								name = "WorldQuestID",
+								--desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
+								type = "input",
+								order = newOrder(),
+								width = .6,
+								set = function(info,val)
+						   			WQA.data.custom.wqID = val
+						   		end,
+						    	get = function() return tostring(WQA.data.custom.wqID )  end
+							},
+							rewardID = {
+								name = "Reward (optional)",
+								desc = "Enter an achievementID or itemID",
+								type = "input",
+								width = .6,
+								order = newOrder(),
+								set = function(info,val)
+						   			WQA.data.custom.rewardID = val
+						   		end,
+						    	get = function() return tostring(WQA.data.custom.rewardID )  end
+							},
+							rewardType = {
+								name = "Reward type",
+								order = newOrder(),
+								type = "select",
+								values = {item = "Item", achievement = "Achievement", none = "none"},
+								width = .6,
+								set = function(info,val)
+						   			WQA.data.custom.rewardType = val
+						   		end,
+						    	get = function() return WQA.data.custom.rewardType end
+							},
+							button = {
+								order = newOrder(),
+								type = "execute",
+								name = "Add",
+								width = .3,
+								func = function() WQA:CreateCustomQuest() end
+							},
+							--Configure
+							header2 = { type = "header", name = "Configure custom World Quests", order = newOrder(), },
+						}
 					},
-					rewardID = {
-						name = "Reward (optional)",
-						desc = "Enter an achievementID or itemID",
-						type = "input",
-						width = .6,
+					reward = {
 						order = newOrder(),
-						set = function(info,val)
-				   			WQA.data.custom.rewardID = val
-				   		end,
-				    	get = function() return tostring(WQA.data.custom.rewardID )  end
+						name = "Reward",
+						type = "group",
+						inline = true,
+						args = {
+							--Add item
+							header1 = { type = "header", name = "Add a World Quest Reward you want to track", order = newOrder(), },
+							itemID = {
+								name = "itemID",
+								--desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
+								type = "input",
+								order = newOrder(),
+								width = .6,
+								set = function(info,val)
+						   			WQA.data.customReward = val
+						   		end,
+						    	get = function() return tostring(WQA.data.customReward or 0)  end
+							},
+							button = {
+								order = newOrder(),
+								type = "execute",
+								name = "Add",
+								width = .3,
+								func = function() WQA:CreateCustomReward() end
+							},
+							--Configure
+							header2 = { type = "header", name = "Configure custom World Quest Rewards", order = newOrder(), },
+						}
 					},
-					rewardType = {
-						name = "Reward type",
-						order = newOrder(),
-						type = "select",
-						values = {item = "Item", achievement = "Achievement", none = "none"},
-						width = .6,
-						set = function(info,val)
-				   			WQA.data.custom.rewardType = val
-				   		end,
-				    	get = function() return WQA.data.custom.rewardType end
-					},
-					button = {
-						order = newOrder(),
-						type = "execute",
-						name = "Add",
-						width = .3,
-						func = function() WQA:CreateCustomQuest() end
-					},
-					--Configure
-					header2 = { type = "header", name = "Configure custom World Quests", order = newOrder(), },
 				}
 			},
 			options = {
@@ -391,9 +481,54 @@ function WQA:UpdateOptions()
 				end
 			end
 		end
+
+		-- Professions
+		self.options.args.reward.args[ExpansionList[i]].args.profession = {
+			order = newOrder(),
+			name = "Professions",
+			type = "group",
+			args = {}
+		}
+
+			-- Recipes
+			self.options.args.reward.args[ExpansionList[i]].args.profession.args["Recipes"] = {
+				type = "toggle",
+				name = "Recipes",
+				set = function(info, val)
+					WQA.db.char.options.reward.recipe[ExpansionIDList[i]] = val
+				end,
+				descStyle = "inline",
+			    get = function()
+			    	return WQA.db.char.options.reward.recipe[ExpansionIDList[i]]
+		    	end,
+			    order = newOrder()
+			}
+
+			-- Crafting Reagents
+			--
+			--for k,v in pairs(CraftingReagentIDList[i] or {}) do
+			--	local name = GetItemInfo(v)
+			--	if name then
+			--		self.options.args.reward.args[ExpansionList[i]].args.profession.args[GetItemInfo(v)] = {
+			--			type = "toggle",
+			--			name = GetItemInfo(v),
+			--			set = function(info, val)
+			--				WQA.db.char.options.reward.craftingreagent[v] = val
+			--			end,
+			--			descStyle = "inline",
+			--		    get = function()
+			--		    	return WQA.db.char.options.reward.craftingreagent[v]
+			--	    	end,
+			--		    order = newOrder()
+			--		}
+			--	else
+			--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+			--	end
+			--end
 	end
 
 	self:UpdateCustomQuests()
+	self:UpdateCustomRewards()
 end
 
 function WQA:ToggleSet(info, val,...)
@@ -457,7 +592,7 @@ function WQA:CreateCustomQuest()
 function WQA:UpdateCustomQuests()
  	local data = self.db.global.custom
  	if type(data) ~= "table" then return false end
- 	local args = self.options.args.custom.args
+ 	local args = self.options.args.custom.args.quest.args
  	for id,object in pairs(data) do
 		args[tostring(id)] = {
 			type = "toggle",
@@ -516,6 +651,55 @@ function WQA:UpdateCustomQuests()
 		args[id.."space"] = {
 			name =" ",
 			width = .4,
+			order = newOrder(),
+			type = "description"
+		}
+	end
+ end
+
+ function WQA:CreateCustomReward()
+ 	if not self.db.global.customReward then self.db.global.customReward = {} end
+ 	self.db.global.customReward[tonumber(self.data.customReward)] = true
+ 	self:UpdateCustomRewards()
+ end
+
+function WQA:UpdateCustomRewards()
+ 	local data = self.db.global.customReward
+ 	if type(data) ~= "table" then return false end
+ 	local args = self.options.args.custom.args.reward.args
+ 	for id,_ in pairs(data) do
+ 		local _, itemLink = GetItemInfo(id)
+		args[tostring(id)] = {
+			type = "toggle",
+			name = itemLink or tostring(id),
+			width = "double",
+			set = function(info, val)
+				WQA.db.char.customReward[id] = val
+			end,
+			descStyle = "inline",
+		    get = function()
+		    	return WQA.db.char.customReward[id]
+	    	end,
+		    order = newOrder(),
+		    width = 1.2
+		}
+		args[id.."Delete"] = {
+			order = newOrder(),
+			type = "execute",
+			name = "Delete",
+			width = .5,
+			func = function()
+				args[tostring(id)] = nil
+				args[id.."Delete"] = nil
+				args[id.."space"] = nil
+				self.db.global.customReward[id] = nil
+				self:UpdateCustomRewards()
+				GameTooltip:Hide()
+			end
+		}
+		args[id.."space"] = {
+			name =" ",
+			width = 1,
 			order = newOrder(),
 			type = "description"
 		}
