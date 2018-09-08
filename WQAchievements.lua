@@ -60,6 +60,9 @@ function WQA:OnInitialize()
 				},
 			},
 			['*'] = { ['*'] = true}
+		},
+		global = {
+			['*'] = { ['*'] = false}
 		}
 	}
 	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults)
