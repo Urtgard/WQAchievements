@@ -7,5 +7,6 @@
 ## X-WoWI-ID: 24566
 
 embeds.xml
+Libs\LibQTip-1.0\LibQTip-1.0.lua
 WQAchievements.lua
 Options.lua
