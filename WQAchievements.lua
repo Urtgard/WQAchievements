@@ -46,6 +46,7 @@ function WQA:OnInitialize()
 				zone = { ['*'] = true},
 				reward = {
 					gear = {
+						AzeriteArmorCache = true,
 						itemLevelUpgrade = true,
 						itemLevelUpgradeMin = 1,
 						PawnUpgrade = true,
@@ -241,31 +242,29 @@ function WQA:CreateQuestList()
 	self:Debug("CreateQuestList")
 	self.questList = {}
 	for _,v in pairs(self.data[1].achievements) do
-		self:AddAchievement(v)
+		self:AddAchievements(v)
 	end
 	self:AddMounts(self.data[1].mounts)
 	self:AddPets(self.data[1].pets)
 	self:AddToys(self.data[1].toys)
 	for _,v in pairs(self.data[2].achievements) do
-		self:AddAchievement(v)
+		self:AddAchievements(v)
 	end
 	self:AddCustom()
 	self:Reward()
 end
 
-function WQA:AddAchievement(achievement)
+function WQA:AddAchievements(achievement)
 	if self.db.char.achievements[achievement.name] == false then return end
 	local id = achievement.id
 	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
 	if (achievement.notAccountwide and not wasEarnedByMe) or not completed then
 		if achievement.criteriaType == "ACHIEVEMENT" then
 			for _,v in pairs(achievement.criteria) do
-				self:AddAchievement(v)
+				self:AddAchievements(v)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
-			if not self.questList[achievement.criteria] then self.questList[achievement.criteria] = {} end
-			local l = self.questList[achievement.criteria]
-			l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+			self:AddReward(achievement.criteria, "ACHIEVEMENT", id)
 		else
 			for i=1, GetAchievementNumCriteria(id) do
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
@@ -273,26 +272,18 @@ function WQA:AddAchievement(achievement)
 					if achievement.criteriaType == "QUESTS" then
 						if type(achievement.criteria[i]) == "table" then
 							for _,questID in pairs(achievement.criteria[i]) do
-						 		if not self.questList[questID] then self.questList[questID] = {} end
-						 		local l = self.questList[questID]
-								l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+								self:AddReward(questID, "ACHIEVEMENT", id)
 							end
 						else
 							questID = achievement.criteria[i] or 0
-							if not self.questList[questID] then self.questList[questID] = {} end
-							local l = self.questList[questID]
-							l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+							self:AddReward(questID, "ACHIEVEMENT", id)
 						end
 					elseif achievement.criteriaType == 1 and t == 0 then
 						for _,questID in pairs(achievement.criteria[i]) do
-					 		if not self.questList[questID] then self.questList[questID] = {} end
-					 		local l = self.questList[questID]
-							l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+							self:AddReward(questID, "ACHIEVEMENT", id)
 						end
 					else
-						if not self.questList[questID] then self.questList[questID] = {} end
-						local l = self.questList[questID]
-						l[#l + 1] = { id = id, type = "ACHIEVEMENT"}
+						self:AddReward(questID, "ACHIEVEMENT", id)
 					end
 				end
 			end	
@@ -309,9 +300,7 @@ function WQA:AddMounts(mounts)
 					if spellID == mount.spellID then
 						for _,v  in pairs(mount.quest) do
 							if not IsQuestFlaggedCompleted(v.trackingID) then
-								if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
-						 		local l = self.questList[v.wqID]
-								l[#l + 1] = { id = mount.itemID, type = "ITEM"}
+								self:AddReward(v.wqID, "CHANCE", mount.itemID)
 							end
 						end
 					end
@@ -331,9 +320,7 @@ function WQA:AddPets(pets)
 	  				if companionID == pet.creatureID then
 						for _,v in pairs(pet.quest) do
 							if not IsQuestFlaggedCompleted(v.trackingID) then
-								if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
-								local l = self.questList[v.wqID]
-								l[#l + 1] = { id = pet.itemID, type = "ITEM"}
+								self:AddReward(v.wqID, "CHANCE", pet.itemID)
 							end
 		  				end
 		  			end
@@ -349,9 +336,7 @@ function WQA:AddToys(toys)
 			if not PlayerHasToy(toy.itemID) then
 				for _,v in pairs(toy.quest) do
 					if not IsQuestFlaggedCompleted(v.trackingID) then
-						if not self.questList[v.wqID] then self.questList[v.wqID] = {} end
-				 		local l = self.questList[v.wqID]
-						l[#l + 1] = { id = toy.itemID, type = "ITEM"}
+						self:AddReward(v.wqID, "CHANCE", toy.itemID)
 					end
 				end
 			end
@@ -363,11 +348,42 @@ function WQA:AddCustom()
 	if type(self.db.global.custom) == "table" then
 		for k,v in pairs(self.db.global.custom) do
 			if self.db.char.custom[k] == true then
-				if not self.questList[k] then self.questList[k] = {} end
-	 			local l = self.questList[k]
-				l[#l + 1] = { id = v.rewardID, type = v.rewardType}
+				self:AddReward(k, "CUSTOM")
 			end
 		end
+	end
+end
+
+function WQA:AddReward(questID, rewardType, reward)
+	if not self.questList[questID] then self.questList[questID] = {} end
+	local l = self.questList[questID]
+	if rewardType == "ACHIEVEMENT" then
+		if not l.achievement then l.achievement = {} end
+		l.achievement[#l.achievement + 1] = {id = reward}
+	elseif rewardType == "CHANCE" then
+		if not l.chance then l.chance = {} end
+		l.chance[#l.chance + 1] = {id = reward}
+	elseif rewardType == "CUSTOM" then
+		if not l.custom then l.custom = true end
+	elseif rewardType == "ITEM" then
+ 		if not l.item then l.item = {} end
+ 		for k,v in pairs(reward) do
+ 			l.item[k] = v
+ 		end
+	elseif rewardType == "REPUTATION" then
+		if not l.reputation then l.reputation = {} end
+ 		for k,v in pairs(reward) do
+ 			l.reputation[k] = v
+ 		end
+	elseif rewardType == "RECIPE" then
+		l.recipe = reward
+	elseif rewardType == "CUSTOM_ITEM" then
+		l.customItem = reward
+	elseif rewardType == "CURRENCY" then
+		if not l.currency then l.currency = {} end
+ 		for k,v in pairs(reward) do
+ 			l.currency[k] = v
+ 		end	
 	end
 end
 
@@ -378,7 +394,6 @@ function WQA:Show(mode)
 	self:CheckWQ(mode)
 	self.first = true
 end
-
 
 function WQA:CheckWQ(mode)
 	self:Debug("CheckWQ")
@@ -414,44 +429,8 @@ function WQA:CheckWQ(mode)
 		self:AnnounceChat(activeQuests)
 		self:AnnouncePopUp(activeQuests)
 	end
-end
-
-function WQA:checkWQ(mode)
-	local first = false
-	local output = L["WQChat"]
-	local watchedNew = {}
-	for questID,qList in pairs(self.questList) do
-		if IsActive(questID) and not ((self.watched[questID] or watchedNew[questID]) and mode == "new") then
-			if not (mode == "details") then
-				if first == false then
-					first = true
-				end
-				watchedNew[questID] = true
-				local questLink = GetQuestLink(questID)
-				if not questLink then
-					self:ScheduleTimer("checkWQ",.5)
-					return
-				end
-				output = output.."\n"..string.format(L["WQforAch"],GetQuestLink(questID),self:link(qList[1]))
-				for k,_ in pairs(watchedNew) do
-					self.watched[k] = true
-				end
-			end
-			if mode == "details" then
-				if first == false then
-					first = true
-					print(L["WQChat"])
-				end
-				print(GetQuestLink(questID))
-				for _, v in pairs(qList) do
-					print("     "..self:link(v))
-				end
-			end
-		end
-	end
-	if first and not (mode == "details") then
-		print(output)
-	end
+	self.activeQuests = activeQuests
+	self.newQuests = newQuests
 end
 
 function WQA:link(x)
@@ -460,23 +439,7 @@ function WQA:link(x)
 	if t == "ACHIEVEMENT" then
 		return GetAchievementLink(x.id)
 	elseif t == "ITEM" then
-		return select(2,GetItemInfo(x.id))--self.links[x.id]
-	elseif t == "ITEMPERCENTUPGRADE" then
-		if x.itemLink then
-			return x.itemLink.."|cFF00FF00 +"..x.upgrade.."%"
-		else	
-			return select(2,GetItemInfo(x.id)).."|cFF00FF00 +"..x.upgrade.."%"
-		end
-	elseif t == "ITEMLEVELUPGRADE" then
-		if x.itemLink then
-			return x.itemLink.."|cFF00FF00 +"..x.upgrade.." iLvl"
-		else	
-			return select(2,GetItemInfo(x.id)).."|cFF00FF00 +"..x.upgrade.." iLvl"
-		end
-	elseif t == "TRANSMOG" then
-		return x.itemLink.."Transmog"
-	elseif t == "UNIQUETRANSMOG" then
-		return x.itemLink.."unique Transmog"
+		return select(2,GetItemInfo(x.id))
 	else
 		return ""
 	end
@@ -488,29 +451,29 @@ local icons = {
 }
 
 function WQA:GetRewardForID(questID)
-	local l = self.questList[questID].reward
+	local l = self.questList[questID]
 	local r = ""
 	if l then
 		if l.item then
-			if l.item.bonus then
-				if l.item.bonus.itemLevelUpgrade then
-					r = r.."|cFF00FF00+"..l.item.bonus.itemLevelUpgrade.." iLvl|r"
+			if l.item then
+				if l.item.transmog then
+					r = r..icons[l.item.transmog]
 				end
-				if l.item.bonus.itemPercentUpgrade then
-					if r ~= "" then r = r.."," end
-					r = r.."|cFF00FF00+"..l.item.bonus.itemPercentUpgrade.."%|r"
-				end
-				if l.item.bonus.transmog then
+				if l.item.itemLevelUpgrade then
 					if r ~= "" then r = r.." " end
-					r = r..icons[l.item.bonus.transmog]
+					r = r.."|cFF00FF00+"..l.item.itemLevelUpgrade.." iLvl|r"
 				end
-				if l.item.bonus.AzeriteArmorCache then
+				if l.item.itemPercentUpgrade then
+					if r ~= "" then r = r..", " end
+					r = r.."|cFF00FF00+"..l.item.itemPercentUpgrade.."%|r"
+				end
+				if l.item.AzeriteArmorCache then
 					for i=1,5,2 do
-						local upgrade = l.item.bonus.AzeriteArmorCache[i]
+						local upgrade = l.item.AzeriteArmorCache[i]
 						if upgrade > 0 then
 							r = r.."|cFF00FF00+"..upgrade.." iLvl|r"
 						elseif upgrade < 0 then
-							r = r.."|cFFFF0000-"..upgrade.." iLvl|r"
+							r = r.."|cFFFF0000"..upgrade.." iLvl|r"
 						else
 							r = r.."±"..upgrade
 						end
@@ -541,14 +504,16 @@ function WQA:AnnounceChat(activeQuests, silent)
 	local output = L["WQChat"]
 	print(output)
 	for questID,_ in pairs(activeQuests) do
-		if self.questList[questID][1] then
-			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
-			if self.questList[questID].reward then
-				output = output.." & "..self:GetRewardForID(questID)
+		local text, i = "", 0
+		for k,v in pairs(self.questList[questID]) do
+			i = i + 1
+			if i > 1 then
+				text = text.." & "..self:GetRewardTextByID(questID, k, v)
+			else
+				text =self:GetRewardTextByID(questID, k, v)
 			end
-		else
-			output = "   "..string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
 		end
+		output = "   "..string.format(L["WQforAch"], GetQuestLink(questID), text)
 		print(output)
 	end
 end
@@ -615,11 +580,7 @@ function WQA:CreatePopUp()
 	return f
 end
 
-function WQA:p()
-	print("pp")
-end
-
-function WQA:AnnouncePopUp(activeQuests, silent)
+function WQA:AnnouncePopUp_(activeQuests, silent)
 	if self.db.char.options.PopUp == false then return end
 	local f = self:CreatePopUp()
 	if f:IsShown() ~= true then
@@ -628,7 +589,6 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 	local i = 1
 	if next(activeQuests) == nil then
 		if silent ~= true then
---			f.ScrollingMessageFrame:SetJustifyH("CENTER")
 			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
 			f:Show()
 		end
@@ -654,7 +614,6 @@ function WQA:AnnouncePopUp(activeQuests, silent)
 	f:SetHeight(38+i*16)
 	f.ScrollingMessageFrame:SetHeight(16*i)
 end
-
 
 local inspectScantip = CreateFrame("GameTooltip", "WorldQuestListInspectScanningTooltip", nil, "GameTooltipTemplate")
 inspectScantip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -754,13 +713,8 @@ function WQA:Reward()
 										if Item then
 											local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
 											if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.char.options.reward.gear.PawnUpgradeMin then
-												if not self.questList[questID] then self.questList[questID] = {} end
-										 		local l = self.questList[questID]
-										 		if not l.reward then l.reward = {} end
-												if not l.reward.item then l.reward.item = {} end
-												if not l.reward.item.bonus then l.reward.item.bonus = {} end
-												l.reward.item.itemLink = itemLink
-												l.reward.item.bonus.itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)
+												local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)}
+												self:AddReward(questID, "ITEM", item)
 											end
 										end
 									end
@@ -787,13 +741,8 @@ function WQA:Reward()
 										itemLevel = GetDetailedItemLevelInfo(itemLink)
 										local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
 										if itemLevel - itemLevelEquipped >= self.db.char.options.reward.gear.itemLevelUpgradeMin then
-											if not self.questList[questID] then self.questList[questID] = {} end
-									 		local l = self.questList[questID]
-									 		if not l.reward then l.reward = {} end
-											if not l.reward.item then l.reward.item = {} end
-											if not l.reward.item.bonus then l.reward.item.bonus = {} end
-											l.reward.item.itemLink = itemLink
-											l.reward.item.bonus.itemLevelUpgrade = itemLevel - itemLevelEquipped
+											local item = {itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped}
+											self:AddReward(questID, "ITEM", item)
 										end
 									end
 
@@ -813,35 +762,23 @@ function WQA:Reward()
 											end
 										end
 										if AzeriteArmorCacheIsUpgrade == true then
-											if not self.questList[questID] then self.questList[questID] = {} end
-											local l = self.questList[questID]
-											if not l.reward then l.reward = {} end
-											if not l.reward.item then l.reward.item = {} end
-											if not l.reward.item.bonus then l.reward.item.bonus = {} end
-											l.reward.item.itemLink = itemLink
-											l.reward.item.bonus.AzeriteArmorCache = AzeriteArmorCache
+											local item = {itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache}
+											self:AddReward(questID, "ITEM", item)
 										end
 									end
 
 									-- Transmog
 									if CanIMogIt and self.db.char.options.reward.gear.unknownAppearance then
 										if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+											local transmog
 											if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
-												if not self.questList[questID] then self.questList[questID] = {} end
-												local l = self.questList[questID]
-												if not l.reward then l.reward = {} end
-												if not l.reward.item then l.reward.item = {} end
-												if not l.reward.item.bonus then l.reward.item.bonus = {} end
-												l.reward.item.itemLink = itemLink
-												l.reward.item.bonus.transmog = "unknown"
+												transmog = "unknown"
 											elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.char.options.reward.gear.unknownSource then
-												if not self.questList[questID] then self.questList[questID] = {} end
-												local l = self.questList[questID]
-												if not l.reward then l.reward = {} end
-												if not l.reward.item then l.reward.item = {} end
-												if not l.reward.item.bonus then l.reward.item.bonus = {} end
-												l.reward.item.itemLink = itemLink
-												l.reward.item.bonus.transmog = "known"
+												transmog = "known"
+											end
+											if transmog then
+												local item = {itemLink = itemLink, transmog = transmog}
+												self:AddReward(questID, "ITEM", item)
 											end
 										end
 									end
@@ -850,22 +787,15 @@ function WQA:Reward()
 									local factionID = ReputationItemList[itemID] or nil
 									if factionID then
 										if self.db.char.options.reward.reputation[factionID] == true then
-											if not self.questList[questID] then self.questList[questID] = {} end
-											local l = self.questList[questID]
-											if not l.reward then l.reward = {} end
-											if not l.reward.item then l.reward.item = {} end
-											l.reward.item.itemLink = itemLink
+											local reputation = {itemLink = itemLink, factionID = factionID}
+											self:AddReward(questID, "REPUTATION", reputation)
 										end
 									end
 
 									-- Recipe
 									if itemClassID == 9 then
 										if self.db.char.options.reward.recipe[expacID] == true then
-											if not self.questList[questID] then self.questList[questID] = {} end
-									 		local l = self.questList[questID]
-									 		if not l.reward then l.reward = {} end
-											if not l.reward.item then l.reward.item = {} end
-											l.reward.item.itemLink = itemLink
+											self:AddReward(questID, "RECIPE", itemLink)
 										end
 									end
 
@@ -882,11 +812,7 @@ function WQA:Reward()
 									-- Custom itemID
 									if self.db.global.customReward[itemID] == true then
 										if self.db.char.customReward[itemID] == true then
-											if not self.questList[questID] then self.questList[questID] = {} end
-									 		local l = self.questList[questID]
-									 		if not l.reward then l.reward = {} end
-											if not l.reward.item then l.reward.item = {} end
-											l.reward.item.itemLink = itemLink
+											self:AddReward(questID, "CUSTOM_ITEM", itemLink)
 										end
 									end
 
@@ -899,20 +825,16 @@ function WQA:Reward()
 							for i = 1, numQuestCurrencies do
 								local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
 								if self.db.char.options.reward.currency[currencyID] then
-									if not self.questList[questID] then self.questList[questID] = {} end
-						 			local l = self.questList[questID]
-						 			if not l.reward then l.reward = {currency = {}} end
-						 			l.reward.currency = {name = name, amount = numItems}
+						 			local currency = {currencyID = currencyID, currencyAmount = numItems}
+						 			self:AddReward(questID, "CURRENCY", currency)
 						 		end
 
 						 		-- Reputation Currency
 						 		local factionID = ReputationCurrencyList[currencyID] or nil
 						 		if factionID then
 						 			if self.db.char.options.reward.reputation[factionID] == true then
-						 				if not self.questList[questID] then self.questList[questID] = {} end
-							 			local l = self.questList[questID]
-							 			if not l.reward then l.reward = {currency = {}} end
-							 			l.reward.currency = {name = name, amount = numItems}
+							 			local repuation = {name = name, currencyID = currencyID, currencyAmount = numItems, factionID = factionID}
+							 			self:AddReward(questID, "REPUTATION", reputation)
 						 			end
 						 		end
 							end
@@ -934,59 +856,203 @@ function WQA:Reward()
 	end
 end
 
-
----- by reward
---  GetQuestsForPlayerByMapID
---[[
-
-print( "\124Hmylinktype:myfunc\124h\124T"..(select(3,GetSpellInfo(12345)))..":16\124t\124h" ) 
-
-Now since your defining your own link type, you need to intercept the default chat link handler and replace it with your own. You save the old function in case the link isn't one of yours so it can be handled as normal. 
-
-local OldSetItemRef = SetItemRef 
-function SetItemRef(link, text, button, chatFrame) 
-local func = strmatch(link, "^mylinktype:(%a+)") 
-if func == "myfunc" then 
-print(random(1, 10)) 
-else 
-OldSetItemRef(link, text, button, chatFrame) 
-end 
-end 
-
---list of all zone ids
-WorldQuestTracker.MapData.ZoneIDs = {
-	--Legion
-		ARGUS = 		905, --905
-		BROKENISLES = 	619, --
-		AZSUNA = 		630, --631 632 633
-		VALSHARAH = 	641, --642 643 644
-		HIGHMONTAIN = 	650, --
-		DALARAN = 	625,
-		SURAMAR =		680,
-		STORMHEIM = 	634,
-		BROKENSHORE = 	646,
-		EYEAZSHARA = 	790,
-		ANTORAN = 	885,
-		KROKUUN = 	830,
-		MCCAREE = 	882,
-		
-	--BFA
-		DARKSHORE = 	62,
-		ARATHI =		14,
-		ZANDALAR = 	875,
-		KULTIRAS = 	876,
-		ZULDAZAAR = 	862,
-		NAZMIR = 		863,
-		VOLDUN = 		864,
-		TIRAGARDE = 	895,
-		STORMSONG = 	942,
-		DRUSTVAR = 	896,
-	
-}
---]]
 WQA.debug = false
 function WQA:Debug(...)
 	if self.debug == true
 		then print(GetTime(),GetFramerate(),...)
 	end
+end
+
+local LibQTip = LibStub("LibQTip-1.0")
+
+function WQA:CreateQTip()
+	if not self.tooltip then
+		local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
+		self.tooltip = tooltip
+		tooltip:SetPoint("TOP", self.PopUp, "TOP", 2, -27)
+		tooltip:SetFrameStrata("HIGH")
+		tooltip:AddHeader("World Quest", "Reward")
+	end
+end
+
+function WQA:UpdateQTip(quests)
+	local tooltip = self.tooltip
+	if next(quests) == nil then
+		tooltip:AddLine(L["NO_QUESTS"])
+	else
+		tooltip.quests = tooltip.quests or {}
+		local i = tooltip:GetLineCount()
+		for questID,_ in pairs(quests) do
+			if not tooltip.quests[questID] then
+				tooltip.quests[questID] = true
+				i = i + 1
+				local questLink = GetQuestLink(questID)
+				tooltip:AddLine(questLink)
+				tooltip:SetCellScript(i, 1, "OnEnter", function(self) 
+					GameTooltip_SetDefaultAnchor(GameTooltip, self)
+					GameTooltip:ClearLines()
+					GameTooltip:ClearAllPoints()
+					GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+					GameTooltip:SetHyperlink(questLink)
+					GameTooltip:Show()
+				end)
+				tooltip:SetCellScript(i, 1, "OnLeave", function() GameTooltip:Hide() end)
+
+				local j = 1
+				for k,v in pairs(WQA.questList[questID]) do
+					j = j + 1
+					local text = self:GetRewardTextByID(questID, k, v)
+					if j > tooltip:GetColumnCount() then tooltip:AddColumn() end
+					tooltip:SetCell(i, j, text)
+				
+					tooltip:SetCellScript(i, j, "OnEnter", function(self) 
+						GameTooltip_SetDefaultAnchor(GameTooltip, self)
+						GameTooltip:ClearLines()
+						GameTooltip:ClearAllPoints()
+						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+						if WQA:GetRewardLinkByID(questID, k, v) then
+							GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(questID, k, v))
+						else
+							GameTooltip:SetText(WQA:GetRewardTextByID(questID, k, v))
+						end
+						GameTooltip:Show()
+					end)
+					tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
+				end
+				--[[
+
+
+
+				tooltip:SetCellScript(i, 1, "OnEnter", function(self) 
+					GameTooltip_SetDefaultAnchor(GameTooltip, self)
+					GameTooltip:ClearLines()
+					GameTooltip:ClearAllPoints()
+					GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+					GameTooltip:SetHyperlink(questLink)
+					GameTooltip:Show()
+				end)
+				tooltip:SetCellScript(i, 1, "OnLeave", function() GameTooltip:Hide() end)
+
+				if achievementLink ~= "" then
+					ColumnTwoEmpty = false
+					tooltip:SetCellScript(i, 2, "OnEnter", function(self)
+						GameTooltip_SetDefaultAnchor(GameTooltip, self)
+						GameTooltip:ClearLines()
+						GameTooltip:ClearAllPoints()
+						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+						GameTooltip:SetHyperlink(achievementLink)
+						GameTooltip:Show()
+					end)
+					tooltip:SetCellScript(i, 2, "OnLeave", function() GameTooltip:Hide() end)
+				end
+
+				if reward then
+					if reward.item then
+						tooltip:SetCellScript(i, 3, "OnEnter", function(self) 
+							GameTooltip_SetDefaultAnchor(GameTooltip, self)
+							GameTooltip:ClearLines()
+							GameTooltip:ClearAllPoints()
+							GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+							GameTooltip:SetHyperlink(reward.item.itemLink)
+							GameTooltip:Show()
+						end)
+						tooltip:SetCellScript(i, 3, "OnLeave", function() GameTooltip:Hide() end)
+					end
+				end]]
+			end
+		end
+	end
+	tooltip:Show()
+	self.PopUp:SetWidth(tooltip:GetWidth()+8.5)
+	self.PopUp:SetHeight(tooltip:GetHeight()+32)
+end
+
+function WQA:AnnouncePopUp(quests, silent)
+	if self.db.char.options.PopUp == false then return end
+	if not self.PopUp then
+		local PopUp = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
+		self.PopUp = PopUp
+		PopUp:SetMovable(true)
+		PopUp:EnableMouse(true)
+		PopUp:RegisterForDrag("LeftButton")
+		PopUp:SetScript("OnDragStart", function(self)
+			self.moving = true
+		    self:StartMoving()
+		end)
+		PopUp:SetScript("OnDragStop", function(self)
+			self.moving = nil
+		    self:StopMovingOrSizing()
+		end)
+		PopUp:SetWidth(300)
+		PopUp:SetHeight(100)
+		PopUp:SetPoint("CENTER")
+		PopUp:Hide()
+
+		PopUp:SetScript("OnHide", function()
+			LibQTip:Release(WQA.tooltip)
+			WQA.tooltip.quests = nil
+   			WQA.tooltip = nil
+		end)
+	end
+	if next(quests) == nil and silent == true then
+		return
+	end
+	local PopUp = self.PopUp
+	PopUp:Show()
+	self:CreateQTip()
+	self:UpdateQTip(quests)
+end
+
+function WQA:GetRewardTextByID(questID, key, value)
+	local k, v = key, value
+	local text
+	if k == "achievement" then
+		text = GetAchievementLink(v[1].id)
+	elseif k == "chance" then
+		text = select(2,GetItemInfo(v[1].id))
+	elseif k == "custom" then
+		text = "Custom"
+	elseif k == "item" then
+		text = self:GetRewardForID(questID)
+	elseif k == "reputation" then
+		if v.itemLink then
+			text = select(2,GetItemInfo(v.itemLink))
+		else
+			text = v.amount.." "..v.name
+		end
+	elseif k == "recipe" then
+		text = v
+	elseif k == "customItem" then
+		text = v
+	elseif k == "currency" then
+		text = v.currencyAmount.." "..GetCurrencyLink(v.currencyID, v.currencyAmount)
+	end
+	return text
+end
+
+function WQA:GetRewardLinkByID(questId, key, value)
+	local k, v = key, value
+	local link = nil
+	if k == "achievement" then
+		link = GetAchievementLink(v[1].id)
+	elseif k == "chance" then
+		link = select(2,GetItemInfo(v[1].id))
+	elseif k == "custom" then
+		return nil
+	elseif k == "item" then
+		link = v.itemLink
+	elseif k == "reputation" then
+		if v.itemLink then
+			link = v.itemLink
+		else
+			link = GetCurrencyLink(v.currencyID, v.currencyAmount)
+		end
+	elseif k == "recipe" then
+		link = v
+	elseif k == "customItem" then
+		link = v
+	elseif k == "currency" then
+		link = GetCurrencyLink(v.currencyID, v.currencyAmount)
+	end
+	return link
 end
