@@ -112,8 +112,8 @@ function WQA:slash(input)
 		--self:CheckWQ()
 	elseif arg1 == "new" then
 		self:Show("new")
-	elseif arg1 == "details" then
-		self:checkWQ("details")
+	elseif arg1 == "popup" then
+		self:Show("popup")
 	end
 end
 
@@ -424,10 +424,16 @@ function WQA:CheckWQ(mode)
 
 	if mode == "new" then
 		self:AnnounceChat(newQuests, self.first)
-		self:AnnouncePopUp(newQuests, self.first)
+		if self.db.char.options.PopUp == true then
+			self:AnnouncePopUp(newQuests, self.first)
+		end
+	elseif mode == "popup" then
+		self:AnnouncePopUp(activeQuests)
 	else
 		self:AnnounceChat(activeQuests)
-		self:AnnouncePopUp(activeQuests)
+		if self.db.char.options.PopUp == true then
+			self:AnnouncePopUp(activeQuests)
+		end
 	end
 	self.activeQuests = activeQuests
 	self.newQuests = newQuests
@@ -968,7 +974,6 @@ function WQA:UpdateQTip(quests)
 end
 
 function WQA:AnnouncePopUp(quests, silent)
-	if self.db.char.options.PopUp == false then return end
 	if not self.PopUp then
 		local PopUp = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
 		self.PopUp = PopUp
