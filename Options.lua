@@ -95,6 +95,7 @@ WQA.ZoneIDList = {
 		895,
 		942,
 		896,
+		1165, -- Dazar'alor
 	}
 }
 
