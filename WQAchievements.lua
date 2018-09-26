@@ -24,6 +24,39 @@ if locale == "deDE" then
 	L["WQforAch"] = "%s für %s"
 end
 
+local function GetQuestZoneID(questID)
+	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
+	if WQA.questList[questID].info.zoneID then
+		return WQA.questList[questID].info.zoneID
+	else
+		WQA.questList[questID].info.zoneID = C_TaskQuest.GetQuestZoneID(questID)
+		return WQA.questList[questID].info.zoneID
+	end
+end
+
+local function GetQuestZoneName(questID)
+	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
+	WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or C_Map.GetMapInfo(GetQuestZoneID(questID)).name
+	return WQA.questList[questID].info.zoneName
+end
+
+local function GetExpansion(questID)
+	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
+	if WQA.questList[questID].info.expansion then
+		return WQA.questList[questID].info.expansion
+	else
+		local zoneID = GetQuestZoneID(questID)
+		for expansion,zones in ipairs(WQA.ZoneIDList) do
+			for _, v in pairs(zones) do
+				if zoneID == v then
+					WQA.questList[questID].info.expansion = expansion
+					return expansion
+				end
+			end
+		end
+	end
+end
+
 local newOrder
 do
 	local current = 0
@@ -41,6 +74,7 @@ function WQA:OnInitialize()
 	local defaults = {
 		char = {
 			options = {
+				['*'] = true,
 				chat = true,
 				PopUp = false,
 				zone = { ['*'] = true},
@@ -83,7 +117,7 @@ function WQA:OnEnable()
 		local _, name, id = ...
 		if name == "PLAYER_ENTERING_WORLD" then
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			self:ScheduleTimer("Show", 5)
+			self:ScheduleTimer("Show", 8)
 			self:ScheduleTimer(function ()
 				self:Show("new")
 				self:ScheduleRepeatingTimer("Show",30*60,"new")
@@ -357,6 +391,8 @@ end
 function WQA:AddReward(questID, rewardType, reward)
 	if not self.questList[questID] then self.questList[questID] = {} end
 	local l = self.questList[questID]
+	if not l.reward then l.reward = {} end
+	l = l.reward
 	if rewardType == "ACHIEVEMENT" then
 		if not l.achievement then l.achievement = {} end
 		l.achievement[#l.achievement + 1] = {id = reward}
@@ -398,45 +434,71 @@ end
 function WQA:CheckWQ(mode)
 	self:Debug("CheckWQ")
 	if self.rewards ~= true then
+		self:Debug("NoRewards")
 		self:ScheduleTimer("CheckWQ", .4, mode)
 		return
 	end
 	local activeQuests = {}
 	local newQuests = {}
+	local retry = false
 	for questID,qList in pairs(self.questList) do
 		if IsActive(questID) then
 			local questLink = GetQuestLink(questID)
-			local link = self:link(self.questList[questID][1])
-			if not questLink or not link then
-				self:ScheduleTimer("CheckWQ", .5, mode)
-				return
+			local link
+			for k,v in pairs(self.questList[questID].reward) do
+				if k == "custom" then
+					link = true
+				else
+					link = self:GetRewardLinkByID(questID, k, v, 1)
+				end
+				if not link then
+					self:Debug(questID, k, v, 1)
+					retry = true
+				else
+					self:SetRewardLinkByID(questID, k, v, 1, link)
+				end
 			end
-			activeQuests[questID] = true
-			if not self.watched[questID] then
-				newQuests[questID] = true
+			if not questLink or not link then
+				retry = true
+			else
+				activeQuests[questID] = true
+				if not self.watched[questID] then
+					newQuests[questID] = true
+				end
 			end
 		end
 	end
 
-	for id,_ in pairs(newQuests) do
+	if retry == true then
+		self:Debug("NoLink")
+		self:ScheduleTimer("CheckWQ", 1, mode)
+		return
+	end
+
+	self.activeQuests = {}
+	for id in pairs(activeQuests) do table.insert(self.activeQuests, id) end
+
+	self.activeQuests = self:SortQuestList(self.activeQuests)
+
+	self.newQuests = {}
+	for id in pairs(newQuests) do
 		self.watched[id] = true
+		table.insert(self.newQuests, id)
 	end
 
 	if mode == "new" then
-		self:AnnounceChat(newQuests, self.first)
+		self:AnnounceChat(self.newQuests, self.first)
 		if self.db.char.options.PopUp == true then
-			self:AnnouncePopUp(newQuests, self.first)
+			self:AnnouncePopUp(self.newQuests, self.first)
 		end
 	elseif mode == "popup" then
-		self:AnnouncePopUp(activeQuests)
+		self:AnnouncePopUp(self.activeQuests)
 	else
-		self:AnnounceChat(activeQuests)
+		self:AnnounceChat(self.activeQuests)
 		if self.db.char.options.PopUp == true then
-			self:AnnouncePopUp(activeQuests)
+			self:AnnouncePopUp(self.activeQuests)
 		end
 	end
-	self.activeQuests = activeQuests
-	self.newQuests = newQuests
 end
 
 function WQA:link(x)
@@ -457,7 +519,7 @@ local icons = {
 }
 
 function WQA:GetRewardForID(questID)
-	local l = self.questList[questID]
+	local l = self.questList[questID].reward
 	local r = ""
 	if l then
 		if l.item then
@@ -509,116 +571,35 @@ function WQA:AnnounceChat(activeQuests, silent)
 
 	local output = L["WQChat"]
 	print(output)
-	for questID,_ in pairs(activeQuests) do
+	local expansion, zoneID
+	for _, questID in ipairs(activeQuests) do
 		local text, i = "", 0
-		for k,v in pairs(self.questList[questID]) do
+
+		if self.db.char.options.chatShowExpansion == true then
+			if GetExpansion(questID) ~= expansion then
+				expansion = GetExpansion(questID)
+				print(self.ExpansionList[expansion])
+			end
+		end
+
+		if self.db.char.options.chatShowZone == true then
+			if GetQuestZoneID(questID) ~= zoneID then
+				zoneID = GetQuestZoneID(questID)
+				print(GetQuestZoneName(questID))
+			end
+		end
+
+		for k,v in pairs(self.questList[questID].reward) do
 			i = i + 1
 			if i > 1 then
-				text = text.." & "..self:GetRewardTextByID(questID, k, v)
+				text = text.." & "..self:GetRewardTextByID(questID, k, v, 1)
 			else
-				text =self:GetRewardTextByID(questID, k, v)
+				text =self:GetRewardTextByID(questID, k, v, 1)
 			end
 		end
 		output = "   "..string.format(L["WQforAch"], GetQuestLink(questID), text)
 		print(output)
 	end
-end
-
-function WQA:CreatePopUp()
-	if self.PopUp then return self.PopUp end
-	local f = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
-	f:SetFrameStrata("BACKGROUND")
-	f:SetWidth(500)
-	f:SetPoint("TOP",0,-200)
-
-	-- Move and resize
-	f:SetMovable(true)
-	f:EnableMouse(true)
-	f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", function(self)
-		self.moving = true
-        self:StartMoving()
-	end)
-	f:SetScript("OnDragStop", function(self)
-		self.moving = nil
-        self:StopMovingOrSizing()
-	end)
-
-	f.ResizeButton = CreateFrame("Button", f:GetName().."ResizeButton", f)
-	f.ResizeButton:SetWidth(16)
-	f.ResizeButton:SetHeight(16)
-	f.ResizeButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT")
-	f.ResizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
-
-	f.Title:SetText("WQAchievements")
-	f.Title:SetFontObject(GameFontNormalLarge)
-	
-	f.ScrollingMessageFrame = CreateFrame("ScrollingMessageFrame", "PopUpScroll", f)
-	f.ScrollingMessageFrame:SetHyperlinksEnabled(true)
-	f.ScrollingMessageFrame:SetWidth(470)
-	f.ScrollingMessageFrame:SetPoint("TOP",f,"TOP",0,-28)
-	f.ScrollingMessageFrame:SetFontObject(GameFontNormalLarge)
-	f.ScrollingMessageFrame:SetFading(false)
-	f.ScrollingMessageFrame:SetScript("OnHyperlinkEnter", function(_,_,link,line)
-		GameTooltip_SetDefaultAnchor(GameTooltip, line)
-		GameTooltip:ClearLines()
-		GameTooltip:ClearAllPoints()
-		GameTooltip:SetPoint("BOTTOM", line, "TOP", 0, 0)
-		GameTooltip:SetHyperlink(link)
-		GameTooltip:Show() end)
-	f.ScrollingMessageFrame:SetScript("OnHyperlinkLeave", function() GameTooltip:Hide() end)
-	f.ScrollingMessageFrame:SetJustifyV("CENTER")
-
-	f.ScrollingMessageFrame:SetInsertMode(1)
-
-	f.ScrollingMessageFrame:SetScript("OnMouseWheel", function(self, delta)
-		if ( delta > 0 ) then
-			self:ScrollDown()
-		else
-			self:ScrollUp()
-		end
-	end)
-
-	--f.CloseButton = CreateFrame("Button", "CloseButton", f, "UIPanelCloseButton")
-	--f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT")
-
-	self.PopUp = f
-	return f
-end
-
-function WQA:AnnouncePopUp_(activeQuests, silent)
-	if self.db.char.options.PopUp == false then return end
-	local f = self:CreatePopUp()
-	if f:IsShown() ~= true then
-		f.ScrollingMessageFrame:Clear()
-	end
-	local i = 1
-	if next(activeQuests) == nil then
-		if silent ~= true then
-			f.ScrollingMessageFrame:AddMessage(L["NO_QUESTS"])
-			f:Show()
-		end
-	else
-		f.ScrollingMessageFrame:SetJustifyH("LEFT")
-		local Message = {}
-		for questID,_ in pairs(activeQuests) do
-			if not self.questList[questID].reward then
-				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:link(self.questList[questID][1]))
-			else
-				Message[i] = string.format(L["WQforAch"],GetQuestLink(questID),self:GetRewardForID(questID))
-			end			
-			i = i+1
-		end
-		for j=#Message,1,-1 do
-			f.ScrollingMessageFrame:AddMessage(Message[j])
-		end
-		f.ScrollingMessageFrame:AddMessage(L["WQChat"])
-
-		f:Show()
-	end
-	i = math.max(3,i)
-	f:SetHeight(38+i*16)
-	f.ScrollingMessageFrame:SetHeight(16*i)
 end
 
 local inspectScantip = CreateFrame("GameTooltip", "WorldQuestListInspectScanningTooltip", nil, "GameTooltipTemplate")
@@ -831,7 +812,7 @@ function WQA:Reward()
 							for i = 1, numQuestCurrencies do
 								local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
 								if self.db.char.options.reward.currency[currencyID] then
-						 			local currency = {currencyID = currencyID, currencyAmount = numItems}
+						 			local currency = {currencyID = currencyID, amount = numItems}
 						 			self:AddReward(questID, "CURRENCY", currency)
 						 		end
 
@@ -839,7 +820,8 @@ function WQA:Reward()
 						 		local factionID = ReputationCurrencyList[currencyID] or nil
 						 		if factionID then
 						 			if self.db.char.options.reward.reputation[factionID] == true then
-							 			local repuation = {name = name, currencyID = currencyID, currencyAmount = numItems, factionID = factionID}
+										 local reputation = {name = name, currencyID = currencyID, amount = numItems, factionID = factionID}
+										 
 							 			self:AddReward(questID, "REPUTATION", reputation)
 						 			end
 						 		end
@@ -875,26 +857,56 @@ function WQA:CreateQTip()
 	if not self.tooltip then
 		local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
 		self.tooltip = tooltip
+
+		if self.db.char.options.popupShowExpansion == true or self.db.char.options.popupShowZone == true  then
+			tooltip:AddColumn()
+			tooltip:AddHeader("World Quest", nil, "Reward")
+		else
+			tooltip:AddHeader("World Quest", "Reward")
+		end
 		tooltip:SetPoint("TOP", self.PopUp, "TOP", 2, -27)
-		tooltip:SetFrameStrata("HIGH")
-		tooltip:AddHeader("World Quest", "Reward")
+		tooltip:SetFrameStrata("HIGH")	
 	end
 end
 
 function WQA:UpdateQTip(quests)
 	local tooltip = self.tooltip
+	tooltip:AddSeparator()
 	if next(quests) == nil then
 		tooltip:AddLine(L["NO_QUESTS"])
 	else
 		tooltip.quests = tooltip.quests or {}
 		local i = tooltip:GetLineCount()
-		for questID,_ in pairs(quests) do
+		local expansion, zoneID
+		for _, questID in ipairs(quests) do
 			if not tooltip.quests[questID] then
-				tooltip.quests[questID] = true
+				local j = 1
+
+				if self.db.char.options.popupShowExpansion == true then
+					j = 2
+					if GetExpansion(questID) ~= expansion then
+						expansion = GetExpansion(questID)
+						tooltip:AddLine(self.ExpansionList[expansion])
+						i = i + 1
+					end
+				end
+
+				tooltip:AddLine()
 				i = i + 1
+				
+				if self.db.char.options.popupShowZone == true then
+					j = 2
+					if GetQuestZoneID(questID) ~= zoneID then
+						zoneID = GetQuestZoneID(questID)
+						tooltip:SetCell(i,1,GetQuestZoneName(questID))
+					end
+				end
+
+				tooltip.quests[questID] = true			
 				local questLink = GetQuestLink(questID)
-				tooltip:AddLine(questLink)
-				tooltip:SetCellScript(i, 1, "OnEnter", function(self) 
+				tooltip:SetCell(i,j,questLink)
+
+				tooltip:SetCellScript(i, j, "OnEnter", function(self) 
 					GameTooltip_SetDefaultAnchor(GameTooltip, self)
 					GameTooltip:ClearLines()
 					GameTooltip:ClearAllPoints()
@@ -902,12 +914,11 @@ function WQA:UpdateQTip(quests)
 					GameTooltip:SetHyperlink(questLink)
 					GameTooltip:Show()
 				end)
-				tooltip:SetCellScript(i, 1, "OnLeave", function() GameTooltip:Hide() end)
-
-				local j = 1
-				for k,v in pairs(WQA.questList[questID]) do
+				tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
+				
+				for k,v in pairs(WQA.questList[questID].reward) do
 					j = j + 1
-					local text = self:GetRewardTextByID(questID, k, v)
+					local text = self:GetRewardTextByID(questID, k, v, 1)
 					if j > tooltip:GetColumnCount() then tooltip:AddColumn() end
 					tooltip:SetCell(i, j, text)
 				
@@ -916,55 +927,15 @@ function WQA:UpdateQTip(quests)
 						GameTooltip:ClearLines()
 						GameTooltip:ClearAllPoints()
 						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-						if WQA:GetRewardLinkByID(questID, k, v) then
-							GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(questID, k, v))
+						if WQA:GetRewardLinkByID(questID, k, v, 1) then
+							GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(questID, k, v, 1))
 						else
-							GameTooltip:SetText(WQA:GetRewardTextByID(questID, k, v))
+							GameTooltip:SetText(WQA:GetRewardTextByID(questID, k, v, 1))
 						end
 						GameTooltip:Show()
 					end)
 					tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
 				end
-				--[[
-
-
-
-				tooltip:SetCellScript(i, 1, "OnEnter", function(self) 
-					GameTooltip_SetDefaultAnchor(GameTooltip, self)
-					GameTooltip:ClearLines()
-					GameTooltip:ClearAllPoints()
-					GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-					GameTooltip:SetHyperlink(questLink)
-					GameTooltip:Show()
-				end)
-				tooltip:SetCellScript(i, 1, "OnLeave", function() GameTooltip:Hide() end)
-
-				if achievementLink ~= "" then
-					ColumnTwoEmpty = false
-					tooltip:SetCellScript(i, 2, "OnEnter", function(self)
-						GameTooltip_SetDefaultAnchor(GameTooltip, self)
-						GameTooltip:ClearLines()
-						GameTooltip:ClearAllPoints()
-						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-						GameTooltip:SetHyperlink(achievementLink)
-						GameTooltip:Show()
-					end)
-					tooltip:SetCellScript(i, 2, "OnLeave", function() GameTooltip:Hide() end)
-				end
-
-				if reward then
-					if reward.item then
-						tooltip:SetCellScript(i, 3, "OnEnter", function(self) 
-							GameTooltip_SetDefaultAnchor(GameTooltip, self)
-							GameTooltip:ClearLines()
-							GameTooltip:ClearAllPoints()
-							GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-							GameTooltip:SetHyperlink(reward.item.itemLink)
-							GameTooltip:Show()
-						end)
-						tooltip:SetCellScript(i, 3, "OnLeave", function() GameTooltip:Hide() end)
-					end
-				end]]
 			end
 		end
 	end
@@ -1008,40 +979,34 @@ function WQA:AnnouncePopUp(quests, silent)
 	self:UpdateQTip(quests)
 end
 
-function WQA:GetRewardTextByID(questID, key, value)
+function WQA:GetRewardTextByID(questID, key, value, i)
 	local k, v = key, value
 	local text
-	if k == "achievement" then
-		text = GetAchievementLink(v[1].id)
-	elseif k == "chance" then
-		text = select(2,GetItemInfo(v[1].id))
-	elseif k == "custom" then
+	if k == "custom" then
 		text = "Custom"
 	elseif k == "item" then
-		text = self:GetRewardForID(questID)
+		text = self:GetRewardForID(questID)	
 	elseif k == "reputation" then
 		if v.itemLink then
-			text = select(2,GetItemInfo(v.itemLink))
+			text = self:GetRewardLinkByID(questID, k, v, i)
 		else
-			text = v.amount.." "..v.name
+			text = v.amount.." "..self:GetRewardLinkByID(questID, k, v, i)
 		end
-	elseif k == "recipe" then
-		text = v
-	elseif k == "customItem" then
-		text = v
 	elseif k == "currency" then
-		text = v.currencyAmount.." "..GetCurrencyLink(v.currencyID, v.currencyAmount)
+		text = v.amount.." "..GetCurrencyLink(v.currencyID, v.amount)
+	else
+		text = self:GetRewardLinkByID(questID, k, v, i)
 	end
 	return text
 end
 
-function WQA:GetRewardLinkByID(questId, key, value)
+function WQA:GetRewardLinkByID(questId, key, value, i)
 	local k, v = key, value
 	local link = nil
 	if k == "achievement" then
-		link = GetAchievementLink(v[1].id)
+		link = v[i].achievementLink or GetAchievementLink(v[i].id)
 	elseif k == "chance" then
-		link = select(2,GetItemInfo(v[1].id))
+		link = v[i].itemLink or select(2,GetItemInfo(v[i].id))
 	elseif k == "custom" then
 		return nil
 	elseif k == "item" then
@@ -1050,14 +1015,72 @@ function WQA:GetRewardLinkByID(questId, key, value)
 		if v.itemLink then
 			link = v.itemLink
 		else
-			link = GetCurrencyLink(v.currencyID, v.currencyAmount)
+			link = v.currencyLink or GetCurrencyLink(v.currencyID, v.amount)
 		end
 	elseif k == "recipe" then
 		link = v
 	elseif k == "customItem" then
 		link = v
 	elseif k == "currency" then
-		link = GetCurrencyLink(v.currencyID, v.currencyAmount)
+		link = v.currencyLink or GetCurrencyLink(v.currencyID, v.amount)
 	end
 	return link
+end
+
+function WQA:SetRewardLinkByID(questID, key, value, i, link)
+	local k, v = key, value
+	if k == "achievement" then
+		v[i].achievementLink = link
+	elseif k == "chance" then
+		v[i].itemLink = link
+	elseif k == "reputation" then
+		if not v.itemLink then
+			v.currencyLink = link
+		end
+	elseif k == "currency" then
+			v.currencyLink = link
+	end
+end
+
+local function SortByZoneName(a,b)
+	return GetQuestZoneName(a) < GetQuestZoneName(b)
+end
+
+local function SortByExpansion(a,b)
+	return GetExpansion(a) > GetExpansion(b)
+end
+
+function SortByName(a,b)
+	local _,_, nameA = string.find(GetQuestLink(a), "%[(.+)%]")
+	local _,_, nameB = string.find(GetQuestLink(b), "%[(.+)%]")
+	return nameA < nameB
+end
+
+local function InsertionSort(A, compareFunction)
+	for i,v in ipairs(A) do
+		local j = i
+		while j > 1 and compareFunction(A[j],A[j-1]) do
+			local temp = A[j]
+			A[j] = A[j-1]
+			A[j-1] = temp
+			j = j - 1
+		end
+	end
+	return A
+end
+
+function WQA:SortQuestList(list)
+	if self.db.char.options.sortByName == true then
+		list = InsertionSort(list, SortByName)
+	end
+
+	if self.db.char.options.sortByZoneName == true then
+		list = InsertionSort(list, SortByZoneName)
+	end
+
+	if self.db.char.options.sortByExpansion == true then
+		list = InsertionSort(list, SortByExpansion)
+	end
+
+	return list
 end

@@ -1,7 +1,7 @@
 local WQA = WQAchievements
 local L = WQA.L
 
-local ExpansionList = {
+WQA.ExpansionList = {
 	[1] = "Legion",
 	[2] = "Battle for Azeroth",
 }
@@ -87,7 +87,6 @@ WQA.ZoneIDList = {
 		882,
 	},
 	[2] = {
---		14,
 		875,
 		876,
 		862,
@@ -366,7 +365,6 @@ function WQA:UpdateOptions()
 						type = "toggle",
 						name = "PopUp",
 						width = "double",
-						handler = WQA,
 						set = function(info, val)
 							WQA.db.char.options.PopUp = val
 						end,
@@ -375,7 +373,98 @@ function WQA:UpdateOptions()
 					    	return WQA.db.char.options.PopUp
 				    	end,
 					    order = newOrder()
-					}
+					},
+					sortByName = {
+						type = "toggle",
+						name = "Sort quests by name",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.sortByName = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.sortByName
+				    	end,
+					    order = newOrder()
+					},
+					sortByZoneName = {
+						type = "toggle",
+						name = "Sort quests by zone name",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.sortByZoneName = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.sortByZoneName
+				    	end,
+					    order = newOrder()
+					},
+					sortByExpansion = {
+						type = "toggle",
+						name = "Sort quests by expansion",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.sortByExpansion = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.sortByExpansion
+				    	end,
+					    order = newOrder()
+					},
+					chatShowExpansion = {
+						type = "toggle",
+						name = "Show expansion in chat",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.chatShowExpansion = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.chatShowExpansion
+				    	end,
+					    order = newOrder()
+					},
+					chatShowZone = {
+						type = "toggle",
+						name = "Show zone in chat",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.chatShowZone = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.chatShowZone
+				    	end,
+					    order = newOrder()
+					},
+					popupShowExpansion = {
+						type = "toggle",
+						name = "Show expansion in popup",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.popupShowExpansion = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.popupShowExpansion
+				    	end,
+					    order = newOrder()
+					},
+					popupShowZone = {
+						type = "toggle",
+						name = "Show zone in popup",
+						width = "double",
+						set = function(info, val)
+							WQA.db.char.options.popupShowZone = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.char.options.popupShowZone
+				    	end,
+					    order = newOrder()
+					},
 				}
 			}
 		},
@@ -397,17 +486,17 @@ function WQA:UpdateOptions()
 		self:CreateGroup(self.options.args.general.args[v.name].args, v, "toys")
 	end
 
-	for i=1,#ExpansionList do
-		self.options.args.reward.args[ExpansionList[i]] = {
+	for i=1,#self.ExpansionList do
+		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),
-			name = ExpansionList[i],
+			name = self.ExpansionList[i],
 			type = "group",
 			inline = true,
 			args = {}
 		}
 		-- Zones
 		if WQA.ZoneIDList[i] then
-			self.options.args.reward.args[ExpansionList[i]].args.zone = {
+			self.options.args.reward.args[self.ExpansionList[i]].args.zone = {
 				order = newOrder(),
 				name = "Zones",
 				type = "group",
@@ -415,7 +504,7 @@ function WQA:UpdateOptions()
 			}
 			for k,v in pairs(WQA.ZoneIDList[i]) do
 				local name = C_Map.GetMapInfo(v).name
-				self.options.args.reward.args[ExpansionList[i]].args.zone.args[name] = {
+				self.options.args.reward.args[self.ExpansionList[i]].args.zone.args[name] = {
 					type = "toggle",
 					name = name,
 					set = function(info, val)
@@ -432,14 +521,14 @@ function WQA:UpdateOptions()
 
 		-- Currencies
 		if CurrencyIDList[i] then
-			self.options.args.reward.args[ExpansionList[i]].args.currency = {
+			self.options.args.reward.args[self.ExpansionList[i]].args.currency = {
 				order = newOrder(),
 				name = "Currencies",
 				type = "group",
 				args = {}
 			}
 			for k,v in pairs(CurrencyIDList[i]) do
-				self.options.args.reward.args[ExpansionList[i]].args.currency.args[GetCurrencyInfo(v)] = {
+				self.options.args.reward.args[self.ExpansionList[i]].args.currency.args[GetCurrencyInfo(v)] = {
 					type = "toggle",
 					name = GetCurrencyInfo(v),
 					set = function(info, val)
@@ -456,7 +545,7 @@ function WQA:UpdateOptions()
 
 		-- Reputation
 		if FactionIDList[i] then
-			self.options.args.reward.args[ExpansionList[i]].args.reputation = {
+			self.options.args.reward.args[self.ExpansionList[i]].args.reputation = {
 				order = newOrder(),
 				name = "Reputation",
 				type = "group",
@@ -465,7 +554,7 @@ function WQA:UpdateOptions()
 			for _, factionGroup in pairs {"Neutral", UnitFactionGroup("player")} do
 				if FactionIDList[i][factionGroup] then
 					for k,v in pairs(FactionIDList[i][factionGroup]) do
-						self.options.args.reward.args[ExpansionList[i]].args.reputation.args[GetFactionInfoByID(v)] = {
+						self.options.args.reward.args[self.ExpansionList[i]].args.reputation.args[GetFactionInfoByID(v)] = {
 							type = "toggle",
 							name = GetFactionInfoByID(v),
 							set = function(info, val)
@@ -483,7 +572,7 @@ function WQA:UpdateOptions()
 		end
 
 		-- Professions
-		self.options.args.reward.args[ExpansionList[i]].args.profession = {
+		self.options.args.reward.args[self.ExpansionList[i]].args.profession = {
 			order = newOrder(),
 			name = "Professions",
 			type = "group",
@@ -491,7 +580,7 @@ function WQA:UpdateOptions()
 		}
 
 			-- Recipes
-			self.options.args.reward.args[ExpansionList[i]].args.profession.args["Recipes"] = {
+			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args["Recipes"] = {
 				type = "toggle",
 				name = "Recipes",
 				set = function(info, val)
@@ -650,7 +739,7 @@ function WQA:UpdateCustomQuests()
 		}
 		args[id.."space"] = {
 			name =" ",
-			width = .4,
+			width = .25,
 			order = newOrder(),
 			type = "description"
 		}
