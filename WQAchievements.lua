@@ -58,6 +58,10 @@ local function GetExpansion(questID)
 	return -1
 end
 
+local function GetExpansionName(id)
+	return WQA.ExpansionList[id] or "Unknown" end
+	
+
 local newOrder
 do
 	local current = 0
@@ -579,7 +583,7 @@ function WQA:AnnounceChat(activeQuests, silent)
 		if self.db.char.options.chatShowExpansion == true then
 			if GetExpansion(questID) ~= expansion then
 				expansion = GetExpansion(questID)
-				print(self.ExpansionList[expansion])
+				print(GetExpansionName(expansion))
 			end
 		end
 
@@ -887,7 +891,7 @@ function WQA:UpdateQTip(quests)
 					j = 2
 					if GetExpansion(questID) ~= expansion then
 						expansion = GetExpansion(questID)
-						tooltip:AddLine(self.ExpansionList[expansion])
+						tooltip:AddLine(GetExpansionName(expansion))
 						i = i + 1
 					end
 				end
