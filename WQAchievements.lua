@@ -55,6 +55,7 @@ local function GetExpansion(questID)
 			end
 		end
 	end
+	return -1
 end
 
 local newOrder
