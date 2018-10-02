@@ -95,7 +95,35 @@ WQA.ZoneIDList = {
 		895,
 		942,
 		896,
+		1161, -- Boralus
+		1165, -- Dazar'alor
 	}
+}
+
+WQA.EmissaryQuestIDList = {
+	[1] = {
+		42233, -- Highmountain Tribes
+		42420, -- Court of Farondis
+		42170, -- The Dreamweavers
+		42422, -- The Wardens
+		42421, -- The Nightfallen
+		42234, -- Valarjar
+		48639, -- Army of the Light
+		48642, -- Argussian Reach
+		48641, -- Armie of Legionfall
+	},
+	[2] = {
+		50604, -- Tortollan Seekers
+		50562, -- Champions of Azeroth
+		50599, -- Proudmoore Admiralty
+		50600, -- Order of Embers
+		50601, -- Storm's Wake
+		50605, -- 7th Legion
+		50598, -- Zandalari Empire
+		50603, -- Voldunai
+		50602, -- Talanji's Expedition
+		50606, -- The Honorbound
+	},
 }
 
 local FactionIDList = {
@@ -400,19 +428,6 @@ function WQA:UpdateOptions()
 				    	end,
 					    order = newOrder()
 					},
-					sortByExpansion = {
-						type = "toggle",
-						name = "Sort quests by expansion",
-						width = "double",
-						set = function(info, val)
-							WQA.db.char.options.sortByExpansion = val
-						end,
-						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.char.options.sortByExpansion
-				    	end,
-					    order = newOrder()
-					},
 					chatShowExpansion = {
 						type = "toggle",
 						name = "Show expansion in chat",
@@ -571,6 +586,30 @@ function WQA:UpdateOptions()
 			end
 		end
 
+		-- Emissary
+		if self.EmissaryQuestIDList[i] then
+			self.options.args.reward.args[self.ExpansionList[i]].args.emissary = {
+				order = newOrder(),
+				name = "Emissary Quests",
+				type = "group",
+				args = {}
+			}
+			for k,v in pairs(self.EmissaryQuestIDList[i]) do
+				self.options.args.reward.args[self.ExpansionList[i]].args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
+					type = "toggle",
+					name = C_QuestLog.GetQuestInfo(v) or tostring(v),
+					set = function(info, val)
+						WQA.db.char.options.emissary[v] = val
+					end,
+					descStyle = "inline",
+				    get = function()
+				    	return WQA.db.char.options.emissary[v]
+			    	end,
+				    order = newOrder()
+				}
+			end
+		end
+
 		-- Professions
 		self.options.args.reward.args[self.ExpansionList[i]].args.profession = {
 			order = newOrder(),
@@ -579,19 +618,19 @@ function WQA:UpdateOptions()
 			args = {}
 		}
 
-			-- Recipes
-			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args["Recipes"] = {
-				type = "toggle",
-				name = "Recipes",
-				set = function(info, val)
-					WQA.db.char.options.reward.recipe[ExpansionIDList[i]] = val
-				end,
-				descStyle = "inline",
-			    get = function()
-			    	return WQA.db.char.options.reward.recipe[ExpansionIDList[i]]
-		    	end,
-			    order = newOrder()
-			}
+		-- Recipes
+		self.options.args.reward.args[self.ExpansionList[i]].args.profession.args["Recipes"] = {
+			type = "toggle",
+			name = "Recipes",
+			set = function(info, val)
+				WQA.db.char.options.reward.recipe[ExpansionIDList[i]] = val
+			end,
+			descStyle = "inline",
+			get = function()
+				return WQA.db.char.options.reward.recipe[ExpansionIDList[i]]
+			end,
+			order = newOrder()
+		}
 
 			-- Crafting Reagents
 			--
