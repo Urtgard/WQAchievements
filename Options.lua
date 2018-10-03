@@ -1,6 +1,9 @@
 local WQA = WQAchievements
 local L = WQA.L
 
+local optionsTimer
+local start
+
 WQA.ExpansionList = {
 	[1] = "Legion",
 	[2] = "Battle for Azeroth",
@@ -74,6 +77,7 @@ local CraftingReagentIDList = {
 WQA.ZoneIDList = {
 	[1] = {
 		619,
+		627, -- Dalaran
 		630,
 		641,
 		650,
@@ -84,9 +88,10 @@ WQA.ZoneIDList = {
 		790,
 		885,
 		830,
-		882,
+		882,	
 	},
 	[2] = {
+		14, -- Arathi Highlands
 		875,
 		876,
 		862,
@@ -166,7 +171,7 @@ function WQA:UpdateOptions()
 	------------------
 	-- 	Options Table
 	------------------
-	WQA.options = {
+	self.options = {
 		type = "group",
 		childGroups = "tab",
 		args = {
@@ -194,11 +199,11 @@ function WQA:UpdateOptions()
 								name = "ItemLevel Upgrade",
 								--width = "double",
 								set = function(info, val)
-									WQA.db.char.options.reward.gear.itemLevelUpgrade = val
+									WQA.db.profile.options.reward.gear.itemLevelUpgrade = val
 								end,
 								descStyle = "inline",
 							    get = function()
-							    	return WQA.db.char.options.reward.gear.itemLevelUpgrade
+							    	return WQA.db.profile.options.reward.gear.itemLevelUpgrade
 						    	end,
 							    order = newOrder()
 							},
@@ -207,11 +212,11 @@ function WQA:UpdateOptions()
 								name = "Azerite Armor Cache",
 								--width = "double",
 								set = function(info, val)
-									WQA.db.char.options.reward.gear.AzeriteArmorCache = val
+									WQA.db.profile.options.reward.gear.AzeriteArmorCache = val
 								end,
 								descStyle = "inline",
 							    get = function()
-							    	return WQA.db.char.options.reward.gear.AzeriteArmorCache
+							    	return WQA.db.profile.options.reward.gear.AzeriteArmorCache
 						    	end,
 							    order = newOrder()
 							},
@@ -221,9 +226,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								--width = .6,
 								set = function(info,val)
-						   			WQA.db.char.options.reward.gear.itemLevelUpgradeMin = tonumber(val)
+						   			WQA.db.profile.options.reward.gear.itemLevelUpgradeMin = tonumber(val)
 						   		end,
-						    	get = function() return tostring(WQA.db.char.options.reward.gear.itemLevelUpgradeMin)  end
+						    	get = function() return tostring(WQA.db.profile.options.reward.gear.itemLevelUpgradeMin)  end
 							},
 							desc1 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							PawnUpgrade = {
@@ -231,11 +236,11 @@ function WQA:UpdateOptions()
 								name = "% Upgrade (Pawn)",
 								--width = "double",
 								set = function(info, val)
-									WQA.db.char.options.reward.gear.PawnUpgrade = val
+									WQA.db.profile.options.reward.gear.PawnUpgrade = val
 								end,
 								descStyle = "inline",
 							    get = function()
-							    	return WQA.db.char.options.reward.gear.PawnUpgrade
+							    	return WQA.db.profile.options.reward.gear.PawnUpgrade
 						    	end,
 							    order = newOrder()
 							},
@@ -245,9 +250,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								--width = .6,
 								set = function(info,val)
-						   			WQA.db.char.options.reward.gear.PawnUpgradeMin = tonumber(val)
+						   			WQA.db.profile.options.reward.gear.PawnUpgradeMin = tonumber(val)
 						   		end,
-						    	get = function() return tostring(WQA.db.char.options.reward.gear.PawnUpgradeMin)  end
+						    	get = function() return tostring(WQA.db.profile.options.reward.gear.PawnUpgradeMin)  end
 							},
 							desc2 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							unknownAppearance = {
@@ -255,11 +260,11 @@ function WQA:UpdateOptions()
 								name = "Unknown appearance",
 								--width = "double",
 								set = function(info, val)
-									WQA.db.char.options.reward.gear.unknownAppearance = val
+									WQA.db.profile.options.reward.gear.unknownAppearance = val
 								end,
 								descStyle = "inline",
 							    get = function()
-							    	return WQA.db.char.options.reward.gear.unknownAppearance
+							    	return WQA.db.profile.options.reward.gear.unknownAppearance
 						    	end,
 							    order = newOrder()
 							},
@@ -268,11 +273,11 @@ function WQA:UpdateOptions()
 								name = "Unknown source",
 								--width = "double",
 								set = function(info, val)
-									WQA.db.char.options.reward.gear.unknownSource = val
+									WQA.db.profile.options.reward.gear.unknownSource = val
 								end,
 								descStyle = "inline",
 							    get = function()
-							    	return WQA.db.char.options.reward.gear.unknownSource
+							    	return WQA.db.profile.options.reward.gear.unknownSource
 						    	end,
 							    order = newOrder()
 							},
@@ -381,11 +386,11 @@ function WQA:UpdateOptions()
 						name = "Chat",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.chat = val
+							WQA.db.profile.options.chat = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.chat
+					    	return WQA.db.profile.options.chat
 				    	end,
 					    order = newOrder()
 					},
@@ -394,11 +399,11 @@ function WQA:UpdateOptions()
 						name = "PopUp",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.PopUp = val
+							WQA.db.profile.options.PopUp = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.PopUp
+					    	return WQA.db.profile.options.PopUp
 				    	end,
 					    order = newOrder()
 					},
@@ -407,11 +412,11 @@ function WQA:UpdateOptions()
 						name = "Sort quests by name",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.sortByName = val
+							WQA.db.profile.options.sortByName = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.sortByName
+					    	return WQA.db.profile.options.sortByName
 				    	end,
 					    order = newOrder()
 					},
@@ -420,11 +425,11 @@ function WQA:UpdateOptions()
 						name = "Sort quests by zone name",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.sortByZoneName = val
+							WQA.db.profile.options.sortByZoneName = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.sortByZoneName
+					    	return WQA.db.profile.options.sortByZoneName
 				    	end,
 					    order = newOrder()
 					},
@@ -433,11 +438,11 @@ function WQA:UpdateOptions()
 						name = "Show expansion in chat",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.chatShowExpansion = val
+							WQA.db.profile.options.chatShowExpansion = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.chatShowExpansion
+					    	return WQA.db.profile.options.chatShowExpansion
 				    	end,
 					    order = newOrder()
 					},
@@ -446,11 +451,11 @@ function WQA:UpdateOptions()
 						name = "Show zone in chat",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.chatShowZone = val
+							WQA.db.profile.options.chatShowZone = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.chatShowZone
+					    	return WQA.db.profile.options.chatShowZone
 				    	end,
 					    order = newOrder()
 					},
@@ -459,11 +464,11 @@ function WQA:UpdateOptions()
 						name = "Show expansion in popup",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.popupShowExpansion = val
+							WQA.db.profile.options.popupShowExpansion = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.popupShowExpansion
+					    	return WQA.db.profile.options.popupShowExpansion
 				    	end,
 					    order = newOrder()
 					},
@@ -472,11 +477,11 @@ function WQA:UpdateOptions()
 						name = "Show zone in popup",
 						width = "double",
 						set = function(info, val)
-							WQA.db.char.options.popupShowZone = val
+							WQA.db.profile.options.popupShowZone = val
 						end,
 						descStyle = "inline",
 					    get = function()
-					    	return WQA.db.char.options.popupShowZone
+					    	return WQA.db.profile.options.popupShowZone
 				    	end,
 					    order = newOrder()
 					},
@@ -523,11 +528,11 @@ function WQA:UpdateOptions()
 					type = "toggle",
 					name = name,
 					set = function(info, val)
-						WQA.db.char.options.zone[v] = val
+						WQA.db.profile.options.zone[v] = val
 					end,
 					descStyle = "inline",
 				    get = function()
-				    	return WQA.db.char.options.zone[v] or false
+				    	return WQA.db.profile.options.zone[v] or false
 			    	end,
 				    order = newOrder()
 				}
@@ -547,11 +552,11 @@ function WQA:UpdateOptions()
 					type = "toggle",
 					name = GetCurrencyInfo(v),
 					set = function(info, val)
-						WQA.db.char.options.reward.currency[v] = val
+						WQA.db.profile.options.reward.currency[v] = val
 					end,
 					descStyle = "inline",
 				    get = function()
-				    	return WQA.db.char.options.reward.currency[v]
+				    	return WQA.db.profile.options.reward.currency[v]
 			    	end,
 				    order = newOrder()
 				}
@@ -573,11 +578,11 @@ function WQA:UpdateOptions()
 							type = "toggle",
 							name = GetFactionInfoByID(v),
 							set = function(info, val)
-								WQA.db.char.options.reward.reputation[v] = val
+								WQA.db.profile.options.reward.reputation[v] = val
 							end,
 							descStyle = "inline",
 						    get = function()
-						    	return WQA.db.char.options.reward.reputation[v]
+						    	return WQA.db.profile.options.reward.reputation[v]
 					    	end,
 						    order = newOrder()
 						}
@@ -599,11 +604,11 @@ function WQA:UpdateOptions()
 					type = "toggle",
 					name = C_QuestLog.GetQuestInfo(v) or tostring(v),
 					set = function(info, val)
-						WQA.db.char.options.emissary[v] = val
+						WQA.db.profile.options.emissary[v] = val
 					end,
 					descStyle = "inline",
 				    get = function()
-				    	return WQA.db.char.options.emissary[v]
+				    	return WQA.db.profile.options.emissary[v]
 			    	end,
 				    order = newOrder()
 				}
@@ -623,11 +628,11 @@ function WQA:UpdateOptions()
 			type = "toggle",
 			name = "Recipes",
 			set = function(info, val)
-				WQA.db.char.options.reward.recipe[ExpansionIDList[i]] = val
+				WQA.db.profile.options.reward.recipe[ExpansionIDList[i]] = val
 			end,
 			descStyle = "inline",
 			get = function()
-				return WQA.db.char.options.reward.recipe[ExpansionIDList[i]]
+				return WQA.db.profile.options.reward.recipe[ExpansionIDList[i]]
 			end,
 			order = newOrder()
 		}
@@ -641,11 +646,11 @@ function WQA:UpdateOptions()
 			--			type = "toggle",
 			--			name = GetItemInfo(v),
 			--			set = function(info, val)
-			--				WQA.db.char.options.reward.craftingreagent[v] = val
+			--				WQA.db.profile.options.reward.craftingreagent[v] = val
 			--			end,
 			--			descStyle = "inline",
 			--		    get = function()
-			--		    	return WQA.db.char.options.reward.craftingreagent[v]
+			--		    	return WQA.db.profile.options.reward.craftingreagent[v]
 			--	    	end,
 			--		    order = newOrder()
 			--		}
@@ -659,18 +664,23 @@ function WQA:UpdateOptions()
 	self:UpdateCustomRewards()
 end
 
+function WQA:GetOptions()
+	self:UpdateOptions()
+	return self.options
+end
+
 function WQA:ToggleSet(info, val,...)
 	--print(info[#info-2],info[#info-1],info[#info])
 	local expansion = info[#info-2]
 	local category = info[#info-1]
 	local option = info[#info]
-	WQA.db.char[category][option] = val
-	--if not WQA.db.char[expansion] then WQA.db.char[expansion] = {} end
-	--[[if not WQA.db.char[category] then WQA.db.char[category] = {} end
+	WQA.db.profile[category][option] = val
+	--if not WQA.db.profile[expansion] then WQA.db.profile[expansion] = {} end
+	--[[if not WQA.db.profile[category] then WQA.db.profile[category] = {} end
 	if not val == true then
-		WQA.db.char[category][option] = true
+		WQA.db.profile[category][option] = true
 	else
-		WQA.db.char[category][option] = nil
+		WQA.db.profile[category][option] = nil
 	end-- ]]
 end
 
@@ -698,11 +708,16 @@ function WQA:CreateGroup(options, data, groupName)
 				set = "ToggleSet",
 				descStyle = "inline",
 			    get = function()
-			    	return WQA.db.char[groupName][object.name]
+			    	return WQA.db.profile[groupName][object.name]
 		    	end,
 			    order = newOrder()	
 			}
 			if object.itemID then
+				if not select(2,GetItemInfo(object.itemID)) then
+					self:CancelTimer(optionsTimer)
+					start = GetTime()
+					optionsTimer = self:ScheduleTimer(function() LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements") end, 2)
+				end
 				args[object.name].name = select(2,GetItemInfo(object.itemID)) or object.name
 			else
 				args[object.name].name = GetAchievementLink(object.id) or object.name
@@ -727,11 +742,11 @@ function WQA:UpdateCustomQuests()
 			name = GetQuestLink(id) or tostring(id),
 			width = "double",
 			set = function(info, val)
-				WQA.db.char.custom[id] = val
+				WQA.db.profile.custom[id] = val
 			end,
 			descStyle = "inline",
 		    get = function()
-		    	return WQA.db.char.custom[id]
+		    	return WQA.db.profile.custom[id]
 	    	end,
 		    order = newOrder(),
 		    width = 1.2
@@ -802,11 +817,11 @@ function WQA:UpdateCustomRewards()
 			name = itemLink or tostring(id),
 			width = "double",
 			set = function(info, val)
-				WQA.db.char.customReward[id] = val
+				WQA.db.profile.customReward[id] = val
 			end,
 			descStyle = "inline",
 		    get = function()
-		    	return WQA.db.char.customReward[id]
+		    	return WQA.db.profile.customReward[id]
 	    	end,
 		    order = newOrder(),
 		    width = 1.2
