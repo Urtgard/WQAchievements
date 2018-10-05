@@ -114,6 +114,7 @@ function WQA:OnInitialize()
 					['*'] = { ['*'] = true},		
 				},
 				emissary = {['*'] = false},
+				delay = 5,
 			},
 			['*'] = {['*'] = true}
 		},
@@ -141,13 +142,12 @@ function WQA:OnEnable()
 		local _, name, id = ...
 		if name == "PLAYER_ENTERING_WORLD" then
 			self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			self:ScheduleTimer("Show", 8)
+			self:ScheduleTimer("Show", self.db.profile.options.delay, nil, true)
 			self:ScheduleTimer(function ()
-				self:Show("new")
-				self:ScheduleRepeatingTimer("Show",30*60,"new")
+				self:Show("new", true)
+				self:ScheduleRepeatingTimer("Show", 30*60, "new", true)
 			end, (32-(date("%M") % 30))*60)
-		end
-		if name == "QUEST_LOG_UPDATE" or name == "GET_ITEM_INFO_RECEIVED" then
+		elseif name == "QUEST_LOG_UPDATE" or name == "GET_ITEM_INFO_RECEIVED" then
 			self.event:UnregisterEvent("QUEST_LOG_UPDATE")
 			self.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
 			self:CancelTimer(self.timer)
@@ -156,6 +156,9 @@ function WQA:OnEnable()
 			else
 				self:ScheduleTimer("Reward", 1)
 			end
+		elseif name == "PLAYER_REGEN_ENABLED" then
+			self.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
+			self:Show("new", true)
 		end
 	end)
 end
@@ -473,7 +476,11 @@ function WQA:AddEmissaryReward(questID, rewardType, reward)
 end
 
 WQA.first = false
-function WQA:Show(mode)
+function WQA:Show(mode, auto)
+	if auto and self.db.profile.options.delayCombat == true and UnitAffectingCombat("player") then
+		self.event:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	self:Debug("Show", mode)
 	self:CreateQuestList()
 	self:CheckWQ(mode)

@@ -485,6 +485,26 @@ function WQA:UpdateOptions()
 				    	end,
 					    order = newOrder()
 					},
+					delay = {
+						name = "Delay on login in s",
+						type = "input",
+						order = newOrder(),
+						width = "double",
+						set = function(info,val)
+							   WQA.db.profile.options.delay = tonumber(val)
+						end,
+						get = function() return tostring(WQA.db.profile.options.delay)  end
+					},
+					delayCombat = {
+						name = "Delay output while in combat",
+						type = "toggle",
+						order = newOrder(),
+						width = "double",
+						set = function(info,val)
+							   WQA.db.profile.options.delayCombat = val
+						end,
+						get = function() return WQA.db.profile.options.delayCombat end
+					},
 				}
 			}
 		},
