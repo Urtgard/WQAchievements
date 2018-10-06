@@ -790,14 +790,14 @@ function WQA:CheckItems(questID, isEmissary)
 
 			-- Upgrade by itemLevel
 			if self.db.profile.options.reward.gear.itemLevelUpgrade then
-				local itemLevel1, itemLevel2 = nil, nil
+				local itemLevel1, itemLevel2
 				local slotID = EquipLocToSlot1[itemEquipLoc]
 				if slotID then
 					if GetInventoryItemID("player", slotID) then
 						local itemLink1 = GetInventoryItemLink("player", slotID)
 						if itemLink1 then
 							itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
-							if itemLevel1 == nil then
+							if not itemLevel1 then
 								retry = true
 							end
 						else
@@ -806,11 +806,12 @@ function WQA:CheckItems(questID, isEmissary)
 					end
 				end
 				if EquipLocToSlot2[itemEquipLoc] then
+					slotID = EquipLocToSlot2[itemEquipLoc]
 					if GetInventoryItemID("player", slotID) then
 						local itemLink2 = GetInventoryItemLink("player", slotID)
 						if itemLink2 then
 							itemLevel2 = GetDetailedItemLevelInfo(itemLink2)
-							if itemLevel1 == nil then
+							if not itemLevel2 then
 								retry = true
 							end
 						else
@@ -832,8 +833,8 @@ function WQA:CheckItems(questID, isEmissary)
 				local AzeriteArmorCacheIsUpgrade = false
 				local AzeriteArmorCache = {}
 				for i=1,5,2 do
-					if GetInventoryItemID("player", slotID) then
-						local itemLink1 = GetInventoryItemLink("player", slotID)
+					if GetInventoryItemID("player", i) then
+						local itemLink1 = GetInventoryItemLink("player", i)
 						if itemLink1 then
 							itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
 							if itemLevel1 then
