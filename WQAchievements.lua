@@ -1,7 +1,3 @@
-for i=1, 19 do
---	print(i,GetInventoryItemID("player", i),"/", GetInventoryItemLink("player", i))
-end
-
 WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
 local WQA = WQAchievements
 WQA.data = {}
@@ -122,8 +118,7 @@ function WQA:OnInitialize()
 			['*'] = {['*'] = false}
 		}
 	}
-	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults, true)
-	--self:UpdateOptions()
+	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults, true)	
 end
 
 function WQA:OnEnable()
@@ -159,6 +154,8 @@ function WQA:OnEnable()
 		elseif name == "PLAYER_REGEN_ENABLED" then
 			self.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
 			self:Show("new", true)
+		elseif name == "QUEST_TURNED_IN" then
+			self.db.global.completed[id] = true
 		end
 	end)
 end
@@ -229,7 +226,8 @@ do
 				{41269, 41600, 41601}},
 			},
 			{name = "Crate Expectations", id = 11681, criteriaType = "QUEST_SINGLE", criteria = 45542},
-			{name = "They See Me Rolling", id = 11607, criteriaType = "QUEST_SINGLE", criteria = 46175}
+			{name = "They See Me Rolling", id = 11607, criteriaType = "QUEST_SINGLE", criteria = 46175},
+			{name = "Variety is the Spice of Life", id = 11189, criteriaType = "SPECIAL"},
 		},
 		mounts = {
 			{name = "Maddened Chaosrunner", itemID = 152814, spellID = 253058, quest = {{trackingID = 48695, wqID = 48696}}},
@@ -295,6 +293,7 @@ do
 			-- green 51976
 			{name = "Drag Race", id = 13059, criteriaType = "QUEST_SINGLE", criteria = 53346},
 			{name = "Unbound Monstrosities", id = 12587, criteriaType = "QUESTS", criteria = {52166, 52157, 52181, 52169, 52196, 136385}},
+			{name = "Wide World of Quests", id = 13144, criteriaType = "SPECIAL"}
 		},
 		toys = {
 			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}}},
@@ -325,6 +324,7 @@ function WQA:CreateQuestList()
 	self:AddToys(self.data[2].toys)
 	
 	self:AddCustom()
+	self:Special()
 	self:Reward()
 	self:EmissaryReward()
 end
@@ -340,7 +340,7 @@ function WQA:AddAchievements(achievement)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
 			self:AddReward(achievement.criteria, "ACHIEVEMENT", id)
-		else
+		elseif achievement.criteriaType ~= "SPECIAL" then
 			for i=1, GetAchievementNumCriteria(id) do
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
 				if not completed then
@@ -515,6 +515,7 @@ function WQA:CheckWQ(mode)
 				end
 			end
 			if not questLink or not link then
+				self:Debug(questID, questLink, link)
 				retry = true
 			else
 				activeQuests[questID] = true
@@ -737,6 +738,25 @@ function WQA:Reward()
 					for i=1,#quests do
 						local questID = quests[i].questId
 						if self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true then
+							-- 100 different World Quests achievements
+							if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
+								local zoneID = C_TaskQuest.GetQuestZoneID(questID)
+								local exp = 0
+								for expansion,zones in ipairs(WQA.ZoneIDList) do
+									for _, v in pairs(zones) do
+										if zoneID == v then
+											exp = expansion
+										end
+									end
+								end
+
+								if self.db.profile.achievements["Variety is the Spice of Life"] == true and not select(4,GetAchievementInfo(11189)) == true  and exp == 1 and not mapID == 885 and not mapID == 830 and not mapID == 882 then
+									self:AddReward(questID, "ACHIEVEMENT", 11189)
+								elseif self.db.profile.achievements["Wide World of Quests"] == true and not select(4,GetAchievementInfo(13144)) == true and exp == 2 then
+									self:AddReward(questID, "ACHIEVEMENT", 13144)
+								end
+							end
+
 							if HaveQuestData(questID) and not HaveQuestRewardData(questID) then
 								C_TaskQuest.RequestPreloadRewardData(questID)
 								retry = true
@@ -1198,7 +1218,6 @@ function WQA:EmissaryReward()
 			if self.db.profile.options.emissary[questID] == true then
 				self:AddEmissaryReward(questID, "CUSTOM", nil, true)
 			end
-			
 			if HaveQuestData(questID) and HaveQuestRewardData(questID) then
 				retry = (self:CheckItems(questID, true) or retry)
 				self:CheckCurrencies(questID, true)
@@ -1242,4 +1261,10 @@ function WQA:EmissaryIsActive(questID)
 		i = i + 1
 	end
 	return false
+end
+
+function WQA:Special()
+	if (self.db.profile.achievements["Variety is the Spice of Life"] == true and not select(4,GetAchievementInfo(11189)) == true) or (self.db.profile.achievements["Wide World of Quests"] == true and not select(4,GetAchievementInfo(13144)) == true) then 
+		self.event:RegisterEvent("QUEST_TURNED_IN")
+	end
 end
