@@ -76,16 +76,16 @@ local CraftingReagentIDList = {
 
 WQA.ZoneIDList = {
 	[1] = {
-		619,
+		619, -- Broken Isles
 		627, -- Dalaran
-		630,
-		641,
-		650,
-		625,
-		680,
-		634,
-		646,
-		790,
+		630, -- Azsuna
+		641, -- Val'sharah
+		650, -- Highmountain
+		625, -- Dalaran
+		680, -- Suramar
+		634, -- Stormheim
+		646, -- Broken Shore
+		790, -- Eye of Azshara
 		885,
 		830,
 		882,	
@@ -99,7 +99,7 @@ WQA.ZoneIDList = {
 		864,
 		895,
 		942,
-		896,
+		896, -- Drustvar
 		1161, -- Boralus
 		1165, -- Dazar'alor
 	}
@@ -115,7 +115,8 @@ WQA.EmissaryQuestIDList = {
 		42234, -- Valarjar
 		48639, -- Army of the Light
 		48642, -- Argussian Reach
-		48641, -- Armie of Legionfall
+		48641, -- Armies of Legionfall
+		43179, -- Kirin Tor
 	},
 	[2] = {
 		50604, -- Tortollan Seekers

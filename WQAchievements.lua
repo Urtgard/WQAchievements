@@ -252,7 +252,7 @@ do
 			{name = "Wondrous Wisdomball", itemID = 141348, creatureID = 113827, questID = 43179, emissary = true},
 		},
 		toys = {
-			{name = "Barrier Generator", itemID = 153183, quest = {{trackingID = 0, wqID = 48724}, {trackingID = 0, wqID = 48723}}},
+			{name = "Barrier Generator", itemID = 153183, quest = {{trackingID = 48704, wqID = 48724}, {trackingID = 48703, wqID = 48723}}},
 			{name = "Micro-Artillery Controller", itemID = 153126, quest = {{trackingID = 0, wqID = 48829}}},
 			{name = "Spire of Spite", itemID = 153124, quest = {{trackingID = 0, wqID = 48512}}},
 			{name = "Yellow Conservatory Scroll", itemID = 153180, quest = {{trackingID = 48718, wqID = 48737}}},
@@ -266,6 +266,7 @@ end
 -- Battle for Azeroth
 do
 	local bfa = {}
+	local trainer = {52009, 52218, 52278, 52297, 52316, 52325, 52430, 52471, 52751, 52754, 52799, 52803, 52850, 52856, 52878, 52892, 52923, 52938}
 	bfa = {
 		name = "Battle for Azeroth",
 		achievements = {
@@ -293,7 +294,19 @@ do
 			-- green 51976
 			{name = "Drag Race", id = 13059, criteriaType = "QUEST_SINGLE", criteria = 53346},
 			{name = "Unbound Monstrosities", id = 12587, criteriaType = "QUESTS", criteria = {52166, 52157, 52181, 52169, 52196, 136385}},
-			{name = "Wide World of Quests", id = 13144, criteriaType = "SPECIAL"}
+			{name = "Wide World of Quests", id = 13144, criteriaType = "SPECIAL"},
+			{name = "Family Battler", id = 13279, criteriaType = "ACHIEVEMENT", criteria = {
+				{id = 13280, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13270, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13271, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13272, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13273, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13274, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13281, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13275, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13277, criteriaType = "QUESTS", criteria = trainer},
+				{id = 13278, criteriaType = "QUESTS", criteria = trainer}}
+			},
 		},
 		toys = {
 			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}}},
