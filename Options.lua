@@ -81,7 +81,7 @@ WQA.ZoneIDList = {
 		630, -- Azsuna
 		641, -- Val'sharah
 		650, -- Highmountain
-		625, -- Dalaran
+		--625, -- Dalaran
 		680, -- Suramar
 		634, -- Stormheim
 		646, -- Broken Shore
@@ -245,15 +245,28 @@ function WQA:UpdateOptions()
 						    	end,
 							    order = newOrder()
 							},
-							PawnUpgradeMin = {
+							StatWeightScore = {
+								type = "toggle",
+								name = "% Upgrade (Stat Weight Score)",
+								--width = "double",
+								set = function(info, val)
+									WQA.db.profile.options.reward.gear.StatWeightScore = val
+								end,
+								descStyle = "inline",
+							    get = function()
+							    	return WQA.db.profile.options.reward.gear.StatWeightScore
+						    	end,
+							    order = newOrder()
+							},
+							PercentUpgradeMin = {
 								name = "minimum % Upgrade",
 								type = "input",
 								order = newOrder(),
 								--width = .6,
 								set = function(info,val)
-						   			WQA.db.profile.options.reward.gear.PawnUpgradeMin = tonumber(val)
+						   			WQA.db.profile.options.reward.gear.PercentUpgradeMin = tonumber(val)
 						   		end,
-						    	get = function() return tostring(WQA.db.profile.options.reward.gear.PawnUpgradeMin)  end
+						    	get = function() return tostring(WQA.db.profile.options.reward.gear.PercentUpgradeMin)  end
 							},
 							desc2 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							unknownAppearance = {

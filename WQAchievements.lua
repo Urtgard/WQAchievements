@@ -100,7 +100,8 @@ function WQA:OnInitialize()
 						itemLevelUpgrade = true,
 						itemLevelUpgradeMin = 1,
 						PawnUpgrade = true,
-						PawnUpgradeMin = 1,
+						StatWeightScore = true,
+						PercentUpgradeMin = 1,
 						unknownAppearance = true,
 						unknownSource = false,
 					},
@@ -563,12 +564,16 @@ function WQA:CheckWQ(mode)
 		end
 	elseif mode == "popup" then
 		self:AnnouncePopUp(self.activeQuests)
+	elseif mode == "LDB" then
+		self:AnnounceLDB(self.activeQuests)
 	else
 		self:AnnounceChat(self.activeQuests)
 		if self.db.profile.options.PopUp == true then
 			self:AnnouncePopUp(self.activeQuests)
 		end
 	end
+
+	self:UpdateLDBText(next(activeQuests), next(newQuests))
 end
 
 function WQA:link(x)
@@ -810,16 +815,60 @@ function WQA:CheckItems(questID, isEmissary)
 				local Item = PawnGetItemData(itemLink)
 				if Item then
 					local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
-					if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.profile.options.reward.gear.PawnUpgradeMin then
+					if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.profile.options.reward.gear.PercentUpgradeMin then
 						local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)}
 						self:AddReward(questID, "ITEM", item, isEmissary)
 					end
 				end
 			end
 
-			--StatWeightScore
-			--local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore")
-			--local ScoreModule = StatWeightScore:GetModule("StatWeightScoreScore")
+			-- StatWeightScore
+			local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore", true)
+			if StatWeightScore and self.db.profile.options.reward.gear.StatWeightScore then
+				local slotID = EquipLocToSlot1[itemEquipLoc]
+				if slotID then
+					local itemPercentUpgrade = 0
+					local ScoreModule = StatWeightScore:GetModule("StatWeightScoreScore")
+					local SpecModule = StatWeightScore:GetModule("StatWeightScoreSpec")
+					local ScanningTooltipModule = StatWeightScore:GetModule("StatWeightScoreScanningTooltip")
+					local specs = SpecModule:GetSpecs()
+					for _,spec in pairs(specs) do
+						if spec.Enabled then
+							local score = ScoreModule:CalculateItemScore(itemLink, slotID, ScanningTooltipModule:ScanTooltip(itemLink), spec, equippedItemHasUniqueGem).Score
+							local equippedScore
+							local equippedLink = GetInventoryItemLink("player", slotID)
+							if equippedLink then
+								equippedScore = ScoreModule:CalculateItemScore(equippedLink, slotID, ScanningTooltipModule:ScanTooltip(equippedLink), spec, equippedItemHasUniqueGem).Score
+							else
+								retry = true
+							end
+							
+							slotID2 =  EquipLocToSlot2[itemEquipLoc]
+							if slotID2 then
+								equippedLink = GetInventoryItemLink("player", slotID2)
+								if equippedLink then
+									local equippedScore2 = ScoreModule:CalculateItemScore(equippedLink, slotID2, ScanningTooltipModule:ScanTooltip(equippedLink), spec, equippedItemHasUniqueGem).Score
+									if equippedScore or 0 > equippedScore2 then
+										equippedScore = equippedScore2
+									end
+								else
+									retry = true
+								end
+							end
+
+							if equippedScore then
+								if (score-equippedScore)/equippedScore*100 > itemPercentUpgrade then
+									itemPercentUpgrade = (score-equippedScore)/equippedScore*100
+								end
+							end
+						end
+					end
+					if itemPercentUpgrade >= self.db.profile.options.reward.gear.PercentUpgradeMin then
+						local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(itemPercentUpgrade + .5)}
+						self:AddReward(questID, "ITEM", item, isEmissary)
+					end
+				end
+			end
 
 			-- Upgrade by itemLevel
 			if self.db.profile.options.reward.gear.itemLevelUpgrade then
@@ -980,17 +1029,16 @@ end
 local LibQTip = LibStub("LibQTip-1.0")
 
 function WQA:CreateQTip()
-	if not self.tooltip then
+	if not LibQTip:IsAcquired("WQAchievements") and not self.tooltip then
 		local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
 		self.tooltip = tooltip
-
+		
 		if self.db.profile.options.popupShowExpansion == true or self.db.profile.options.popupShowZone == true  then
 			tooltip:AddColumn()
 			tooltip:AddHeader("World Quest", nil, "Reward")
 		else
 			tooltip:AddHeader("World Quest", "Reward")
 		end
-		tooltip:SetPoint("TOP", self.PopUp, "TOP", 2, -27)
 		tooltip:SetFrameStrata("HIGH")
 		tooltip:AddSeparator()
 	end
@@ -1014,6 +1062,8 @@ function WQA:UpdateQTip(quests)
 						expansion = GetExpansion(questID)
 						tooltip:AddLine(GetExpansionName(expansion))
 						i = i + 1
+
+						zoneID = nil
 					end
 				end
 
@@ -1066,8 +1116,6 @@ function WQA:UpdateQTip(quests)
 		end
 	end
 	tooltip:Show()
-	self.PopUp:SetWidth(tooltip:GetWidth()+8.5)
-	self.PopUp:SetHeight(tooltip:GetHeight()+32)
 end
 
 function WQA:AnnouncePopUp(quests, silent)
@@ -1093,7 +1141,8 @@ function WQA:AnnouncePopUp(quests, silent)
 		PopUp:SetScript("OnHide", function()
 			LibQTip:Release(WQA.tooltip)
 			WQA.tooltip.quests = nil
-   			WQA.tooltip = nil
+			WQA.tooltip = nil
+			PopUp.shown = false
 		end)
 	end
 	if next(quests) == nil and silent == true then
@@ -1101,8 +1150,14 @@ function WQA:AnnouncePopUp(quests, silent)
 	end
 	local PopUp = self.PopUp
 	PopUp:Show()
+	PopUp.shown = true
 	self:CreateQTip()
+	self.tooltip:SetAutoHideDelay()
+	self.tooltip:ClearAllPoints()
+	self.tooltip:SetPoint("TOP", PopUp, "TOP", 2, -27)
 	self:UpdateQTip(quests)
+	PopUp:SetWidth(self.tooltip:GetWidth()+8.5)
+	PopUp:SetHeight(self.tooltip:GetHeight()+32)
 end
 
 function WQA:GetRewardTextByID(questID, key, value, i)
@@ -1219,9 +1274,6 @@ function WQA:SortQuestList(list)
 	return list
 end
 
-
--- GetQuestBountyInfoForMapID(619)
--- GetQuestBountyInfoForMapID(875)
 function WQA:EmissaryReward()
 	self.emissaryRewards = false
 	local retry = false
@@ -1241,11 +1293,7 @@ function WQA:EmissaryReward()
 	end
 
 	if retry == true then
---		self.start = GetTime()
-		--self.timer = 
 		self:ScheduleTimer(function() self:EmissaryReward() end, 2)
-		--self.event:RegisterEvent("QUEST_LOG_UPDATE")
-		--self.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 	else
 		self.emissaryRewards = true
 	end
@@ -1279,5 +1327,54 @@ end
 function WQA:Special()
 	if (self.db.profile.achievements["Variety is the Spice of Life"] == true and not select(4,GetAchievementInfo(11189)) == true) or (self.db.profile.achievements["Wide World of Quests"] == true and not select(4,GetAchievementInfo(13144)) == true) then 
 		self.event:RegisterEvent("QUEST_TURNED_IN")
+	end
+end
+
+local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
+local dataobj = ldb:NewDataObject("WQAchievements", {
+	type = "data source",
+	text = "WQA",
+	icon = "Interface\\Icons\\INV_Misc_Map06",
+})
+
+local anchor
+function dataobj:OnEnter()
+	anchor = self
+	WQA:Show("LDB")
+end
+
+local function PopUpIsShown()
+	if WQA.PopUp then
+		return WQA.PopUp.shown
+	else
+		return false
+	end
+end
+
+function WQA:AnnounceLDB(quests)
+	-- Hide PopUp
+	if self.PopUp and self.PopUp:IsShown() then
+		self.PopUp:Hide()
+	end
+
+	self:CreateQTip()
+	self.tooltip:SetAutoHideDelay(.25, anchor, function()
+		if not PopUpIsShown() then
+			LibQTip:Release(WQA.tooltip)
+			WQA.tooltip.quests = nil
+			WQA.tooltip = nil
+		end
+	end)
+	self.tooltip:SmartAnchorTo(anchor)
+	self:UpdateQTip(quests)
+end
+
+function WQA:UpdateLDBText(activeQuests, newQuests)
+	if newQuests ~= nil then
+		dataobj.text = "New World Quests active"
+	elseif activeQuests ~= nil then
+		dataobj.text = "World Quests active"
+	else
+		dataobj.text = "No World Quests active"
 	end
 end
