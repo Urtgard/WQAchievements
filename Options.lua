@@ -473,6 +473,19 @@ function WQA:UpdateOptions()
 				    	end,
 					    order = newOrder()
 					},
+					chatShowTime = {
+						type = "toggle",
+						name = "Show time left in chat",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.chatShowTime = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.profile.options.chatShowTime
+				    	end,
+					    order = newOrder()
+					},
 					popupShowExpansion = {
 						type = "toggle",
 						name = "Show expansion in popup",
@@ -499,6 +512,19 @@ function WQA:UpdateOptions()
 				    	end,
 					    order = newOrder()
 					},
+					popupShowTime = {
+						type = "toggle",
+						name = "Show time left in popup",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.popupShowTime = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.profile.options.popupShowTime
+				    	end,
+					    order = newOrder()
+					},
 					delay = {
 						name = "Delay on login in s",
 						type = "input",
@@ -518,6 +544,19 @@ function WQA:UpdateOptions()
 							   WQA.db.profile.options.delayCombat = val
 						end,
 						get = function() return WQA.db.profile.options.delayCombat end
+					},
+					WorldQuestTracker = {
+						type = "toggle",
+						name = "Use World Quest Tracker",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.WorldQuestTracker = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.profile.options.WorldQuestTracker
+				    	end,
+					    order = newOrder()
 					},
 				}
 			}

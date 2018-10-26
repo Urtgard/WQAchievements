@@ -15,6 +15,7 @@ local L = WQA.L
 L["NO_QUESTS"] = "No interesting World Quests active!"
 L["WQChat"] = "Interesting World Quests are active:"
 L["WQforAch"] = "%s for %s"
+L["WQforAchTime"] = "%s (%s) for %s"
 L["achievements"] = "Achievements"
 L["mounts"] = "Mounts"
 L["pets"] = "Pets"
@@ -22,6 +23,7 @@ L["toys"] = "Toys"
 if locale == "deDE" then
 	L["WQChat"] = "Interessante Weltquests verfügbar:"
 	L["WQforAch"] = "%s für %s"
+	L["WQforAchTime"] = "%s (%s) für %s"
 end
 
 local function GetQuestZoneID(questID)
@@ -672,7 +674,12 @@ function WQA:AnnounceChat(activeQuests, silent)
 				text =self:GetRewardTextByID(questID, k, v, 1)
 			end
 		end
-		output = "   "..string.format(L["WQforAch"], GetQuestLink(questID), text)
+
+		if self.db.profile.options.chatShowTime then
+			output = "   "..string.format(L["WQforAchTime"], GetQuestLink(questID), self:formatTime(C_TaskQuest.GetQuestTimeLeftMinutes(questID)), text)
+		else
+			output = "   "..string.format(L["WQforAch"], GetQuestLink(questID), text)
+		end
 		print(output)
 	end
 end
@@ -1033,12 +1040,15 @@ function WQA:CreateQTip()
 		local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
 		self.tooltip = tooltip
 		
-		if self.db.profile.options.popupShowExpansion == true or self.db.profile.options.popupShowZone == true  then
+		if self.db.profile.options.popupShowExpansion or self.db.profile.options.popupShowZone  then
 			tooltip:AddColumn()
-			tooltip:AddHeader("World Quest", nil, "Reward")
-		else
-			tooltip:AddHeader("World Quest", "Reward")
 		end
+		if self.db.profile.options.popupShowTime then
+			tooltip:AddColumn()
+		end
+
+		tooltip:AddHeader("World Quest")
+		tooltip:SetCell(1, tooltip:GetColumnCount(), "Reward")
 		tooltip:SetFrameStrata("HIGH")
 		tooltip:AddSeparator()
 	end
@@ -1056,13 +1066,12 @@ function WQA:UpdateQTip(quests)
 			if not tooltip.quests[questID] then
 				local j = 1
 
-				if self.db.profile.options.popupShowExpansion == true then
+				if self.db.profile.options.popupShowExpansion then
 					j = 2
 					if GetExpansion(questID) ~= expansion then
 						expansion = GetExpansion(questID)
 						tooltip:AddLine(GetExpansionName(expansion))
 						i = i + 1
-
 						zoneID = nil
 					end
 				end
@@ -1070,12 +1079,17 @@ function WQA:UpdateQTip(quests)
 				tooltip:AddLine()
 				i = i + 1
 				
-				if self.db.profile.options.popupShowZone == true then
+				if self.db.profile.options.popupShowZone then
 					j = 2
 					if GetQuestZoneID(questID) ~= zoneID then
 						zoneID = GetQuestZoneID(questID)
 						tooltip:SetCell(i,1,GetQuestZoneName(questID))
 					end
+				end
+
+				if self.db.profile.options.popupShowTime then
+					tooltip:SetCell(i, j, self:formatTime(C_TaskQuest.GetQuestTimeLeftMinutes(questID)))
+					j = j + 1
 				end
 
 				tooltip.quests[questID] = true			
@@ -1091,6 +1105,39 @@ function WQA:UpdateQTip(quests)
 					GameTooltip:Show()
 				end)
 				tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
+				tooltip:SetCellScript(i, j, "OnMouseDown", function()
+					if ChatEdit_TryInsertChatLink(questLink) ~= true then
+						if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
+							if WorldQuestTrackerAddon.IsQuestBeingTracked(questID) then
+								WorldQuestTrackerAddon.RemoveQuestFromTracker(questID)
+								WQA:ScheduleTimer(function () WorldQuestTrackerAddon:FullTrackerUpdate() end, .5)
+							else
+								local _, _, numObjectives = GetTaskInfo(questID)
+								local widget = {questID = questID, mapID = GetQuestZoneID(questID), numObjectives = numObjectives}
+								local x, y = C_TaskQuest.GetQuestLocation (questID, zoneID)
+								widget.questX, widget.questY = x or 0, y or 0
+								widget.IconTexture = select(2,GetQuestLogRewardInfo(1, questID)) or select(2, GetQuestLogRewardCurrencyInfo(1, questID))
+								local function f(widget)
+									if not widget.IconTexture then
+										WQA:ScheduleTimer(function()
+											widget.IconTexture = select(2,GetQuestLogRewardInfo(1, questID)) or select(2, GetQuestLogRewardCurrencyInfo(1, questID))
+											f(widget) end, 1.5)
+									else
+										WorldQuestTrackerAddon.AddQuestToTracker(widget)
+										WQA:ScheduleTimer(function () WorldQuestTrackerAddon:FullTrackerUpdate() end, .5)
+									end
+								end
+								f(widget)
+							end
+						else
+							if IsWorldQuestHardWatched(questID) or (IsWorldQuestWatched(questID) and GetSuperTrackedQuestID() == questID) then
+								BonusObjectiveTracker_UntrackWorldQuest(questID)
+							else
+								BonusObjectiveTracker_TrackWorldQuest(questID, true)
+							end
+						end				
+					end					
+				end)
 				
 				for k,v in pairs(WQA.questList[questID].reward) do
 					j = j + 1
@@ -1103,14 +1150,21 @@ function WQA:UpdateQTip(quests)
 						GameTooltip:ClearLines()
 						GameTooltip:ClearAllPoints()
 						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+						
 						if WQA:GetRewardLinkByID(questID, k, v, 1) then
 							GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(questID, k, v, 1))
 						else
 							GameTooltip:SetText(WQA:GetRewardTextByID(questID, k, v, 1))
 						end
 						GameTooltip:Show()
+						if IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems") then
+							GameTooltip_ShowCompareItem()
+						end
 					end)
 					tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
+					tooltip:SetCellScript(i, j, "OnMouseDown", function()
+						HandleModifiedItemClick(WQA:GetRewardLinkByID(questID, k, v, 1))
+					end)
 				end
 			end
 		end
@@ -1353,7 +1407,7 @@ end
 
 function WQA:AnnounceLDB(quests)
 	-- Hide PopUp
-	if self.PopUp and self.PopUp:IsShown() then
+	if PopUpIsShown() then
 		self.PopUp:Hide()
 	end
 
@@ -1376,5 +1430,27 @@ function WQA:UpdateLDBText(activeQuests, newQuests)
 		dataobj.text = "World Quests active"
 	else
 		dataobj.text = "No World Quests active"
+	end
+end
+
+function WQA:formatTime(t)
+	local d, h, m
+	d = math.floor(t/60/24)
+	h = math.floor(t/60 % 24)
+	m = t % 60
+	if d > 0 then
+		if h > 0 then
+			return d.."d "..h.."h"
+		else
+			return d.."d"
+		end
+	elseif h > 0 then
+		if m > 0 then
+			return h.."h "..m.."m"
+		else
+			return h.."h"
+		end
+	else
+		return m.."m"
 	end
 end
