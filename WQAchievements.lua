@@ -90,6 +90,15 @@ WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none"}
 function WQA:OnInitialize()
 	-- Defaults
 	local defaults = {
+		char = {
+			['*'] = {
+				["profession"] = {
+					['*'] = {
+						isMaxLevel = true,
+					},
+				},
+			},
+		},
 		profile = {
 			options = {
 				['*'] = true,
@@ -110,7 +119,14 @@ function WQA:OnInitialize()
 					reputation = {['*'] = false},
 					currency = {},
 					craftingreagent = {['*'] = false},
-					['*'] = { ['*'] = true},		
+					['*'] = {
+						['*'] = true,
+						profession = {
+							['*'] = {
+								skillup = true,
+							},
+						},
+					},
 				},
 				emissary = {['*'] = false},
 				delay = 5,
@@ -488,7 +504,9 @@ function WQA:AddReward(questID, rewardType, reward, emissary)
 		if not l.currency then l.currency = {} end
  		for k,v in pairs(reward) do
  			l.currency[k] = v
- 		end	
+		end	
+	elseif rewardType == "PROFESSION_SKILLUP" then
+		l.professionSkillup = reward
 	end
 end
 
@@ -523,7 +541,7 @@ function WQA:CheckWQ(mode)
 			local questLink = GetQuestLink(questID)
 			local link
 			for k,v in pairs(self.questList[questID].reward) do
-				if k == "custom" then
+				if k == "custom" or k == "professionSkillup" then
 					link = true
 				else
 					link = self:GetRewardLinkByID(questID, k, v, 1)
@@ -791,8 +809,29 @@ function WQA:Reward()
 								C_TaskQuest.RequestPreloadRewardData(questID)
 								retry = true
 							end
-							retry = (self:CheckItems(questID) or retry)
+							retry = self:CheckItems(questID) or retry
 							self:CheckCurrencies(questID)
+
+							-- Profession
+							local _,_,_,_,_, tradeskillLineIndex = GetQuestTagInfo(questID)
+							if tradeskillLineIndex then
+								local professionName,_,_,_,_,_, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
+								if tradeskillLineIndex then
+									local zoneID = C_TaskQuest.GetQuestZoneID(questID)
+									local exp = 0
+									for expansion,zones in ipairs(WQA.ZoneIDList) do
+										for _, v in pairs(zones) do
+											if zoneID == v then
+												exp = expansion
+											end
+										end
+									end
+
+									if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup then
+										self:AddReward(questID, "PROFESSION_SKILLUP", professionName)
+									end
+								end
+							end
 						end
 					end
 				end
@@ -1234,6 +1273,8 @@ function WQA:GetRewardTextByID(questID, key, value, i)
 		end
 	elseif k == "currency" then
 		text = v.amount.." "..GetCurrencyLink(v.currencyID, v.amount)
+	elseif k == "professionSkillup" then
+		text = v
 	else
 		text = self:GetRewardLinkByID(questID, k, v, i)
 	end
@@ -1263,6 +1304,8 @@ function WQA:GetRewardLinkByID(questId, key, value, i)
 		link = v
 	elseif k == "currency" then
 		link = v.currencyLink or GetCurrencyLink(v.currencyID, v.amount)
+	elseif k == "professionSkillup" then
+		return nil
 	end
 	return link
 end

@@ -710,6 +710,36 @@ function WQA:UpdateOptions()
 			order = newOrder()
 		}
 
+		-- Skillup
+		-- if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup thenthen
+		for _, tradeskillLineIndex in pairs({GetProfessions()}) do
+			local professionName,_,_,_,_,_, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
+			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."Header"] = { type = "header", name = professionName, order = newOrder(), }
+			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."Skillup"] = {
+				type = "toggle",
+				name = "Skillup",
+				desc = "Track every World Quest until skill level is maxed out",
+				set = function(info, val)
+					WQA.db.profile.options.reward[ExpansionIDList[i]].profession[tradeskillLineID].skillup = val
+				end,
+				get = function()
+					return WQA.db.profile.options.reward[ExpansionIDList[i]].profession[tradeskillLineID].skillup
+				end,
+				order = newOrder()
+			}
+			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."MaxLevel"] = {
+				type = "toggle",
+				name = "Skill level is maxed out*",
+				desc = "Setting is per character",
+				set = function(info, val)
+					WQA.db.char[ExpansionIDList[i]].profession[tradeskillLineID].isMaxLevel = val
+				end,
+				get = function()
+					return WQA.db.char[ExpansionIDList[i]].profession[tradeskillLineID].isMaxLevel
+				end,
+				order = newOrder()
+			}
+		end
 			-- Crafting Reagents
 			--
 			--for k,v in pairs(CraftingReagentIDList[i] or {}) do
