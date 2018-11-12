@@ -116,6 +116,10 @@ function WQA:OnInitialize()
 						unknownAppearance = true,
 						unknownSource = false,
 					},
+					general = {
+						gold = false,
+						goldMin = 0,
+					},
 					reputation = {['*'] = false},
 					currency = {},
 					craftingreagent = {['*'] = false},
@@ -314,8 +318,6 @@ do
 			{name = "Adventurer of Tiragarde Sound", id = 12939, criteriaType = "QUESTS", criteria = {51653, 51652, 51666, 51669, 51841, 51665, 51848, 51842, 51654, 51662, 51844, 51664, 51670, 51895, nil, 51659, 51843, 51660, 51661, 51890, 51656, 51893, 51892, 51651, 51839, 51891, 51849, 51894, 51655, 51847, nil, 51657}},
 			{name = "Adventurer of Stormsong Valley", id = 12940, criteriaType = "QUESTS", criteria = {52452, 52315, 51759, {51976, 51977, 51978}, 52476, 51774, 51921, nil, 51776, 52459, 52321, 51781, nil, 51886, 51779, 51778, 52306, 52310, 51901, 51777, 52301, nil, 52463, nil, 52328, 51782, 52299, nil, 52300, nil, 52464, 52309, 52322, nil}},
 			{name = "Sabertron Assemble", id = 13054, criteriaType = "QUESTS", criteria = {nil, 51977, 51978, 51976, 51974}},
-			-- Sabertron Assemble
-			-- green 51976
 			{name = "Drag Race", id = 13059, criteriaType = "QUEST_SINGLE", criteria = 53346},
 			{name = "Unbound Monstrosities", id = 12587, criteriaType = "QUESTS", criteria = {52166, 52157, 52181, 52169, 52196, 136385}},
 			{name = "Wide World of Quests", id = 13144, criteriaType = "SPECIAL"},
@@ -504,9 +506,11 @@ function WQA:AddReward(questID, rewardType, reward, emissary)
 		if not l.currency then l.currency = {} end
  		for k,v in pairs(reward) do
  			l.currency[k] = v
-		end	
+		end
 	elseif rewardType == "PROFESSION_SKILLUP" then
 		l.professionSkillup = reward
+	elseif rewardType == "GOLD" then
+		l.gold = reward
 	end
 end
 
@@ -541,7 +545,7 @@ function WQA:CheckWQ(mode)
 			local questLink = GetQuestLink(questID)
 			local link
 			for k,v in pairs(self.questList[questID].reward) do
-				if k == "custom" or k == "professionSkillup" then
+				if k == "custom" or k == "professionSkillup" or k == "gold" then
 					link = true
 				else
 					link = self:GetRewardLinkByID(questID, k, v, 1)
@@ -1068,6 +1072,13 @@ function WQA:CheckCurrencies(questID, isEmissary)
 			 end
 		 end
 	end
+
+	local gold = math.floor(GetQuestLogRewardMoney(questID)/10000) or 0
+	if gold > 0 then
+		if self.db.profile.options.reward.general.gold and gold >= self.db.profile.options.reward.general.goldMin then
+			self:AddReward(questID, "GOLD", gold, isEmissary)
+		end
+	end
 end
 
 WQA.debug = false
@@ -1158,9 +1169,10 @@ function WQA:UpdateQTip(quests)
 							else
 								local _, _, numObjectives = GetTaskInfo(questID)
 								local widget = {questID = questID, mapID = GetQuestZoneID(questID), numObjectives = numObjectives}
-								local x, y = C_TaskQuest.GetQuestLocation (questID, zoneID)
+								zoneID = GetQuestZoneID(questID)
+								local x, y = C_TaskQuest.GetQuestLocation(questID, zoneID)
 								widget.questX, widget.questY = x or 0, y or 0
-								widget.IconTexture = select(2,GetQuestLogRewardInfo(1, questID)) or select(2, GetQuestLogRewardCurrencyInfo(1, questID))
+								widget.IconTexture = select(2,GetQuestLogRewardInfo(1, questID)) or select(2, GetQuestLogRewardCurrencyInfo(1, questID)) or [[Interface\GossipFrame\auctioneerGossipIcon]]
 								local function f(widget)
 									if not widget.IconTexture then
 										WQA:ScheduleTimer(function()
@@ -1275,6 +1287,8 @@ function WQA:GetRewardTextByID(questID, key, value, i)
 		text = v.amount.." "..GetCurrencyLink(v.currencyID, v.amount)
 	elseif k == "professionSkillup" then
 		text = v
+	elseif k == "gold" then
+		text = GOLD_AMOUNT_TEXTURE_STRING:format(v, 0, 0);
 	else
 		text = self:GetRewardLinkByID(questID, k, v, i)
 	end
@@ -1305,6 +1319,8 @@ function WQA:GetRewardLinkByID(questId, key, value, i)
 	elseif k == "currency" then
 		link = v.currencyLink or GetCurrencyLink(v.currencyID, v.amount)
 	elseif k == "professionSkillup" then
+		return nil
+	elseif k == "gold" then
 		return nil
 	end
 	return link
@@ -1350,7 +1366,7 @@ local function SortByName(a,b)
 	return GetQuestName(a) < GetQuestName(b)
 end
 
-local function InsertionSort(A, compareFunction)
+function WQA:InsertionSort(A, compareFunction)
 	for i,v in ipairs(A) do
 		local j = i
 		while j > 1 and compareFunction(A[j],A[j-1]) do
@@ -1365,20 +1381,22 @@ end
 
 function WQA:SortQuestList(list)
 	if self.db.profile.options.sortByName == true then
-		list = InsertionSort(list, SortByName)
+		list = WQA:InsertionSort(list, SortByName)
 	end
 
 	if self.db.profile.options.sortByZoneName == true then
-		list = InsertionSort(list, SortByZoneName)
+		list = WQA:InsertionSort(list, SortByZoneName)
 	end
 
-	list = InsertionSort(list, SortByExpansion)
+	list = WQA:InsertionSort(list, SortByExpansion)
 	return list
 end
 
+local GetQuestBountyInfoForMapIDRequested = false
 function WQA:EmissaryReward()
 	self.emissaryRewards = false
 	local retry = false
+	
 	for _, mapID in pairs({619,875}) do
 		for _, emissary in ipairs(GetQuestBountyInfoForMapID(mapID)) do
 			local questID = emissary.questID
@@ -1394,9 +1412,11 @@ function WQA:EmissaryReward()
 		end
 	end
 
-	if retry == true then
-		self:ScheduleTimer(function() self:EmissaryReward() end, 2)
+	if retry == true or GetQuestBountyInfoForMapIDRequested == false then
+		GetQuestBountyInfoForMapIDRequested = true
+		self:ScheduleTimer(function() self:EmissaryReward() end, 1.5)
 	else
+		GetQuestBountyInfoForMapIDRequested = false
 		self.emissaryRewards = true
 	end
 end

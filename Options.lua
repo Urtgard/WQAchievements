@@ -295,7 +295,37 @@ function WQA:UpdateOptions()
 						    	end,
 							    order = newOrder()
 							},
-						}
+						},
+					},
+					general = {
+						order = newOrder(),
+						name = "General",
+						type = "group",
+						inline = true,
+						args = {
+							gold = {
+								type = "toggle",
+								name = "Gold",
+								set = function(info, val)
+									WQA.db.profile.options.reward.general.gold = val
+								end,
+								descStyle = "inline",
+							    get = function()
+							    	return WQA.db.profile.options.reward.general.gold
+						    	end,
+							    order = newOrder()
+							},
+							goldMin = {
+								name = "minimum Gold",
+								type = "input",
+								order = newOrder(),
+								--width = .6,
+								set = function(info,val)
+									WQA.db.profile.options.reward.general.goldMin = tonumber(val)
+						   		end,
+						    	get = function() return tostring(WQA.db.profile.options.reward.general.goldMin)  end
+							},
+						},
 					},
 				}
 			},
@@ -769,6 +799,7 @@ end
 
 function WQA:GetOptions()
 	self:UpdateOptions()
+	self:SortOptions()
 	return self.options
 end
 
@@ -790,6 +821,8 @@ end
 function WQA:ToggleGet()
 end
 
+local NameToID = {}
+
 function WQA:CreateGroup(options, data, groupName)
 	if data[groupName] then
 		options[groupName] = {
@@ -803,6 +836,7 @@ function WQA:CreateGroup(options, data, groupName)
 		local expansion = data.name
 		local data = data[groupName]
 		for _,object in pairs(data) do
+			NameToID[object.name] = object.id or object.spellID or object.creatureID or object.itemID
 			args[object.name] = {
 				type = "toggle",
 				name = object.name,
@@ -813,7 +847,7 @@ function WQA:CreateGroup(options, data, groupName)
 			    get = function()
 			    	return WQA.db.profile[groupName][object.name]
 		    	end,
-			    order = newOrder()	
+				order = newOrder(),
 			}
 			if object.itemID then
 				if not select(2,GetItemInfo(object.itemID)) then
@@ -950,4 +984,47 @@ function WQA:UpdateCustomRewards()
 			type = "description"
 		}
 	end
- end
+end
+
+function WQA:SortOptions()
+	for k,v in pairs(WQA.options.args.general.args) do
+		for kk,vv in pairs(v.args) do
+			t = {}
+			for kkk,vvv in pairs(vv.args) do
+				local completed = false
+				local id = NameToID[kkk]
+				if kk == "achievements" then
+					completed = select(4,GetAchievementInfo(id))
+				elseif kk == "mounts" then
+					for _, mountID in pairs(C_MountJournal.GetMountIDs()) do
+						local _, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+						if spellID == id then
+							completed = isCollected
+							break
+						end
+					end
+				elseif kk == "pets" then
+					local total = C_PetJournal.GetNumPets()
+					for i = 1, total do
+						local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
+						if companionID == id then
+							completed = owned
+							break
+						end
+					end
+				elseif kk == "toys" then
+					completed = PlayerHasToy(id)
+				end
+				vvv.disabled = completed
+				table.insert(t, {key = kkk, name = select(3,string.find(vvv.name, "%[(.+)%]")) or vvv.name, completed = completed})
+			end
+			table.sort(t, function(a,b) return a.name < b.name end)
+			for order,object in pairs(t) do
+				if object.completed then
+					order = order + 100
+				end
+				vv.args[object.key].order = order
+			end
+		end
+	end
+end
