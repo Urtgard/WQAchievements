@@ -334,6 +334,9 @@ do
 				{id = 13278, criteriaType = "QUESTS", criteria = trainer}}
 			},
 		},
+		pets = {
+			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
+		},
 		toys = {
 			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}}},
 			{name = "Toy Siege Tower", itemID = 163828, quest = {{trackingID = 0, wqID = 52847}}},
@@ -360,6 +363,7 @@ function WQA:CreateQuestList()
 	for _,v in pairs(self.data[2].achievements) do
 		self:AddAchievements(v)
 	end
+	self:AddPets(self.data[2].pets)
 	self:AddToys(self.data[2].toys)
 	
 	self:AddCustom()
