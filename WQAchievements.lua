@@ -1506,6 +1506,7 @@ function WQA:UpdateLDBText(activeQuests, newQuests)
 end
 
 function WQA:formatTime(t)
+	local t = t or 0
 	local d, h, m
 	d = math.floor(t/60/24)
 	h = math.floor(t/60 % 24)
