@@ -333,6 +333,13 @@ do
 				{id = 13277, criteriaType = "QUESTS", criteria = trainer},
 				{id = 13278, criteriaType = "QUESTS", criteria = trainer}}
 			},
+			-- 8.1
+			{name = "Upright Citizens", id = 13285, criteriaType = "QUEST_SINGLE", criteria = 53704},
+			{name = "Scavenge like a Vulpera", id = 13437, criteriaType = "QUEST_SINGLE", criteria = 54415},
+			{name = "Pushing the Payload_H", id = 13441, criteriaType = "QUEST_SINGLE", criteria = 54505},
+			{name = "Pushing the Payload_A", id = 13440, criteriaType = "QUEST_SINGLE", criteria = 54498},
+			{name = "Doomsoul Surprise", id = 13435, criteriaType = "QUEST_SINGLE", criteria = 54689},
+			{name = "Come On and Slam", id = 13426, criteriaType = "QUEST_SINGLE", criteria = 54512},
 		},
 		pets = {
 			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
