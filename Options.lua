@@ -231,6 +231,45 @@ function WQA:UpdateOptions()
 						   		end,
 						    	get = function() return tostring(WQA.db.profile.options.reward.gear.itemLevelUpgradeMin)  end
 							},
+							armorCache = {
+								type = "toggle",
+								name = "Armor Cache",
+								--width = "double",
+								set = function(info, val)
+									WQA.db.profile.options.reward.gear.armorCache = val
+								end,
+								descStyle = "inline",
+							    get = function()
+							    	return WQA.db.profile.options.reward.gear.armorCache
+						    	end,
+							    order = newOrder()
+							},
+							weaponCache = {
+								type = "toggle",
+								name = "Weapon Cache",
+								--width = "double",
+								set = function(info, val)
+									WQA.db.profile.options.reward.gear.weaponCache = val
+								end,
+								descStyle = "inline",
+							    get = function()
+							    	return WQA.db.profile.options.reward.gear.weaponCache
+						    	end,
+							    order = newOrder()
+							},
+							jewelryCache = {
+								type = "toggle",
+								name = "Jewelry Cache",
+								--width = "double",
+								set = function(info, val)
+									WQA.db.profile.options.reward.gear.jewelryCache = val
+								end,
+								descStyle = "inline",
+							    get = function()
+							    	return WQA.db.profile.options.reward.gear.jewelryCache
+						    	end,
+							    order = newOrder()
+							},
 							desc1 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							PawnUpgrade = {
 								type = "toggle",

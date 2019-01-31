@@ -171,13 +171,9 @@ function WQA:OnInitialize()
 				zone = { ['*'] = true},
 				reward = {
 					gear = {
-						AzeriteArmorCache = true,
-						itemLevelUpgrade = true,
+						['*'] = true,
 						itemLevelUpgradeMin = 1,
-						PawnUpgrade = true,
-						StatWeightScore = true,
 						PercentUpgradeMin = 1,
-						unknownAppearance = true,
 						unknownSource = false,
 					},
 					general = {
@@ -694,7 +690,7 @@ function WQA:CheckWQ(mode)
 	local activeMissions = self:CheckMissions()
 	local newMissions = {}
 	for missionID,_ in pairs(activeMissions) do
-		if not self.watched[missionID] then
+		if not self.watchedMissions[missionID] then
 			newMissions[missionID] = true
 		end
 	end
@@ -788,6 +784,17 @@ function WQA:GetRewardForID(questID, key)
 							r = r.." / "
 						end
 					end
+				end
+				if l.item.cache then
+					local cache = l.item.cache
+					local upgradeChance = cache.upgradeNum/cache.n
+					upgradeChance = 1/2*upgradeChance + .5
+					upgradeChance = string.format("%X", (1 - upgradeChance) * 255)
+					if string.len(upgradeChance) == 1 then
+						upgradeChance = "0"..upgradeChance
+					end
+					r = r.."|cFF"..upgradeChance.."FF"..upgradeChance..cache.upgradeNum.."/"..cache.n.." max +"..cache.upgradeMax.."|r"
+					local item = {itemLink = itemLink, cache = {upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax}}
 				end
 			end
 			r = l.item.itemLink.." "..r
@@ -1009,6 +1016,27 @@ function WQA:Reward()
 	end
 end
 
+local weaponCache = {
+	[165872] = true, -- 7th Legion Equipment Cache
+	[165867] = true, -- Kul Tiran Weapons Cache
+	[165871] = true, -- Honorbound Equipment Cache
+	[165863] = true, -- Zandalari Weapons Cache
+}
+local armorCache = {
+	[165872] = true, -- 7th Legion Equipment Cache
+	[165870] = true, -- Order of Embers Equipment Cache
+	[165868] = true, -- Storm's Wake Equipment Cache
+	[165869] = true, -- Proudmoore Admiralty Equipment Cache
+	[165871] = true, -- Honorbound Equipment Cache
+	[165865] = true, -- Nazmir Expeditionary Equipment Cache
+	[165864] = true, -- Voldunai Equipment Cache
+	[165866] = true, -- Zandalari Empire Equipment Cache
+}
+local jewelryCache = {
+	[165785] = true, -- Tortollan Trader's Stock
+}
+
+
 function WQA:CheckItems(questID, isEmissary)
 	local retry = false
 	local numQuestRewards = GetNumQuestLogRewards(questID)
@@ -1152,6 +1180,96 @@ function WQA:CheckItems(questID, isEmissary)
 				end
 				if AzeriteArmorCacheIsUpgrade == true then
 					local item = {itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache}
+					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
+				end
+			end
+
+			-- Equipment Cache
+			if (weaponCache[itemID] and self.db.profile.options.reward.gear.weaponCache) or (armorCache[itemID] and self.db.profile.options.reward.gear.armorCache) or (jewelryCache[itemID] and self.db.profile.options.reward.gear.jewelryCache) then
+				itemLevel = GetDetailedItemLevelInfo(itemLink)
+				local n = 0
+				local upgrade
+				local upgradeMax = 0
+				local upgradeSum = 0
+				local upgradeNum = 0
+
+				if weaponCache[itemID] then
+					for i=16,17 do
+						if GetInventoryItemID("player", i) then
+							local itemLink1 = GetInventoryItemLink("player", i)
+							if itemLink1 then
+								itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+								if itemLevel1 then
+									n = n + 1
+									upgrade = itemLevel - itemLevel1
+									if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+										upgradeNum = upgradeNum + 1
+										if upgrade > upgradeMax then upgradeMax = upgrade end
+									end
+									upgradeSum = upgradeSum + upgrade
+								else
+									retry = true
+								end
+							else
+								retry = true
+							end
+						end
+					end
+				end
+
+				if armorCache[itemID] then
+					for i=1,10 do
+						if i == 4 then i = 15 end
+						if i ~= 2 then
+							if GetInventoryItemID("player", i) then
+								local itemLink1 = GetInventoryItemLink("player", i)
+								if itemLink1 then
+									itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+									if itemLevel1 then
+										n = n + 1
+										upgrade = itemLevel - itemLevel1
+										if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+											upgradeNum = upgradeNum + 1
+											if upgrade > upgradeMax then upgradeMax = upgrade end
+										end
+										upgradeSum = upgradeSum + upgrade
+									else
+										retry = true
+									end
+								else
+									retry = true
+								end
+							end
+						end
+					end
+				end
+
+				if jewelryCache[itemID] then
+					for i=11,14 do
+						if GetInventoryItemID("player", i) then
+							local itemLink1 = GetInventoryItemLink("player", i)
+							if itemLink1 then
+								itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+								if itemLevel1 then
+									n = n + 1
+									upgrade = itemLevel - itemLevel1
+									if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+										upgradeNum = upgradeNum + 1
+										if upgrade > upgradeMax then upgradeMax = upgrade end
+									end
+									upgradeSum = upgradeSum + upgrade
+								else
+									retry = true
+								end
+							else
+								retry = true
+							end
+						end
+					end
+				end
+
+				if upgradeNum > 0 then
+					local item = {itemLink = itemLink, cache = {upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax}}
 					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 				end
 			end
