@@ -893,7 +893,7 @@ function WQA:CreateGroup(options, data, groupName)
 			}
 			args[idString] = {
 				type = "select",
-				values = {disabled = "Don't track", default = "Default", always = "Always track", exclusive = "Only track with this Character"},
+				values = {disabled = "Don't track", default = "Default", always = "Always track", wasEarnedByMe = "Track if not earned by active character", exclusive = "Only track with this Character"},
 				width = 1.2,
 				--type = "toggle",
 				name = "",--idString,

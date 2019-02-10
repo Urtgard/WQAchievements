@@ -456,6 +456,7 @@ end
 function WQA:CreateQuestList()
 	self:Debug("CreateQuestList")
 	self.questList = {}
+	self.missionList = {}
 
 	for _,v in pairs(self.data[1].achievements) do
 		self:AddAchievements(v)
@@ -476,19 +477,21 @@ function WQA:CreateQuestList()
 	self:EmissaryReward()
 end
 
-function WQA:AddAchievements(achievement, forced)
+function WQA:AddAchievements(achievement, forced, forcedByMe)
 	local id = achievement.id
 	local forced = forced or false
+	local forcedByMe = false
 
 	if self.db.profile.achievements[id] == "disabled" then return end
 	if self.db.profile.achievements[id] == "exclusive" and self.db.profile.achievements.exclusive[id] ~= self.playerName then return end
 	if self.db.profile.achievements[id] == "always" then forced = true end
+	if self.db.profile.achievements[id] == "wasEarnedByMe" then forcedByMe = true end
 
 	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
-	if (achievement.notAccountwide and not wasEarnedByMe) or not completed or forced then
+	if (achievement.notAccountwide and not wasEarnedByMe) or not completed or forced or forcedByMe then
 		if achievement.criteriaType == "ACHIEVEMENT" then
 			for _,v in pairs(achievement.criteria) do
-				self:AddAchievements(v, forced)
+				self:AddAchievements(v, forced, forcedByMe)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
 			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
