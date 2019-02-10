@@ -847,7 +847,13 @@ function WQA:ToggleSet(info, val,...)
 	local expansion = info[#info-2]
 	local category = info[#info-1]
 	local option = info[#info]
-	WQA.db.profile[category][option] = val
+	WQA.db.profile[category][tonumber(option)] = val
+	if val == "exclusive" then
+		local name, server = UnitFullName("player")
+		WQA.db.profile[category].exclusive[tonumber(option)] = name.."-"..server
+	elseif WQA.db.profile[category].exclusive[tonumber(option)] then
+		WQA.db.profile[category].exclusive[tonumber(option)] = nil
+	end
 	--if not WQA.db.profile[expansion] then WQA.db.profile[expansion] = {} end
 	--[[if not WQA.db.profile[category] then WQA.db.profile[category] = {} end
 	if not val == true then
@@ -860,8 +866,6 @@ end
 function WQA:ToggleGet()
 end
 
-local NameToID = {}
-
 function WQA:CreateGroup(options, data, groupName)
 	if data[groupName] then
 		options[groupName] = {
@@ -872,19 +876,41 @@ function WQA:CreateGroup(options, data, groupName)
 			}
 		}
 		local args = options[groupName].args
+
+		args["completed"] = { type = "header", name = "Completed", order = newOrder(), hidden = true, }
+
 		local expansion = data.name
 		local data = data[groupName]
 		for _,object in pairs(data) do
-			NameToID[object.name] = object.id or object.spellID or object.creatureID or object.itemID
-			args[object.name] = {
-				type = "toggle",
-				name = object.name,
-				width = "double",
+			local id = object.id or object.spellID or object.creatureID or object.itemID
+			local idString = tostring(id)
+			args[idString.."Name"] = {
+				type = "description",
+				name = idString,
+				fontSize = "medium",
+				order = newOrder(),
+				width = 1.5,
+			}
+			args[idString] = {
+				type = "select",
+				values = {disabled = "Don't track", default = "Default", always = "Always track", exclusive = "Only track with this Character"},
+				width = 1.2,
+				--type = "toggle",
+				name = "",--idString,
 				handler = WQA,
 				set = "ToggleSet",
 				descStyle = "inline",
-			    get = function()
-			    	return WQA.db.profile[groupName][object.name]
+			    get = function(info)
+			    	local value = WQA.db.profile[groupName][id]
+			    	if value == "exclusive" then
+			    		local name, server = UnitFullName("player")
+			    		name = name.."-"..server
+			    		if WQA.db.profile[info[#info-1]].exclusive[id] ~= name then
+			    			info.option.values.other = "Only tracked by "..WQA.db.profile[info[#info-1]].exclusive[id]
+			    			return "other"
+			    		end
+			    	end
+					return value
 		    	end,
 				order = newOrder(),
 			}
@@ -894,9 +920,9 @@ function WQA:CreateGroup(options, data, groupName)
 					start = GetTime()
 					optionsTimer = self:ScheduleTimer(function() LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements") end, 2)
 				end
-				args[object.name].name = select(2,GetItemInfo(object.itemID)) or object.name
+				args[idString.."Name"].name = select(2,GetItemInfo(object.itemID)) or object.name
 			else
-				args[object.name].name = GetAchievementLink(object.id) or object.name
+				args[idString.."Name"].name = GetAchievementLink(object.id) or object.name
 			end
 		end
 	end
@@ -1031,38 +1057,48 @@ function WQA:SortOptions()
 			t = {}
 			for kkk,vvv in pairs(vv.args) do
 				local completed = false
-				local id = NameToID[kkk]
-				if kk == "achievements" then
-					completed = select(4,GetAchievementInfo(id))
-				elseif kk == "mounts" then
-					for _, mountID in pairs(C_MountJournal.GetMountIDs()) do
-						local _, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
-						if spellID == id then
-							completed = isCollected
-							break
+				local id = select(3,string.find(kkk, "(%d*)Name"))
+				if id then
+					id = tonumber(id)
+					if kk == "achievements" then
+						completed = select(4,GetAchievementInfo(id))
+					elseif kk == "mounts" then
+						for _, mountID in pairs(C_MountJournal.GetMountIDs()) do
+							local _, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+							if spellID == id then
+								completed = isCollected
+								break
+							end
 						end
-					end
-				elseif kk == "pets" then
-					local total = C_PetJournal.GetNumPets()
-					for i = 1, total do
-						local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
-						if companionID == id then
-							completed = owned
-							break
+					elseif kk == "pets" then
+						local total = C_PetJournal.GetNumPets()
+						for i = 1, total do
+							local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
+							if companionID == id then
+								completed = owned
+								break
+							end
 						end
+					elseif kk == "toys" then
+						completed = PlayerHasToy(id)
 					end
-				elseif kk == "toys" then
-					completed = PlayerHasToy(id)
+					vvv.disabled = completed
+					table.insert(t, {key = kkk, name = select(3,string.find(vvv.name, "%[(.+)%]")) or vvv.name, completed = completed, id = tostring(id)})
 				end
-				vvv.disabled = completed
-				table.insert(t, {key = kkk, name = select(3,string.find(vvv.name, "%[(.+)%]")) or vvv.name, completed = completed})
 			end
 			table.sort(t, function(a,b) return a.name < b.name end)
+			local completedHeader = false
 			for order,object in pairs(t) do
 				if object.completed then
 					order = order + 100
+					if not completedHeader then
+						vv.args["completed"].order = order*2 - .5
+						vv.args["completed"].hidden = false
+						completedHeader = true
+					end
 				end
-				vv.args[object.key].order = order
+				vv.args[object.key].order = order*2
+				vv.args[object.id].order = order*2 + 1
 			end
 		end
 	end

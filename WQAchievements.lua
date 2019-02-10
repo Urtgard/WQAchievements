@@ -195,6 +195,10 @@ function WQA:OnInitialize()
 				emissary = {['*'] = false},
 				delay = 5,
 			},
+			["achievements"] = {exclusive = {}, ['*'] = "default"},
+			["mounts"] = {exclusive = {}, ['*'] = "default"},
+			["pets"] = {exclusive = {}, ['*'] = "default"},
+			["toys"] = {exclusive = {}, ['*'] = "default"},
 			['*'] = {['*'] = true}
 		},
 		global = {
@@ -205,6 +209,8 @@ function WQA:OnInitialize()
 end
 
 function WQA:OnEnable()
+	local name, server = UnitFullName("player")
+	self.playerName = name.."-"..server
 	------------------
 	-- 	Options
 	------------------
@@ -470,21 +476,26 @@ function WQA:CreateQuestList()
 	self:EmissaryReward()
 end
 
-function WQA:AddAchievements(achievement)
-	if self.db.profile.achievements[achievement.name] == false then return end
+function WQA:AddAchievements(achievement, forced)
 	local id = achievement.id
+	local forced = forced or false
+
+	if self.db.profile.achievements[id] == "disabled" then return end
+	if self.db.profile.achievements[id] == "exclusive" and self.db.profile.achievements.exclusive[id] ~= self.playerName then return end
+	if self.db.profile.achievements[id] == "always" then forced = true end
+
 	local _,_,_,completed,_,_,_,_,_,_,_,_,wasEarnedByMe = GetAchievementInfo(id)
-	if (achievement.notAccountwide and not wasEarnedByMe) or not completed then
+	if (achievement.notAccountwide and not wasEarnedByMe) or not completed or forced then
 		if achievement.criteriaType == "ACHIEVEMENT" then
 			for _,v in pairs(achievement.criteria) do
-				self:AddAchievements(v)
+				self:AddAchievements(v, forced)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
 			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
 		elseif achievement.criteriaType ~= "SPECIAL" then
 			for i=1, GetAchievementNumCriteria(id) do
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
-				if not completed then
+				if not completed or forced then
 					if achievement.criteriaType == "QUESTS" then
 						if type(achievement.criteria[i]) == "table" then
 							for _,questID in pairs(achievement.criteria[i]) do
@@ -513,9 +524,13 @@ end
 function WQA:AddMounts(mounts)
 	for i,id in pairs(C_MountJournal.GetMountIDs()) do
 		local n, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
-		if not isCollected then
-			for _,mount in pairs(mounts) do
-				if self.db.profile.mounts[mount.name] == true then
+		local forced = false
+
+		if not (self.db.profile.mounts[spellID] == "disabled" or (self.db.profile.mounts[spellID] == "exclusive" and self.db.profile.mounts.exclusive[spellID] ~= self.playerName)) then
+			if self.db.profile.mounts[spellID] == "always" then forced = true end
+
+			if not isCollected or forced then
+				for _,mount in pairs(mounts) do
 					if spellID == mount.spellID then
 						for _,v  in pairs(mount.quest) do
 							if not IsQuestFlaggedCompleted(v.trackingID) then
@@ -533,9 +548,13 @@ function WQA:AddPets(pets)
 	local total = C_PetJournal.GetNumPets()
  	for i = 1, total do
   		local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
-  		if not owned then
-  			for _,pet in pairs(pets) do
-  				if self.db.profile.pets[pet.name] == true then
+		local forced = false
+
+		if not (self.db.profile.pets[companionID] == "disabled" or (self.db.profile.pets[companionID] == "exclusive" and self.db.profile.pets.exclusive[companionID] ~= self.playerName)) then
+			if self.db.profile.pets[companionID] == "always" then forced = true end
+
+	  		if not owned or forced then
+	  			for _,pet in pairs(pets) do
 					  if companionID == pet.creatureID then
 						if pet.emissary == true then
 							self:AddEmissaryReward(pet.questID, "CHANCE", pet.itemID)
@@ -545,9 +564,9 @@ function WQA:AddPets(pets)
 									self:AddRewardToQuest(v.wqID, "CHANCE", pet.itemID)
 								end
 							end
-		  				end
-		  			end
-		  		end
+			  			end
+			  		end
+			  	end
   			end
   		end
   	end
@@ -555,8 +574,13 @@ end
 
 function WQA:AddToys(toys)
 	for _,toy in pairs(toys) do
-		if self.db.profile.toys[toy.name] == true then
-			if not PlayerHasToy(toy.itemID) then
+		local itemID = toy.itemID
+		local forced = false
+
+		if not (self.db.profile.toys[itemID] == "disabled" or (self.db.profile.toys[itemID] == "exclusive" and self.db.profile.toys.exclusive[itemID] ~= self.playerName)) then
+			if self.db.profile.toys[itemID] == "always" then forced = true end
+	
+			if not PlayerHasToy(toy.itemID) or forced then
 				for _,v in pairs(toy.quest) do
 					if not IsQuestFlaggedCompleted(v.trackingID) then
 						self:AddRewardToQuest(v.wqID, "CHANCE", toy.itemID)
