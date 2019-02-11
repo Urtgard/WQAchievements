@@ -22,10 +22,31 @@ L["achievements"] = "Achievements"
 L["mounts"] = "Mounts"
 L["pets"] = "Pets"
 L["toys"] = "Toys"
+L["completed"] = "Completed"
+L["notCompleted"] = "Not completed"
+L["tracking_disabled"] = "Don't track"
+L["tracking_default"] = "Default"
+L["tracking_always"] = "Always track"
+L["tracking_wasEarnedByMe"] = "Track if not earned by active character"
+L["tracking_exclusive"] = "Only track with this character"
+L["tracking_other"] = "Only tracked by %s"
 if locale == "deDE" then
 	L["WQChat"] = "Interessante Weltquests verfügbar:"
 	L["WQforAch"] = "%s für %s"
 	L["WQforAchTime"] = "%s (%s) für %s"
+	L["NO_QUESTS"] = "Keine interessanten Weltquests verfügbar!"
+	L["achievements"] = "Erfolge"
+	L["mounts"] = "Reittiere"
+	L["pets"] = "Haustiere"
+	L["toys"] = "Spielzeuge"
+	L["completed"] = "Abgeschlossen"
+	L["notCompleted"] = "Nicht abgeschlossen"
+	L["tracking_disabled"] = "Nicht verfolgen"
+	L["tracking_default"] = "Standard"
+	L["tracking_always"] = "Immer verfolgen"
+	L["tracking_wasEarnedByMe"] = "Verfolgen, wenn nicht mit aktiven Charakter errungen"
+	L["tracking_exclusive"] = "Nur mit diesem Charakter verfolgen"
+	L["tracking_other"] = "Nur mit %s verfolgen"
 end
 
 local function GetQuestZoneID(questID)
@@ -151,6 +172,7 @@ function WQA:OnInitialize()
 			end
 		end
 	end
+	self.faction = faction
 
 	-- Defaults
 	local defaults = {
@@ -386,18 +408,18 @@ do
 	bfa = {
 		name = "Battle for Azeroth",
 		achievements = {
-			{name = "Adept Sandfisher", id = 13009, criteriaType = "QUEST_SINGLE", criteria = 51173},
+			{name = "Adept Sandfisher", id = 13009, criteriaType = "QUEST_SINGLE", criteria = 51173, faction = "Horde"},
 			{name = "Scourge of Zem'lan", id = 13011, criteriaType = "QUESTS", criteria = {{51763, 51783}}},
-			{name = "Vorrik's Champion", id = 13014, criteriaType = "QUESTS", criteria = {51957, 51983}},
-			{name = "Revenge is Best Served Speedily", id = 13022, criteriaType = "QUEST_SINGLE", criteria = 50786},
-			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUEST_SINGLE", criteria = 50559},
-			{name = "Zandalari Spycatcher", id = 13025, criteriaType = "QUEST_SINGLE", criteria = 50717},
-			{name = "7th Legion Spycatcher", id = 13026, criteriaType = "QUEST_SINGLE", criteria = 50899},
+			{name = "Vorrik's Champion", id = 13014, criteriaType = "QUESTS", criteria = {51957, 51983}, faction = "Horde"},
+			{name = "Revenge is Best Served Speedily", id = 13022, criteriaType = "QUEST_SINGLE", criteria = 50786, faction = "Horde"},
+			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUESTS", criteria = {50559, 51127}},
+			{name = "Zandalari Spycatcher", id = 13025, criteriaType = "QUEST_SINGLE", criteria = 50717, faction = "Horde"},
+			{name = "7th Legion Spycatcher", id = 13026, criteriaType = "QUEST_SINGLE", criteria = 50899, faction = "Alliance"},
 			{name = "By de Power of de Loa!", id = 13035, criteriaType = "QUEST_SINGLE", criteria = 51178},
 			{name = "Bless the Rains Down in Freehold", id = 13050, criteriaType = "QUESTS", criteria = {{53196, 52159}}},
-			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994, 53188, 53189}},	-- Frozen Freestyle
+			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994, 53188, 53189}, faction = "Alliance"},
 			{name = "Battle on Zandalar and Kul Tiras", id = 12936},
-			{name = "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665},
+			{name = "A Most Efficient Apocalypse", id = 13021, criteriaType = "QUEST_SINGLE", criteria = 50665, faction = "Horde"},
 			-- Thanks NatalieWright
 			{name = "Adventurer of Zuldazar", id = 12944, criteriaType = "QUESTS", criteria = {50864, 50877, {51085, 51087}, 51081, {50287, 51374, 50866}, 50885, 50863, 50862, 50861, 50859, 50845, 50857, nil, 50875, 50874, nil, 50872, 50876, 50871, 50870, 50869, 50868, 50867}},
 			{name = "Adventurer of Vol'dun", id = 12943, criteriaType = "QUESTS", criteria = {51105, 51095, 51096, 51117, nil, 51118, 51120, 51098, 51121, 51099, 51108, 51100, 51125, 51102, 51429, 51103, 51124, 51107, 51122, 51123, 51104, 51116, 51106, 51119, 51112, 51113, 51114, 51115}},
@@ -406,7 +428,7 @@ do
 			{name = "Adventurer of Tiragarde Sound", id = 12939, criteriaType = "QUESTS", criteria = {51653, 51652, 51666, 51669, 51841, 51665, 51848, 51842, 51654, 51662, 51844, 51664, 51670, 51895, nil, 51659, 51843, 51660, 51661, 51890, 51656, 51893, 51892, 51651, 51839, 51891, 51849, 51894, 51655, 51847, nil, 51657}},
 			{name = "Adventurer of Stormsong Valley", id = 12940, criteriaType = "QUESTS", criteria = {52452, 52315, 51759, {51976, 51977, 51978}, 52476, 51774, 51921, nil, 51776, 52459, 52321, 51781, nil, 51886, 51779, 51778, 52306, 52310, 51901, 51777, 52301, nil, 52463, nil, 52328, 51782, 52299, nil, 52300, nil, 52464, 52309, 52322, nil}},
 			{name = "Sabertron Assemble", id = 13054, criteriaType = "QUESTS", criteria = {nil, 51977, 51978, 51976, 51974}},
-			{name = "Drag Race", id = 13059, criteriaType = "QUEST_SINGLE", criteria = 53346},
+			{name = "Drag Race", id = 13059, criteriaType = "QUEST_SINGLE", criteria = 53346, faction = "Alliance"},
 			{name = "Unbound Monstrosities", id = 12587, criteriaType = "QUESTS", criteria = {52166, 52157, 52181, 52169, 52196, 136385}},
 			{name = "Wide World of Quests", id = 13144, criteriaType = "SPECIAL"},
 			{name = "Family Battler", id = 13279, criteriaType = "ACHIEVEMENT", criteria = {
@@ -422,12 +444,12 @@ do
 				{id = 13278, criteriaType = "QUESTS", criteria = trainer}}
 			},
 			-- 8.1
-			{name = "Upright Citizens", id = 13285, criteriaType = "QUEST_SINGLE", criteria = 53704},
-			{name = "Scavenge like a Vulpera", id = 13437, criteriaType = "QUEST_SINGLE", criteria = 54415},
+			{name = "Upright Citizens", id = 13285, criteriaType = "QUEST_SINGLE", criteria = 53704, faction = "Alliance"},
+			{name = "Scavenge like a Vulpera", id = 13437, criteriaType = "QUEST_SINGLE", criteria = 54415,faction = "Horde"},
 			{name = "Pushing the Payload", id = 13441, criteriaType = "QUEST_SINGLE", criteria = 54505, faction = "Horde"},
 			{name = "Pushing the Payload", id = 13440, criteriaType = "QUEST_SINGLE", criteria = 54498, faction = "Alliance"},
-			{name = "Doomsoul Surprise", id = 13435, criteriaType = "QUEST_SINGLE", criteria = 54689},
-			{name = "Come On and Slam", id = 13426, criteriaType = "QUEST_SINGLE", criteria = 54512},
+			{name = "Doomsoul Surprise", id = 13435, criteriaType = "QUEST_SINGLE", criteria = 54689, faction = "Horde"},
+			{name = "Come On and Slam", id = 13426, criteriaType = "QUEST_SINGLE", criteria = 54512, faction = "Alliance"},
 			-- Mission Table
 			-- Alliance
 			{name = "Azeroth at War: The Barrens", id = 12896, criteriaType = "MISSION_TABLE", faction = "Alliance"},

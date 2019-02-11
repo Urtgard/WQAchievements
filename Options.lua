@@ -24,6 +24,8 @@ local CurrencyIDList = {
 	[2] = {
 		1553, -- Azerite
 		1560, -- War Ressource
+		{id = 1716, faction = "Horde"}, -- Honorbound Service Medal
+		{id = 1717, faction = "Alliance"}, -- 7th Legion Service Medal
 	}
 }
 
@@ -92,12 +94,13 @@ WQA.ZoneIDList = {
 	},
 	[2] = {
 		14, -- Arathi Highlands
+		62, -- Darkshore
 		875,
 		876,
 		862,
 		863,
 		864,
-		895,
+		895, -- Tiragarde Sound
 		942,
 		896, -- Drustvar
 		1161, -- Boralus
@@ -121,14 +124,14 @@ WQA.EmissaryQuestIDList = {
 	[2] = {
 		50604, -- Tortollan Seekers
 		50562, -- Champions of Azeroth
-		50599, -- Proudmoore Admiralty
-		50600, -- Order of Embers
-		50601, -- Storm's Wake
-		50605, -- 7th Legion
-		50598, -- Zandalari Empire
-		50603, -- Voldunai
-		50602, -- Talanji's Expedition
-		50606, -- The Honorbound
+		{id = 50599, faction = "Alliance"}, -- Proudmoore Admiralty
+		{id = 50600, faction = "Alliance"}, -- Order of Embers
+		{id = 50601, faction = "Alliance"}, -- Storm's Wake
+		{id = 50605, faction = "Alliance"}, -- 7th Legion
+		{id = 50598, faction = "Horde"}, -- Zandalari Empire
+		{id = 50603, faction = "Horde"}, -- Voldunai
+		{id = 50602, faction = "Horde"}, -- Talanji's Expedition
+		{id = 50606, faction = "Horde"}, -- The Honorbound
 	},
 }
 
@@ -690,18 +693,21 @@ function WQA:UpdateOptions()
 				args = {}
 			}
 			for k,v in pairs(CurrencyIDList[i]) do
-				self.options.args.reward.args[self.ExpansionList[i]].args.currency.args[GetCurrencyInfo(v)] = {
-					type = "toggle",
-					name = GetCurrencyInfo(v),
-					set = function(info, val)
-						WQA.db.profile.options.reward.currency[v] = val
-					end,
-					descStyle = "inline",
-				    get = function()
-				    	return WQA.db.profile.options.reward.currency[v]
-			    	end,
-				    order = newOrder()
-				}
+				if not (type(v) == "table" and v.faction ~= self.faction) then
+					if type(v) == "table" then v = v.id end
+					self.options.args.reward.args[self.ExpansionList[i]].args.currency.args[GetCurrencyInfo(v)] = {
+						type = "toggle",
+						name = GetCurrencyInfo(v),
+						set = function(info, val)
+							WQA.db.profile.options.reward.currency[v] = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.profile.options.reward.currency[v]
+				    	end,
+					    order = newOrder()
+					}
+				end
 			end
 		end
 
@@ -742,18 +748,21 @@ function WQA:UpdateOptions()
 				args = {}
 			}
 			for k,v in pairs(self.EmissaryQuestIDList[i]) do
-				self.options.args.reward.args[self.ExpansionList[i]].args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
-					type = "toggle",
-					name = C_QuestLog.GetQuestInfo(v) or tostring(v),
-					set = function(info, val)
-						WQA.db.profile.options.emissary[v] = val
-					end,
-					descStyle = "inline",
-				    get = function()
-				    	return WQA.db.profile.options.emissary[v]
-			    	end,
-				    order = newOrder()
-				}
+				if not (type(v) == "table" and v.faction ~= self.faction) then
+					if type(v) == "table" then v = v.id end
+					self.options.args.reward.args[self.ExpansionList[i]].args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
+						type = "toggle",
+						name = C_QuestLog.GetQuestInfo(v) or tostring(v),
+						set = function(info, val)
+							WQA.db.profile.options.emissary[v] = val
+						end,
+						descStyle = "inline",
+					    get = function()
+					    	return WQA.db.profile.options.emissary[v]
+				    	end,
+					    order = newOrder()
+					}
+				end
 			end
 		end
 
@@ -877,7 +886,8 @@ function WQA:CreateGroup(options, data, groupName)
 		}
 		local args = options[groupName].args
 
-		args["completed"] = { type = "header", name = "Completed", order = newOrder(), hidden = true, }
+		args["completed"] = { type = "header", name = L["completed"], order = newOrder(), hidden = true, }
+		args["notCompleted"] = { type = "header", name = L["notCompleted"], order = newOrder(), hidden = true, }
 
 		local expansion = data.name
 		local data = data[groupName]
@@ -893,20 +903,20 @@ function WQA:CreateGroup(options, data, groupName)
 			}
 			args[idString] = {
 				type = "select",
-				values = {disabled = "Don't track", default = "Default", always = "Always track", wasEarnedByMe = "Track if not earned by active character", exclusive = "Only track with this Character"},
-				width = 1.2,
+				values = {disabled = L["tracking_disabled"], default = L["tracking_default"], always = L["tracking_always"], wasEarnedByMe = L["tracking_wasEarnedByMe"], exclusive = L["tracking_exclusive"]},
+				width = 1.4,
 				--type = "toggle",
 				name = "",--idString,
 				handler = WQA,
 				set = "ToggleSet",
-				descStyle = "inline",
+				--descStyle = "inline",
 			    get = function(info)
 			    	local value = WQA.db.profile[groupName][id]
 			    	if value == "exclusive" then
 			    		local name, server = UnitFullName("player")
 			    		name = name.."-"..server
 			    		if WQA.db.profile[info[#info-1]].exclusive[id] ~= name then
-			    			info.option.values.other = "Only tracked by "..WQA.db.profile[info[#info-1]].exclusive[id]
+			    			info.option.values.other = string.format(L["tracking_other"], WQA.db.profile[info[#info-1]].exclusive[id])
 			    			return "other"
 			    		end
 			    	end
@@ -1089,6 +1099,10 @@ function WQA:SortOptions()
 			table.sort(t, function(a,b) return a.name < b.name end)
 			local completedHeader = false
 			for order,object in pairs(t) do
+				if not object.completed then
+					vv.args["notCompleted"].order = 0
+					vv.args["notCompleted"].hidden = false
+				end
 				if object.completed then
 					order = order + 100
 					if not completedHeader then
