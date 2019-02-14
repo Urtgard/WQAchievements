@@ -100,6 +100,7 @@ local function GetExpansionByQuestID(questID)
 
 		for expansion,v in ipairs(WQA.EmissaryQuestIDList) do
 			for _,id in pairs(v) do
+				if type(id) == "table" then id = id.id end
 				if id == questID then
 					WQA.questList[questID].info.expansion = expansion
 					return expansion
@@ -356,12 +357,12 @@ do
 				41271,
 				41277,
 				41240,
-				{41269, 41600, 41601}},
+				{41269, 41600, 41601},
 				41253,
 				41276,
 				41272,
 				41282,
-				41283,
+				41283,}
 			},
 			{name = "Crate Expectations", id = 11681, criteriaType = "QUEST_SINGLE", criteria = 45542},
 			{name = "They See Me Rolling", id = 11607, criteriaType = "QUEST_SINGLE", criteria = 46175},
@@ -527,8 +528,10 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 							end
 						else
-							questID = achievement.criteria[i] or 0
-							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+							questID = achievement.criteria[i]
+							if questID then
+								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+							end
 						end
 					elseif achievement.criteriaType == 1 and t == 0 then
 						for _,questID in pairs(achievement.criteria[i]) do
@@ -1712,7 +1715,7 @@ local function SortByZoneName(a,b)
 			return true
 		end
 	elseif WQA.questList[b].isEmissary then
-		return true
+		return false
 	end
 	return GetQuestZoneName(a) < GetQuestZoneName(b)
 end
@@ -1817,6 +1820,7 @@ function WQA:EmissaryIsActive(questID)
 	local emissary = {}
 	for _,v in ipairs(self.EmissaryQuestIDList) do
 		for _,id in pairs(v) do
+			if type(id) == "table" then id = id.id end
 			if id == questID then
 				emissary[id] = true
 			end
