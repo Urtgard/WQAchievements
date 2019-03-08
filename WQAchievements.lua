@@ -1108,7 +1108,7 @@ function WQA:CheckItems(questID, isEmissary)
 				local Item = PawnGetItemData(itemLink)
 				if Item then
 					local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
-					if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.profile.options.reward.gear.PercentUpgradeMin then
+					if UpgradeInfo and UpgradeInfo[1].PercentUpgrade*100 >= self.db.profile.options.reward.gear.PercentUpgradeMin and UpgradeInfo[1].PercentUpgrade < 10 then
 						local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade*100+.5)}
 						self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 					end
@@ -1792,7 +1792,7 @@ function WQA:EmissaryReward()
 	self.emissaryRewards = false
 	local retry = false
 	
-	for _, mapID in pairs({619,875}) do
+	for _, mapID in pairs({627,875}) do
 		for _, emissary in ipairs(GetQuestBountyInfoForMapID(mapID)) do
 			local questID = emissary.questID
 			if self.db.profile.options.emissary[questID] == true then
