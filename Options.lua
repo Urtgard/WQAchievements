@@ -5,23 +5,25 @@ local optionsTimer
 local start
 
 WQA.ExpansionList = {
-	[1] = "Legion",
-	[2] = "Battle for Azeroth",
+	[6] = "Warlords of Draenor",
+	[7] = "Legion",
+	[8] = "Battle for Azeroth",
 }
 
-local ExpansionIDList = {
-	[1] = 6, -- Legion
-	[2] = 7, -- Battle for Azeroth
+local IDToExpansionID = {
+	[1] = 6,
+	[2] = 7,
+	[3] = 8
 }
 
 local CurrencyIDList = {
-	[1] = {
+	[7] = {
 		1220, -- Order Resources
 		1226, -- Nethershard
 		1342, -- Legionfall War Supplies
 		1533, -- Wakening Essence
 	},
-	[2] = {
+	[8] = {
 		1553, -- Azerite
 		1560, -- War Ressource
 		{id = 1716, faction = "Horde"}, -- Honorbound Service Medal
@@ -30,7 +32,7 @@ local CurrencyIDList = {
 }
 
 local CraftingReagentIDList = {
-	[1] = {
+	[7] = {
 		124124, -- Blood of Sargeras
 		133680, -- Slice of Bacon
 
@@ -53,7 +55,7 @@ local CraftingReagentIDList = {
 		124105, -- Starlight Rose
 		151565, -- Astral Glory
 	},
-	[2] = {
+	[8] = {
 		152513, -- Platinum Ore
 		152512, -- Monelite Ore
 		152579, -- Storm Silver Ore
@@ -77,7 +79,7 @@ local CraftingReagentIDList = {
 }
 
 WQA.ZoneIDList = {
-	[1] = {
+	[7] = {
 		619, -- Broken Isles
 		627, -- Dalaran
 		630, -- Azsuna
@@ -92,7 +94,7 @@ WQA.ZoneIDList = {
 		830,
 		882,	
 	},
-	[2] = {
+	[8] = {
 		14, -- Arathi Highlands
 		62, -- Darkshore
 		875,
@@ -109,7 +111,7 @@ WQA.ZoneIDList = {
 }
 
 WQA.EmissaryQuestIDList = {
-	[1] = {
+	[7] = {
 		42233, -- Highmountain Tribes
 		42420, -- Court of Farondis
 		42170, -- The Dreamweavers
@@ -121,7 +123,7 @@ WQA.EmissaryQuestIDList = {
 		48641, -- Armies of Legionfall
 		43179, -- Kirin Tor
 	},
-	[2] = {
+	[8] = {
 		50604, -- Tortollan Seekers
 		50562, -- Champions of Azeroth
 		{id = 50599, faction = "Alliance"}, -- Proudmoore Admiralty
@@ -136,13 +138,19 @@ WQA.EmissaryQuestIDList = {
 }
 
 local FactionIDList = {
-	[1] = {
+	[7] = {
 		Neutral = {
 			2165,
 			2170,
+			1894, -- The Wardens
+			1900, -- Court of Farondis
+			1883, -- Dreamweavers
+			1828, -- Highmountain Tribe
+			1948, -- Valarjar
+			1859, -- The Nightfallen
 		}
 	},
-	[2] = {
+	[8] = {
 		Neutral = {
 			2164, -- Champions of Azeroth
 			2163, -- Tortollan Seekers
@@ -189,14 +197,43 @@ function WQA:UpdateOptions()
 			reward = {
 				order = newOrder(),
 				type = "group",
-				childGroups = "tree",
 				name = "Rewards",
 				args = {
+					general = {
+						order = newOrder(),
+						name = "General",
+						type = "group",
+						--inline = true,
+						args = {
+							gold = {
+								type = "toggle",
+								name = "Gold",
+								set = function(info, val)
+									WQA.db.profile.options.reward.general.gold = val
+								end,
+								descStyle = "inline",
+							 get = function()
+							 	return WQA.db.profile.options.reward.general.gold
+						 	end,
+							 order = newOrder()
+							},
+							goldMin = {
+								name = "minimum Gold",
+								type = "input",
+								order = newOrder(),
+								--width = .6,
+								set = function(info,val)
+									WQA.db.profile.options.reward.general.goldMin = tonumber(val)
+								end,
+						 	get = function() return tostring(WQA.db.profile.options.reward.general.goldMin)  end
+							},
+						},
+					},
 					gear = {
 						order = newOrder(),
 						name = "Gear",
 						type = "group",
-						inline = true,
+						--inline = true,
 						args = {
 							itemLevelUpgrade = {
 								type = "toggle",
@@ -206,10 +243,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.itemLevelUpgrade = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.itemLevelUpgrade
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.itemLevelUpgrade
+						 	end,
+							 order = newOrder()
 							},
 							AzeriteArmorCache = {
 								type = "toggle",
@@ -219,10 +256,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.AzeriteArmorCache = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.AzeriteArmorCache
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.AzeriteArmorCache
+						 	end,
+							 order = newOrder()
 							},
 							itemLevelUpgradeMin = {
 								name = "minimum ItemLevel Upgrade",
@@ -230,9 +267,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								--width = .6,
 								set = function(info,val)
-						   			WQA.db.profile.options.reward.gear.itemLevelUpgradeMin = tonumber(val)
-						   		end,
-						    	get = function() return tostring(WQA.db.profile.options.reward.gear.itemLevelUpgradeMin)  end
+									WQA.db.profile.options.reward.gear.itemLevelUpgradeMin = tonumber(val)
+								end,
+						 	get = function() return tostring(WQA.db.profile.options.reward.gear.itemLevelUpgradeMin)  end
 							},
 							armorCache = {
 								type = "toggle",
@@ -242,10 +279,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.armorCache = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.armorCache
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.armorCache
+						 	end,
+							 order = newOrder()
 							},
 							weaponCache = {
 								type = "toggle",
@@ -255,10 +292,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.weaponCache = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.weaponCache
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.weaponCache
+						 	end,
+							 order = newOrder()
 							},
 							jewelryCache = {
 								type = "toggle",
@@ -268,10 +305,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.jewelryCache = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.jewelryCache
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.jewelryCache
+						 	end,
+							 order = newOrder()
 							},
 							desc1 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							PawnUpgrade = {
@@ -282,10 +319,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.PawnUpgrade = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.PawnUpgrade
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.PawnUpgrade
+						 	end,
+							 order = newOrder()
 							},
 							StatWeightScore = {
 								type = "toggle",
@@ -295,10 +332,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.StatWeightScore = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.StatWeightScore
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.StatWeightScore
+						 	end,
+							 order = newOrder()
 							},
 							PercentUpgradeMin = {
 								name = "minimum % Upgrade",
@@ -306,9 +343,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								--width = .6,
 								set = function(info,val)
-						   			WQA.db.profile.options.reward.gear.PercentUpgradeMin = tonumber(val)
-						   		end,
-						    	get = function() return tostring(WQA.db.profile.options.reward.gear.PercentUpgradeMin)  end
+									WQA.db.profile.options.reward.gear.PercentUpgradeMin = tonumber(val)
+								end,
+						 	get = function() return tostring(WQA.db.profile.options.reward.gear.PercentUpgradeMin)  end
 							},
 							desc2 = { type = "description", fontSize = "small", name = " ", order = newOrder(), },
 							unknownAppearance = {
@@ -319,10 +356,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.unknownAppearance = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.unknownAppearance
-						    	end,
-							    order = newOrder()
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.unknownAppearance
+						 	end,
+							 order = newOrder()
 							},
 							unknownSource = {
 								type = "toggle",
@@ -332,40 +369,10 @@ function WQA:UpdateOptions()
 									WQA.db.profile.options.reward.gear.unknownSource = val
 								end,
 								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.gear.unknownSource
-						    	end,
-							    order = newOrder()
-							},
-						},
-					},
-					general = {
-						order = newOrder(),
-						name = "General",
-						type = "group",
-						inline = true,
-						args = {
-							gold = {
-								type = "toggle",
-								name = "Gold",
-								set = function(info, val)
-									WQA.db.profile.options.reward.general.gold = val
-								end,
-								descStyle = "inline",
-							    get = function()
-							    	return WQA.db.profile.options.reward.general.gold
-						    	end,
-							    order = newOrder()
-							},
-							goldMin = {
-								name = "minimum Gold",
-								type = "input",
-								order = newOrder(),
-								--width = .6,
-								set = function(info,val)
-									WQA.db.profile.options.reward.general.goldMin = tonumber(val)
-						   		end,
-						    	get = function() return tostring(WQA.db.profile.options.reward.general.goldMin)  end
+							 get = function()
+							 	return WQA.db.profile.options.reward.gear.unknownSource
+						 	end,
+							 order = newOrder()
 							},
 						},
 					},
@@ -392,9 +399,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								width = .6,
 								set = function(info,val)
-						   			WQA.data.custom.wqID = val
-						   		end,
-						    	get = function() return tostring(WQA.data.custom.wqID )  end
+									WQA.data.custom.wqID = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.wqID)  end
 							},
 							rewardID = {
 								name = "Reward (optional)",
@@ -403,9 +410,9 @@ function WQA:UpdateOptions()
 								width = .6,
 								order = newOrder(),
 								set = function(info,val)
-						   			WQA.data.custom.rewardID = val
-						   		end,
-						    	get = function() return tostring(WQA.data.custom.rewardID )  end
+									WQA.data.custom.rewardID = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.rewardID )  end
 							},
 							rewardType = {
 								name = "Reward type",
@@ -414,9 +421,9 @@ function WQA:UpdateOptions()
 								values = {item = "Item", achievement = "Achievement", none = "none"},
 								width = .6,
 								set = function(info,val)
-						   			WQA.data.custom.rewardType = val
-						   		end,
-						    	get = function() return WQA.data.custom.rewardType end
+									WQA.data.custom.rewardType = val
+								end,
+						 	get = function() return WQA.data.custom.rewardType end
 							},
 							button = {
 								order = newOrder(),
@@ -444,9 +451,9 @@ function WQA:UpdateOptions()
 								order = newOrder(),
 								width = .6,
 								set = function(info,val)
-						   			WQA.data.customReward = val
-						   		end,
-						    	get = function() return tostring(WQA.data.customReward or 0)  end
+									WQA.data.custom.worldQuestReward = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.worldQuestReward or 0)  end
 							},
 							button = {
 								order = newOrder(),
@@ -457,6 +464,86 @@ function WQA:UpdateOptions()
 							},
 							--Configure
 							header2 = { type = "header", name = "Configure custom World Quest Rewards", order = newOrder(), },
+						}
+					},
+					mission = {
+						order = newOrder(),
+						name = "Mission",
+						type = "group",
+						inline = true,
+						args = {
+							--Add WQ
+							header1 = { type = "header", name = "Add a Mission you want to track", order = newOrder(), },
+							missionID = {
+								name = "MissionID",
+								type = "input",
+								order = newOrder(),
+								width = .6,
+								set = function(info,val)
+									WQA.data.custom.mission.missionID = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.mission.missionID)  end
+							},
+							rewardID = {
+								name = "Reward (optional)",
+								desc = "Enter an achievementID or itemID",
+								type = "input",
+								width = .6,
+								order = newOrder(),
+								set = function(info,val)
+									WQA.data.custom.mission.rewardID = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.mission.rewardID )  end
+							},
+							rewardType = {
+								name = "Reward type",
+								order = newOrder(),
+								type = "select",
+								values = {item = "Item", achievement = "Achievement", none = "none"},
+								width = .6,
+								set = function(info,val)
+									WQA.data.custom.mission.rewardType = val
+								end,
+						 	get = function() return WQA.data.custom.mission.rewardType end
+							},
+							button = {
+								order = newOrder(),
+								type = "execute",
+								name = "Add",
+								width = .3,
+								func = function() WQA:CreateCustomMission() end
+							},
+							--Configure
+							header2 = { type = "header", name = "Configure custom Missions", order = newOrder(), },
+						}
+					},
+					missionReward = {
+						order = newOrder(),
+						name = "Reward",
+						type = "group",
+						inline = true,
+						args = {
+							--Add item
+							header1 = { type = "header", name = "Add a Mission Reward you want to track", order = newOrder(), },
+							itemID = {
+								name = "itemID",
+								type = "input",
+								order = newOrder(),
+								width = .6,
+								set = function(info,val)
+									WQA.data.custom.missionReward = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.missionReward or 0)  end
+							},
+							button = {
+								order = newOrder(),
+								type = "execute",
+								name = "Add",
+								width = .3,
+								func = function() WQA:CreateCustomMissionReward() end
+							},
+							--Configure
+							header2 = { type = "header", name = "Configure custom Mission Rewards", order = newOrder(), },
 						}
 					},
 				}
@@ -475,10 +562,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.chat = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.chat
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.chat
+				 	end,
+					 order = newOrder()
 					},
 					PopUp = {
 						type = "toggle",
@@ -488,10 +575,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.PopUp = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.PopUp
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.PopUp
+				 	end,
+					 order = newOrder()
 					},
 					sortByName = {
 						type = "toggle",
@@ -501,10 +588,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.sortByName = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.sortByName
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.sortByName
+				 	end,
+					 order = newOrder()
 					},
 					sortByZoneName = {
 						type = "toggle",
@@ -514,10 +601,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.sortByZoneName = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.sortByZoneName
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.sortByZoneName
+				 	end,
+					 order = newOrder()
 					},
 					chatShowExpansion = {
 						type = "toggle",
@@ -527,10 +614,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.chatShowExpansion = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.chatShowExpansion
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.chatShowExpansion
+				 	end,
+					 order = newOrder()
 					},
 					chatShowZone = {
 						type = "toggle",
@@ -540,10 +627,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.chatShowZone = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.chatShowZone
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.chatShowZone
+				 	end,
+					 order = newOrder()
 					},
 					chatShowTime = {
 						type = "toggle",
@@ -553,10 +640,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.chatShowTime = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.chatShowTime
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.chatShowTime
+				 	end,
+					 order = newOrder()
 					},
 					popupShowExpansion = {
 						type = "toggle",
@@ -566,10 +653,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.popupShowExpansion = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.popupShowExpansion
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.popupShowExpansion
+				 	end,
+					 order = newOrder()
 					},
 					popupShowZone = {
 						type = "toggle",
@@ -579,10 +666,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.popupShowZone = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.popupShowZone
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.popupShowZone
+				 	end,
+					 order = newOrder()
 					},
 					popupShowTime = {
 						type = "toggle",
@@ -592,10 +679,10 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.popupShowTime = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.popupShowTime
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.popupShowTime
+				 	end,
+					 order = newOrder()
 					},
 					delay = {
 						name = "Delay on login in s",
@@ -603,7 +690,7 @@ function WQA:UpdateOptions()
 						order = newOrder(),
 						width = "double",
 						set = function(info,val)
-							   WQA.db.profile.options.delay = tonumber(val)
+							WQA.db.profile.options.delay = tonumber(val)
 						end,
 						get = function() return tostring(WQA.db.profile.options.delay)  end
 					},
@@ -613,7 +700,7 @@ function WQA:UpdateOptions()
 						order = newOrder(),
 						width = "double",
 						set = function(info,val)
-							   WQA.db.profile.options.delayCombat = val
+							WQA.db.profile.options.delayCombat = val
 						end,
 						get = function() return WQA.db.profile.options.delayCombat end
 					},
@@ -625,87 +712,295 @@ function WQA:UpdateOptions()
 							WQA.db.profile.options.WorldQuestTracker = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.WorldQuestTracker
-				    	end,
-					    order = newOrder()
+					 get = function()
+					 	return WQA.db.profile.options.WorldQuestTracker
+				 	end,
+					 order = newOrder()
 					},
 				}
 			}
 		},
 	}
 
-	for i = 1, 2 do
-		local v = self.data[i]
-		self.options.args.general.args[v.name] = {
-			order = i,
-			name = v.name,
-			type = "group",
-			inline = true,
-			args = {
+	for i in pairs(self.ExpansionList) do
+		local v = self.data[i] or nil
+		if v ~= nil then
+			self.options.args.general.args[v.name] = {
+				order = i,
+				name = v.name,
+				type = "group",
+				inline = true,
+				args = {
+				}
 			}
-		}
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "achievements")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "mounts")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "pets")
-		self:CreateGroup(self.options.args.general.args[v.name].args, v, "toys")
+			self:CreateGroup(self.options.args.general.args[v.name].args, v, "achievements")
+			self:CreateGroup(self.options.args.general.args[v.name].args, v, "mounts")
+			self:CreateGroup(self.options.args.general.args[v.name].args, v, "pets")
+			self:CreateGroup(self.options.args.general.args[v.name].args, v, "toys")
+		end
 	end
 
-	for i=1,#self.ExpansionList do
+	for _,i in ipairs(IDToExpansionID) do
 		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),
 			name = self.ExpansionList[i],
 			type = "group",
-			inline = true,
 			args = {}
 		}
-		-- Zones
-		if WQA.ZoneIDList[i] then
-			self.options.args.reward.args[self.ExpansionList[i]].args.zone = {
+		
+		-- World Quests
+		if i > 6 then
+			self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i].."WorldQuests"] = {
 				order = newOrder(),
-				name = "Zones",
+				name = "World Quests",
 				type = "group",
 				args = {}
 			}
-			for k,v in pairs(WQA.ZoneIDList[i]) do
-				local name = C_Map.GetMapInfo(v).name
-				self.options.args.reward.args[self.ExpansionList[i]].args.zone.args[name] = {
+			local args = self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i].."WorldQuests"].args
+
+			-- Zones
+			if WQA.ZoneIDList[i] then
+				args.zone = {
+					order = newOrder(),
+					name = "Zones",
+					type = "group",
+					args = {},
+					inline = false,
+				}
+				for k,v in pairs(WQA.ZoneIDList[i]) do
+					local name = C_Map.GetMapInfo(v).name
+					args.zone.args[name] = {
+						type = "toggle",
+						name = name,
+						set = function(info, val)
+							WQA.db.profile.options.zone[v] = val
+						end,
+						descStyle = "inline",
+						get = function()
+							return WQA.db.profile.options.zone[v] or false
+						end,
+						order = newOrder()
+					}
+				end
+			end
+
+			-- Currencies
+			if CurrencyIDList[i] then
+				args.currency = {
+					order = newOrder(),
+					name = "Currencies",
+					type = "group",
+					args = {}
+				}
+				for k,v in pairs(CurrencyIDList[i]) do
+					if not (type(v) == "table" and v.faction ~= self.faction) then
+						if type(v) == "table" then v = v.id end
+						args.currency.args[GetCurrencyInfo(v)] = {
+							type = "toggle",
+							name = GetCurrencyInfo(v),
+							set = function(info, val)
+								WQA.db.profile.options.reward.currency[v] = val
+							end,
+							descStyle = "inline",
+							get = function()
+								return WQA.db.profile.options.reward.currency[v]
+							end,
+							order = newOrder()
+						}
+					end
+				end
+			end
+
+			-- Reputation
+			if FactionIDList[i] then
+				args.reputation = {
+					order = newOrder(),
+					name = "Reputation",
+					type = "group",
+					args = {}
+				}
+				for _, factionGroup in pairs {"Neutral", UnitFactionGroup("player")} do
+					if FactionIDList[i][factionGroup] then
+						for k,v in pairs(FactionIDList[i][factionGroup]) do
+							args.reputation.args[GetFactionInfoByID(v)] = {
+								type = "toggle",
+								name = GetFactionInfoByID(v),
+								set = function(info, val)
+									WQA.db.profile.options.reward.reputation[v] = val
+								end,
+								descStyle = "inline",
+								get = function()
+									return WQA.db.profile.options.reward.reputation[v]
+								end,
+								order = newOrder()
+							}
+						end
+					end
+				end
+			end
+
+			-- Emissary
+			if self.EmissaryQuestIDList[i] then
+				args.emissary = {
+					order = newOrder(),
+					name = "Emissary Quests",
+					type = "group",
+					args = {}
+				}
+				for k,v in pairs(self.EmissaryQuestIDList[i]) do
+					if not (type(v) == "table" and v.faction ~= self.faction) then
+						if type(v) == "table" then v = v.id end
+						args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
+							type = "toggle",
+							name = C_QuestLog.GetQuestInfo(v) or tostring(v),
+							set = function(info, val)
+								WQA.db.profile.options.emissary[v] = val
+							end,
+							descStyle = "inline",
+							get = function()
+								return WQA.db.profile.options.emissary[v]
+							end,
+							order = newOrder()
+						}
+					end
+				end
+			end
+
+			-- Professions
+			if i > 6 then
+				args.profession = {
+					order = newOrder(),
+					name = "Professions",
+					type = "group",
+					args = {}
+				}
+
+				-- Recipes
+				args.profession.args["Recipes"] = {
 					type = "toggle",
-					name = name,
+					name = "Recipes",
 					set = function(info, val)
-						WQA.db.profile.options.zone[v] = val
+						WQA.db.profile.options.reward.recipe[i] = val
 					end,
 					descStyle = "inline",
-				    get = function()
-				    	return WQA.db.profile.options.zone[v] or false
-			    	end,
-				    order = newOrder()
+					get = function()
+						return WQA.db.profile.options.reward.recipe[i]
+					end,
+					order = newOrder()
 				}
+
+				-- Skillup
+				-- if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup thenthen
+				for _, tradeskillLineIndex in pairs({GetProfessions()}) do
+					local professionName,_,_,_,_,_, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
+					args.profession.args[tradeskillLineID.."Header"] = { type = "header", name = professionName, order = newOrder(), }
+					args.profession.args[tradeskillLineID.."Skillup"] = {
+						type = "toggle",
+						name = "Skillup",
+						desc = "Track every World Quest until skill level is maxed out",
+						set = function(info, val)
+							WQA.db.profile.options.reward[i].profession[tradeskillLineID].skillup = val
+						end,
+						get = function()
+							return WQA.db.profile.options.reward[i].profession[tradeskillLineID].skillup
+						end,
+						order = newOrder()
+					}
+					args.profession.args[tradeskillLineID.."MaxLevel"] = {
+						type = "toggle",
+						name = "Skill level is maxed out*",
+						desc = "Setting is per character",
+						set = function(info, val)
+							WQA.db.char[i].profession[tradeskillLineID].isMaxLevel = val
+						end,
+						get = function()
+							return WQA.db.char[i].profession[tradeskillLineID].isMaxLevel
+						end,
+						order = newOrder()
+					}
+				end
+					-- Crafting Reagents
+					--
+					--for k,v in pairs(CraftingReagentIDList[i] or {}) do
+					--	local name = GetItemInfo(v)
+					--	if name then
+					--		self.options.args.reward.args[ExpansionList[i]].args.profession.args[GetItemInfo(v)] = {
+					--			type = "toggle",
+					--			name = GetItemInfo(v),
+					--			set = function(info, val)
+					--				WQA.db.profile.options.reward.craftingreagent[v] = val
+					--			end,
+					--			descStyle = "inline",
+					--		 get = function()
+					--		 	return WQA.db.profile.options.reward.craftingreagent[v]
+					--	 	end,
+					--		 order = newOrder()
+					--		}
+					--	else
+					--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+					--	end
+					--end
 			end
 		end
 
+		-- Mission Table
+		self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i].."MissionTable"] = {
+			order = newOrder(),
+			name = (i ~= 6 and "Mission Table" or "Mission Table & Shipyard"),
+			type = "group",
+			args = {}
+		}
+		local args = self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i].."MissionTable"].args
+
 		-- Currencies
 		if CurrencyIDList[i] then
-			self.options.args.reward.args[self.ExpansionList[i]].args.currency = {
+			args.currency = {
 				order = newOrder(),
 				name = "Currencies",
 				type = "group",
 				args = {}
 			}
+			if i == 8 then
+				args.currency.args = {
+					gold = {
+						type = "toggle",
+						name = "Gold",
+						set = function(info, val)
+							WQA.db.profile.options.missionTable.reward.gold = val
+						end,
+						descStyle = "inline",
+						get = function()
+							return WQA.db.profile.options.missionTable.reward.gold
+						end,
+						order = newOrder()
+					},
+					goldMin = {
+						name = "minimum Gold",
+						type = "input",
+						order = newOrder(),
+						--width = .6,
+						set = function(info,val)
+							WQA.db.profile.options.missionTable.reward.goldMin = tonumber(val)
+						end,
+						get = function() return tostring(WQA.db.profile.options.missionTable.reward.goldMin)  end
+					},
+				}
+			end
+
 			for k,v in pairs(CurrencyIDList[i]) do
 				if not (type(v) == "table" and v.faction ~= self.faction) then
 					if type(v) == "table" then v = v.id end
-					self.options.args.reward.args[self.ExpansionList[i]].args.currency.args[GetCurrencyInfo(v)] = {
+					args.currency.args[GetCurrencyInfo(v)] = {
 						type = "toggle",
 						name = GetCurrencyInfo(v),
 						set = function(info, val)
-							WQA.db.profile.options.reward.currency[v] = val
+							WQA.db.profile.options.missionTable.reward.currency[v] = val
 						end,
 						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.reward.currency[v]
-				    	end,
-					    order = newOrder()
+						get = function()
+							return WQA.db.profile.options.missionTable.reward.currency[v]
+						end,
+						order = newOrder()
 					}
 				end
 			end
@@ -713,7 +1008,7 @@ function WQA:UpdateOptions()
 
 		-- Reputation
 		if FactionIDList[i] then
-			self.options.args.reward.args[self.ExpansionList[i]].args.reputation = {
+			args.reputation = {
 				order = newOrder(),
 				name = "Reputation",
 				type = "group",
@@ -722,127 +1017,25 @@ function WQA:UpdateOptions()
 			for _, factionGroup in pairs {"Neutral", UnitFactionGroup("player")} do
 				if FactionIDList[i][factionGroup] then
 					for k,v in pairs(FactionIDList[i][factionGroup]) do
-						self.options.args.reward.args[self.ExpansionList[i]].args.reputation.args[GetFactionInfoByID(v)] = {
+						args.reputation.args[GetFactionInfoByID(v)] = {
 							type = "toggle",
 							name = GetFactionInfoByID(v),
 							set = function(info, val)
-								WQA.db.profile.options.reward.reputation[v] = val
+								WQA.db.profile.options.missionTable.reward.reputation[v] = val
 							end,
 							descStyle = "inline",
-						    get = function()
-						    	return WQA.db.profile.options.reward.reputation[v]
-					    	end,
-						    order = newOrder()
+							get = function()
+								return WQA.db.profile.options.missionTable.reward.reputation[v]
+							end,
+							order = newOrder()
 						}
 					end
 				end
 			end
 		end
-
-		-- Emissary
-		if self.EmissaryQuestIDList[i] then
-			self.options.args.reward.args[self.ExpansionList[i]].args.emissary = {
-				order = newOrder(),
-				name = "Emissary Quests",
-				type = "group",
-				args = {}
-			}
-			for k,v in pairs(self.EmissaryQuestIDList[i]) do
-				if not (type(v) == "table" and v.faction ~= self.faction) then
-					if type(v) == "table" then v = v.id end
-					self.options.args.reward.args[self.ExpansionList[i]].args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
-						type = "toggle",
-						name = C_QuestLog.GetQuestInfo(v) or tostring(v),
-						set = function(info, val)
-							WQA.db.profile.options.emissary[v] = val
-						end,
-						descStyle = "inline",
-					    get = function()
-					    	return WQA.db.profile.options.emissary[v]
-				    	end,
-					    order = newOrder()
-					}
-				end
-			end
-		end
-
-		-- Professions
-		self.options.args.reward.args[self.ExpansionList[i]].args.profession = {
-			order = newOrder(),
-			name = "Professions",
-			type = "group",
-			args = {}
-		}
-
-		-- Recipes
-		self.options.args.reward.args[self.ExpansionList[i]].args.profession.args["Recipes"] = {
-			type = "toggle",
-			name = "Recipes",
-			set = function(info, val)
-				WQA.db.profile.options.reward.recipe[ExpansionIDList[i]] = val
-			end,
-			descStyle = "inline",
-			get = function()
-				return WQA.db.profile.options.reward.recipe[ExpansionIDList[i]]
-			end,
-			order = newOrder()
-		}
-
-		-- Skillup
-		-- if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup thenthen
-		for _, tradeskillLineIndex in pairs({GetProfessions()}) do
-			local professionName,_,_,_,_,_, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
-			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."Header"] = { type = "header", name = professionName, order = newOrder(), }
-			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."Skillup"] = {
-				type = "toggle",
-				name = "Skillup",
-				desc = "Track every World Quest until skill level is maxed out",
-				set = function(info, val)
-					WQA.db.profile.options.reward[ExpansionIDList[i]].profession[tradeskillLineID].skillup = val
-				end,
-				get = function()
-					return WQA.db.profile.options.reward[ExpansionIDList[i]].profession[tradeskillLineID].skillup
-				end,
-				order = newOrder()
-			}
-			self.options.args.reward.args[self.ExpansionList[i]].args.profession.args[tradeskillLineID.."MaxLevel"] = {
-				type = "toggle",
-				name = "Skill level is maxed out*",
-				desc = "Setting is per character",
-				set = function(info, val)
-					WQA.db.char[ExpansionIDList[i]].profession[tradeskillLineID].isMaxLevel = val
-				end,
-				get = function()
-					return WQA.db.char[ExpansionIDList[i]].profession[tradeskillLineID].isMaxLevel
-				end,
-				order = newOrder()
-			}
-		end
-			-- Crafting Reagents
-			--
-			--for k,v in pairs(CraftingReagentIDList[i] or {}) do
-			--	local name = GetItemInfo(v)
-			--	if name then
-			--		self.options.args.reward.args[ExpansionList[i]].args.profession.args[GetItemInfo(v)] = {
-			--			type = "toggle",
-			--			name = GetItemInfo(v),
-			--			set = function(info, val)
-			--				WQA.db.profile.options.reward.craftingreagent[v] = val
-			--			end,
-			--			descStyle = "inline",
-			--		    get = function()
-			--		    	return WQA.db.profile.options.reward.craftingreagent[v]
-			--	    	end,
-			--		    order = newOrder()
-			--		}
-			--	else
-			--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
-			--	end
-			--end
 	end
 
-	self:UpdateCustomQuests()
-	self:UpdateCustomRewards()
+	self:UpdateCustom()
 end
 
 function WQA:GetOptions()
@@ -910,18 +1103,18 @@ function WQA:CreateGroup(options, data, groupName)
 				handler = WQA,
 				set = "ToggleSet",
 				--descStyle = "inline",
-			    get = function(info)
-			    	local value = WQA.db.profile[groupName][id]
-			    	if value == "exclusive" then
-			    		local name, server = UnitFullName("player")
-			    		name = name.."-"..server
-			    		if WQA.db.profile[info[#info-1]].exclusive[id] ~= name then
-			    			info.option.values.other = string.format(L["tracking_other"], WQA.db.profile[info[#info-1]].exclusive[id])
-			    			return "other"
-			    		end
-			    	end
+			 get = function(info)
+			 	local value = WQA.db.profile[groupName][id]
+			 	if value == "exclusive" then
+			 		local name, server = UnitFullName("player")
+			 		name = name.."-"..server
+			 		if WQA.db.profile[info[#info-1]].exclusive[id] ~= name then
+			 			info.option.values.other = string.format(L["tracking_other"], WQA.db.profile[info[#info-1]].exclusive[id])
+			 			return "other"
+			 		end
+			 	end
 					return value
-		    	end,
+		 	end,
 				order = newOrder(),
 			}
 			if object.itemID then
@@ -939,13 +1132,14 @@ function WQA:CreateGroup(options, data, groupName)
 end
 
 function WQA:CreateCustomQuest()
- 	if not self.db.global.custom then self.db.global.custom = {} end
- 	self.db.global.custom[tonumber(self.data.custom.wqID)] = {rewardID = tonumber(self.data.custom.rewardID), rewardType = self.data.custom.rewardType}
+	 if not self.db.global.custom then self.db.global.custom = {} end
+	 if not self.db.global.custom.worldQuest then self.db.global.custom.worldQuest = {} end
+ 	self.db.global.custom.worldQuest[tonumber(self.data.custom.wqID)] = {rewardID = tonumber(self.data.custom.rewardID), rewardType = self.data.custom.rewardType}
  	self:UpdateCustomQuests()
  end
 
 function WQA:UpdateCustomQuests()
- 	local data = self.db.global.custom
+ 	local data = self.db.global.custom.worldQuest
  	if type(data) ~= "table" then return false end
  	local args = self.options.args.custom.args.quest.args
  	for id,object in pairs(data) do
@@ -954,14 +1148,14 @@ function WQA:UpdateCustomQuests()
 			name = GetQuestLink(id) or tostring(id),
 			width = "double",
 			set = function(info, val)
-				WQA.db.profile.custom[id] = val
+				WQA.db.profile.custom.worldQuest[id] = val
 			end,
 			descStyle = "inline",
-		    get = function()
-		    	return WQA.db.profile.custom[id]
-	    	end,
-		    order = newOrder(),
-		    width = 1.2
+		 get = function()
+		 	return WQA.db.profile.custom.worldQuest[id]
+	 	end,
+		 order = newOrder(),
+		 width = 1.2
 		}
 		args[id.."Reward"] = {
 			name = "Reward (optional)",
@@ -970,10 +1164,10 @@ function WQA:UpdateCustomQuests()
 			width = .6,
 			order = newOrder(),
 			set = function(info,val)
-				self.db.global.custom[id].rewardID = tonumber(val)
+				self.db.global.custom.worldQuest[id].rewardID = tonumber(val)
 			end,
 			get = function() return
-				tostring(self.db.global.custom[id].rewardID or "")
+				tostring(self.db.global.custom.worldQuest[id].rewardID or "")
 			end
 		}
 		args[id.."RewardType"] = {
@@ -983,9 +1177,9 @@ function WQA:UpdateCustomQuests()
 			values = {item = "Item", achievement = "Achievement", none = "none"},
 			width = .6,
 			set = function(info,val)
-				self.db.global.custom[id].rewardType = val
+				self.db.global.custom.worldQuest[id].rewardType = val
 			end,
-			get = function() return self.db.global.custom[id].rewardType or nil end
+			get = function() return self.db.global.custom.worldQuest[id].rewardType or nil end
 		}
 		args[id.."Delete"] = {
 			order = newOrder(),
@@ -998,7 +1192,7 @@ function WQA:UpdateCustomQuests()
 				args[id.."RewardType"] = nil
 				args[id.."Delete"] = nil
 				args[id.."space"] = nil
-				self.db.global.custom[id] = nil
+				self.db.global.custom.worldQuest[id] = nil
 				self:UpdateCustomQuests()
 				GameTooltip:Hide()
 			end
@@ -1010,16 +1204,17 @@ function WQA:UpdateCustomQuests()
 			type = "description"
 		}
 	end
- end
+end
 
- function WQA:CreateCustomReward()
- 	if not self.db.global.customReward then self.db.global.customReward = {} end
- 	self.db.global.customReward[tonumber(self.data.customReward)] = true
+function WQA:CreateCustomReward()
+	 if not self.db.global.custom then self.db.global.custom = {} end
+	 if not self.db.global.custom.worldQuestReward then self.db.global.custom.worldQuestReward = {} end
+ 	self.db.global.custom.worldQuestReward[tonumber(self.data.custom.worldQuestReward)] = true
  	self:UpdateCustomRewards()
- end
+end
 
 function WQA:UpdateCustomRewards()
- 	local data = self.db.global.customReward
+ 	local data = self.db.global.custom.worldQuestReward
  	if type(data) ~= "table" then return false end
  	local args = self.options.args.custom.args.reward.args
  	for id,_ in pairs(data) do
@@ -1029,14 +1224,14 @@ function WQA:UpdateCustomRewards()
 			name = itemLink or tostring(id),
 			width = "double",
 			set = function(info, val)
-				WQA.db.profile.customReward[id] = val
+				WQA.db.profile.custom.worldQuestReward[id] = val
 			end,
 			descStyle = "inline",
-		    get = function()
-		    	return WQA.db.profile.customReward[id]
-	    	end,
-		    order = newOrder(),
-		    width = 1.2
+		 get = function()
+		 	return WQA.db.profile.custom.worldQuestReward[id]
+	 	end,
+		 order = newOrder(),
+		 width = 1.2
 		}
 		args[id.."Delete"] = {
 			order = newOrder(),
@@ -1047,7 +1242,7 @@ function WQA:UpdateCustomRewards()
 				args[tostring(id)] = nil
 				args[id.."Delete"] = nil
 				args[id.."space"] = nil
-				self.db.global.customReward[id] = nil
+				self.db.global.custom.worldQuestReward[id] = nil
 				self:UpdateCustomRewards()
 				GameTooltip:Hide()
 			end
@@ -1059,6 +1254,138 @@ function WQA:UpdateCustomRewards()
 			type = "description"
 		}
 	end
+end
+
+function WQA:CreateCustomMission()
+	if not self.db.global.custom then self.db.global.custom = {} end
+	if not self.db.global.custom.mission then self.db.global.custom.mission = {} end
+	self.db.global.custom.mission[tonumber(self.data.custom.mission.missionID)] = {rewardID = tonumber(self.data.custom.mission.rewardID), rewardType = self.data.custom.mission.rewardType}
+ 	self:UpdateCustomMissions()
+end
+
+function WQA:UpdateCustomMissions()
+	local data = self.db.global.custom.mission
+	if type(data) ~= "table" then return false end
+	local args = self.options.args.custom.args.mission.args
+	for id,object in pairs(data) do
+	args[tostring(id)] = {
+		type = "toggle",
+		name = C_Garrison.GetMissionLink(id) or tostring(id),
+		width = "double",
+		set = function(info, val)
+			WQA.db.profile.custom.mission[id] = val
+		end,
+		descStyle = "inline",
+		get = function()
+			return WQA.db.profile.custom.mission[id]
+		end,
+		order = newOrder(),
+		width = 1.2
+	}
+	args[id.."Reward"] = {
+		name = "Reward (optional)",
+		desc = "Enter an achievementID or itemID",
+		type = "input",
+		width = .6,
+		order = newOrder(),
+		set = function(info,val)
+			self.db.global.custom.mission[id].rewardID = tonumber(val)
+		end,
+		get = function() return
+			tostring(self.db.global.custom.mission[id].rewardID or "")
+		end
+	}
+	args[id.."RewardType"] = {
+		name = "Reward type",
+		order = newOrder(),
+		type = "select",
+		values = {item = "Item", achievement = "Achievement", none = "none"},
+		width = .6,
+		set = function(info,val)
+			self.db.global.custom.mission[id].rewardType = val
+		end,
+		get = function() return self.db.global.custom.mission[id].rewardType or nil end
+	}
+	args[id.."Delete"] = {
+		order = newOrder(),
+		type = "execute",
+		name = "Delete",
+		width = .5,
+		func = function()
+			args[tostring(id)] = nil
+			args[id.."Reward"] = nil
+			args[id.."RewardType"] = nil
+			args[id.."Delete"] = nil
+			args[id.."space"] = nil
+			self.db.global.custom.mission[id] = nil
+			self:UpdateCustomMissions()
+			GameTooltip:Hide()
+		end
+	}
+	args[id.."space"] = {
+		name =" ",
+		width = .25,
+		order = newOrder(),
+		type = "description"
+	}
+end
+end
+
+function WQA:CreateCustomMissionReward()
+	if not self.db.global.custom then self.db.global.custom = {} end
+	if not self.db.global.custom.missionReward then self.db.global.custom.missionReward = {} end
+	self.db.global.custom.missionReward[tonumber(self.data.custom.missionReward)] = true
+	self:UpdateCustomMissionRewards()
+end
+
+function WQA:UpdateCustomMissionRewards()
+	local data = self.db.global.custom.missionReward
+	if type(data) ~= "table" then return false end
+	local args = self.options.args.custom.args.missionReward.args
+	for id,_ in pairs(data) do
+		local _, itemLink = GetItemInfo(id)
+		args[tostring(id)] = {
+			type = "toggle",
+			name = itemLink or tostring(id),
+			width = "double",
+			set = function(info, val)
+				WQA.db.profile.custom.missionReward[id] = val
+			end,
+			descStyle = "inline",
+			get = function()
+				return WQA.db.profile.custom.missionReward[id]
+			end,
+			order = newOrder(),
+			width = 1.2
+		}
+		args[id.."Delete"] = {
+			order = newOrder(),
+			type = "execute",
+			name = "Delete",
+			width = .5,
+			func = function()
+				args[tostring(id)] = nil
+				args[id.."Delete"] = nil
+				args[id.."space"] = nil
+				self.db.global.custom.missionReward[id] = nil
+				self:UpdateCustomMissionRewards()
+				GameTooltip:Hide()
+			end
+		}
+		args[id.."space"] = {
+			name =" ",
+			width = 1,
+			order = newOrder(),
+			type = "description"
+		}
+	end
+end
+
+function WQA:UpdateCustom()
+	self:UpdateCustomQuests()
+	self:UpdateCustomRewards()
+	self:UpdateCustomMissions()
+	self:UpdateCustomMissionRewards()
 end
 
 function WQA:SortOptions()
