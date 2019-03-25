@@ -1,5 +1,6 @@
 # WQAchievements
 Would you like to be alerted when a certain world quest is available?
+
 This addon can alert you when a world quest is up that is needed for an achievement.
 But wait - there's more! It can also let you know about world quests that award mounts, pets, reputation, currency, toys, item upgrades... You can even enter in a custom world quest or reward to watch for that might not be in the settings. It watches for both Legion and Battle for Azeroth world quests.
 
@@ -13,3 +14,5 @@ You'll get notifications either in your chat or as a separate window.
 
 ## Download
 https://www.curseforge.com/wow/addons/wqachievements
+
+## [Credits](/credits.md)
