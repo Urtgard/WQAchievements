@@ -78,6 +78,13 @@ local CraftingReagentIDList = {
 	}
 }
 
+local worldQuestType = {
+	["LE_QUEST_TAG_TYPE_PVP"] = LE_QUEST_TAG_TYPE_PVP,
+	["LE_QUEST_TAG_TYPE_PET_BATTLE"] = LE_QUEST_TAG_TYPE_PET_BATTLE,
+	["LE_QUEST_TAG_TYPE_PROFESSION"] = LE_QUEST_TAG_TYPE_PROFESSION,
+	["LE_QUEST_TAG_TYPE_DUNGEON"] = LE_QUEST_TAG_TYPE_DUNGEON,
+}
+
 WQA.ZoneIDList = {
 	[7] = {
 		619, -- Broken Isles
@@ -722,6 +729,25 @@ function WQA:UpdateOptions()
 		},
 	}
 
+	-- General
+	-- worldQuestType
+	local args = self.options.args.reward.args.general.args
+	args.header1 = { type = "header", name = "World Quest Type", order = newOrder(), }
+	for k,v in pairs(worldQuestType) do
+		args[k] = {
+			type = "toggle",
+			name = L[k],
+			set = function(info, val)
+				WQA.db.profile.options.reward.general.worldQuestType[v] = val
+			end,
+			descStyle = "inline",
+			get = function()
+				return WQA.db.profile.options.reward.general.worldQuestType[v] or false
+			end,
+			order = newOrder()
+		}
+	end
+
 	for i in pairs(self.ExpansionList) do
 		local v = self.data[i] or nil
 		if v ~= nil then
@@ -739,7 +765,7 @@ function WQA:UpdateOptions()
 			self:CreateGroup(self.options.args.general.args[v.name].args, v, "toys")
 		end
 	end
-
+	
 	for _,i in ipairs(IDToExpansionID) do
 		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),

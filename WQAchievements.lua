@@ -30,6 +30,10 @@ L["tracking_always"] = "Always track"
 L["tracking_wasEarnedByMe"] = "Track if not earned by active character"
 L["tracking_exclusive"] = "Only track with this character"
 L["tracking_other"] = "Only tracked by %s"
+L["LE_QUEST_TAG_TYPE_PVP"] = "PVP"
+L["LE_QUEST_TAG_TYPE_PET_BATTLE"] = "Pet Battle"
+L["LE_QUEST_TAG_TYPE_PROFESSION"] = "Profession"
+L["LE_QUEST_TAG_TYPE_DUNGEON"] = "Dungeon"
 if locale == "deDE" then
 	L["WQChat"] = "Interessante Weltquests verfügbar:"
 	L["WQforAch"] = "%s für %s"
@@ -223,6 +227,9 @@ function WQA:OnInitialize()
 					general = {
 						gold = false,
 						goldMin = 0,
+						worldQuestType = {
+							['*'] = true,
+						},
 					},
 					reputation = {['*'] = false},
 					currency = {},
@@ -1179,7 +1186,9 @@ function WQA:Reward()
 				if quests then
 					for i=1,#quests do
 						local questID = quests[i].questId
-						if self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true then
+						local worldQuestType = select(3,GetQuestTagInfo(questID)) or 0
+
+						if self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and self.db.profile.options.reward.general.worldQuestType[worldQuestType] then
 							-- 100 different World Quests achievements
 							if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
 								local zoneID = C_TaskQuest.GetQuestZoneID(questID)
