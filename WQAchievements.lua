@@ -1633,7 +1633,8 @@ function WQA:CreateQTip()
 
 		tooltip:AddHeader("World Quest")
 		tooltip:SetCell(1, tooltip:GetColumnCount(), "Reward")
-		tooltip:SetFrameStrata("HIGH")
+		tooltip:SetFrameStrata("MEDIUM")
+		tooltip:SetFrameLevel(100)
 		tooltip:AddSeparator()
 	end
 end
@@ -1764,22 +1765,23 @@ function WQA:UpdateQTip(tasks)
 								tooltip:SetCell(i, j, text)
 							
 								tooltip:SetCellScript(i, j, "OnEnter", function(self)
-									GameTooltip_SetDefaultAnchor(GameTooltip, self)
+									GameTooltip:SetOwner(self, "ANCHOR_NONE")
 									GameTooltip:ClearLines()
-									GameTooltip:ClearAllPoints()
-									GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-	
+									ContainerFrameItemButton_CalculateItemTooltipAnchors(self, GameTooltip)
+
 									if WQA:GetRewardLinkByID(id, k, v, n) then
 										GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(id, k, v, n))
 									else
 										GameTooltip:SetText(WQA:GetRewardTextByID(id, k, v, n, task.type))
 									end
 									GameTooltip:Show()
-									if IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems") then
+									if (IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems")) and k == "item" then
 										GameTooltip_ShowCompareItem()
+									else
+										GameTooltip_HideShoppingTooltips(GameTooltip)
 									end
 								end)
-								tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
+								tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip_HideResetCursor() end)
 								tooltip:SetCellScript(i, j, "OnMouseDown", function()
 									HandleModifiedItemClick(WQA:GetRewardLinkByID(id, k, v, n))
 								end)
