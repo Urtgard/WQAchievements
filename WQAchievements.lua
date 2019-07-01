@@ -375,7 +375,7 @@ end
 do
 	local legion = {}
 	local trainer = {42159, 40299, 40277, 42442, 40298, 40280, 40282, 41687, 40278, 41944, 41895, 40337, 41990, 40279, 41860}
-	local argusTrainer = {49041, 49043, 49045, 49047, 49049, 49051, 49053, 49055, 49057, 49042, 49044, 49046, 49048, 49050, 49052, 49054, 49056, 49058}
+	local argusTrainer = {49041, 49042, 49043, 49044, 49045, 49046, 49047, 49048, 49049, 49050, 49051, 49052, 49053, 49054, 49055, 49056, 49057, 49058}
 	legion = {
 		name = "Legion",
 		achievements = {
@@ -544,6 +544,8 @@ do
 		},
 		pets = {
 			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
+			{name = "Rebuilt Gorilla Bot", itemID = 166715, creatureID = 149348, quest = {{trackingID = 0, wqID = 54272}}, faction = "Alliance"},
+			{name = "Rebuilt Mechanical Spider", itemID = 166723, creatureID = 149361, quest = {{trackingID = 0, wqID = 54273}}, faction = "Horde"},
 		},
 		toys = {
 			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}}},
@@ -1184,6 +1186,9 @@ local ReputationCurrencyList = {
 	[1595] = 2156, -- Talanji's Expedition
 	[1596] = 2158, -- Voldunai
 	[1600] = 2157, -- The Honorbound
+	[1742] = 2391, -- Rustbolt Resistance
+	[1739] = 2400, -- Waveblade Ankoan
+	[1738] = 2373, -- The Unshackled
 }
 
 function WQA:Reward()

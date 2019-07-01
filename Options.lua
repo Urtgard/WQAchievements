@@ -28,6 +28,7 @@ local CurrencyIDList = {
 		1560, -- War Ressource
 		{id = 1716, faction = "Horde"}, -- Honorbound Service Medal
 		{id = 1717, faction = "Alliance"}, -- 7th Legion Service Medal
+		1721, -- Prismatic Manapearl
 	}
 }
 
@@ -114,6 +115,8 @@ WQA.ZoneIDList = {
 		896, -- Drustvar
 		1161, -- Boralus
 		1165, -- Dazar'alor
+		1355, -- Nazjatar
+		1462, -- Mechagon
 	}
 }
 
@@ -141,6 +144,11 @@ WQA.EmissaryQuestIDList = {
 		{id = 50603, faction = "Horde"}, -- Voldunai
 		{id = 50602, faction = "Horde"}, -- Talanji's Expedition
 		{id = 50606, faction = "Horde"}, -- The Honorbound
+		-- 8.2
+		--2391, -- Rustbolt Resistance
+		{id = 56119, faction = "Alliance"}, -- Waveblade Ankoan
+		{id = 56120, faction = "Horde"}, -- The Unshackled
+
 	},
 }
 
@@ -155,24 +163,28 @@ local FactionIDList = {
 			1828, -- Highmountain Tribe
 			1948, -- Valarjar
 			1859, -- The Nightfallen
+			2391, -- Rustbolt Resistance
 		}
 	},
 	[8] = {
 		Neutral = {
 			2164, -- Champions of Azeroth
 			2163, -- Tortollan Seekers
+			2391, -- Rustbolt Resistance
 		},
 		Alliance = {
 			2160, -- Proudmoore Admiralty
 			2161, -- Order of Embers
 			2162, -- Storm's Wake
 			2159, -- 7th Legion
+			2400, -- Waveblade Ankoan
 		},
 		Horde = {
 			2103, -- Zandalari Empire
 			2156, -- Talanji's Expedition
 			2158, -- Voldunai
 			2157, -- The Honorbound
+			2373, -- The Unshackled
 		},
 	},
 }
