@@ -489,7 +489,7 @@ do
 			{name = "Scourge of Zem'lan", id = 13011, criteriaType = "QUESTS", criteria = {{51763, 51783}}},
 			{name = "Vorrik's Champion", id = 13014, criteriaType = "QUESTS", criteria = {51957, 51983}, faction = "Horde"},
 			{name = "Revenge is Best Served Speedily", id = 13022, criteriaType = "QUEST_SINGLE", criteria = 50786, faction = "Horde"},
-			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUESTS", criteria = {50559, 51127}},
+			{name = "It's Really Getting Out of Hand", id = 13023, criteriaType = "QUESTS", criteria = {{50559, 51127}}},
 			{name = "Zandalari Spycatcher", id = 13025, criteriaType = "QUEST_SINGLE", criteria = 50717, faction = "Horde"},
 			{name = "7th Legion Spycatcher", id = 13026, criteriaType = "QUEST_SINGLE", criteria = 50899, faction = "Alliance"},
 			{name = "By de Power of de Loa!", id = 13035, criteriaType = "QUEST_SINGLE", criteria = 51178},
@@ -602,32 +602,47 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
 			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
 		elseif achievement.criteriaType ~= "SPECIAL" then
-			for i=1, GetAchievementNumCriteria(id) do
-				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
-				if not completed or forced then
-					if achievement.criteriaType == "QUESTS" then
-						if type(achievement.criteria[i]) == "table" then
+			if GetAchievementNumCriteria(id) > 0 then
+				for i=1, GetAchievementNumCriteria(id) do
+					local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
+					if not completed or forced then
+						if achievement.criteriaType == "QUESTS" then
+							if type(achievement.criteria[i]) == "table" then
+								for _,questID in pairs(achievement.criteria[i]) do
+									self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+								end
+							else
+								questID = achievement.criteria[i]
+								if questID then
+									self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+								end
+							end
+						elseif achievement.criteriaType == 1 and t == 0 then
 							for _,questID in pairs(achievement.criteria[i]) do
 								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 							end
+						elseif achievement.criteriaType == "MISSION_TABLE" then
+							self:AddRewardToMission(questID, "ACHIEVEMENT", id)
+							--self.missionList[questID] = {name = C_Garrison.GetMissionName(questID), reward = {{rewardType = "ACHIEVEMENT", achievement[1] = {id = id}}}}
 						else
-							questID = achievement.criteria[i]
-							if questID then
-								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-							end
-						end
-					elseif achievement.criteriaType == 1 and t == 0 then
-						for _,questID in pairs(achievement.criteria[i]) do
 							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 						end
-					elseif achievement.criteriaType == "MISSION_TABLE" then
-						self:AddRewardToMission(questID, "ACHIEVEMENT", id)
-						--self.missionList[questID] = {name = C_Garrison.GetMissionName(questID), reward = {{rewardType = "ACHIEVEMENT", achievement[1] = {id = id}}}}
+					end
+				end	
+			else
+				if achievement.criteriaType == "QUESTS" then
+					if type(achievement.criteria[1]) == "table" then
+						for _,questID in pairs(achievement.criteria[1]) do
+							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+						end
 					else
-						self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+						questID = achievement.criteria[1]
+						if questID then
+							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+						end
 					end
 				end
-			end	
+			end
 		end
 	end
 end
