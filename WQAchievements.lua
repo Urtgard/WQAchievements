@@ -165,7 +165,11 @@ end
 
 local function GetTaskLink(task)
 	if task.type == "WORLD_QUEST" then
-		return GetQuestLink(task.id)
+		if WQA.questPinList[task.id] then
+			return C_QuestLog.GetQuestInfo(task.id)
+		else
+			return GetQuestLink(task.id)
+		end
 	else
 		return C_Garrison.GetMissionLink(task.id)
 	end
@@ -541,6 +545,8 @@ do
 			{name = "Azeroth at War: The Barrens", id = 12867, criteriaType = "MISSION_TABLE", faction = "Horde"},
 			{name = "Azeroth at War: Kalimdor on Fire", id = 12870, criteriaType = "MISSION_TABLE", faction = "Horde"},
 			{name = "Azeroth at War: After Lordaeron", id = 12869, criteriaType = "MISSION_TABLE", faction = "Horde"},
+			-- 8.2
+			{name = "Outside Influences", id = 13556, criteriaType = "QUEST_PIN", mapID = "1462", criteriaInfo = {[25] = {56552, 56558}}},
 		},
 		pets = {
 			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
@@ -562,6 +568,8 @@ end
 function WQA:CreateQuestList()
 	self:Debug("CreateQuestList")
 	self.questList = {}
+	self.questPinList = {}
+	self.questPinMapList = {}
 	self.missionList = {}
 
 	for _,v in pairs(self.data[7].achievements) do
@@ -601,6 +609,22 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
 			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
+		elseif achievement.criteriaType == "QUEST_PIN" then
+			C_QuestLine.RequestQuestLinesForMap(achievement.mapID)
+			for i=1, GetAchievementNumCriteria(id) do
+				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
+				if t == 0 then
+					for _, questID in pairs(achievement.criteriaInfo[i]) do
+						self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+						self.questPinMapList[achievement.mapID] = true
+						self.questPinList[questID] = true
+					end
+				else
+					self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+					self.questPinMapList[achievement.mapID] = true
+					self.questPinList[questID] = true
+				end
+			end
 		elseif achievement.criteriaType ~= "SPECIAL" then
 			if GetAchievementNumCriteria(id) > 0 then
 				for i=1, GetAchievementNumCriteria(id) do
@@ -827,7 +851,7 @@ function WQA:CheckWQ(mode)
 	local newQuests = {}
 	local retry = false
 	for questID,_ in pairs(self.questList) do
-		if IsActive(questID) or self:EmissaryIsActive(questID) then
+		if IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) then
 			local questLink = GetQuestLink(questID)
 			local link
 			for k,v in pairs(self.questList[questID].reward) do
@@ -855,7 +879,7 @@ function WQA:CheckWQ(mode)
 					end
 				end
 			end
-			if not questLink or not link then
+			if (not questLink or not link) and not self.questPinList[questID] then
 				self:Debug(questID, questLink, link)
 				retry = true
 			else
@@ -2289,3 +2313,14 @@ print(C_Garrison.GetAvailableMissions)
 print((C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowerType(LE_GARRISON_TYPE_8_0))))
 for _,mission in pairs(C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowerType(LE_GARRISON_TYPE_8_0))) do print(mission.name,mission.missionID) end
 ]]--
+
+function WQA:isQuestPinActive(questID)
+	for mapID in pairs(self.questPinMapList) do
+		for _, questPin in pairs(C_QuestLine.GetAvailableQuestLines(mapID)) do
+			if questPin.questID == questID then
+				return true
+			end
+		end
+	end
+	return false
+end
