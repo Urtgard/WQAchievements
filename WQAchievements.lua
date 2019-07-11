@@ -548,6 +548,7 @@ do
 			-- 8.2
 			{name = "Outside Influences", id = 13556, criteriaType = "QUEST_PIN", mapID = "1462", criteriaInfo = {[25] = {56552, 56558}}},
 			{name = "Nazjatarget Eliminated", id = 13690},
+			{name = "Puzzle Performer", id = 13764},-- criteriaType = "QUESTS", criteria= {56025, 56024, 56023, 56022, 56021, 56020, 56019, 56018, nil, 56008, 56007, 56009, 56006, 56003, 56010, 56011, 56014, 56016, 56015, 56013,  56012}},
 		},
 		pets = {
 			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
@@ -1739,7 +1740,9 @@ function WQA:UpdateQTip(tasks)
 					GameTooltip:ClearAllPoints()
 					GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
 					if task.type == "WORLD_QUEST" then
-						GameTooltip:SetHyperlink(link)
+						if linke then
+							GameTooltip:SetHyperlink(link)
+						end
 					else
 						GameTooltip:SetText(C_Garrison.GetMissionName(id))
 						GameTooltip:AddLine(string.format(GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS, C_Garrison.GetMissionMaxFollowers(id)), 1, 1, 1)
@@ -1756,7 +1759,7 @@ function WQA:UpdateQTip(tasks)
 				tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
 				tooltip:SetCellScript(i, j, "OnMouseDown", function()
 					if ChatEdit_TryInsertChatLink(link) ~= true then
-						if task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary then
+						if task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and not self.questPinList[id] then
 							if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
 								if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
 									WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
