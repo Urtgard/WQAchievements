@@ -57,13 +57,50 @@ local function GetExpansionByMissionID(missionID)
 	return WQA.missionList[missionID].expansion
 end
 
+local questZoneIDList = {
+	-- Outside Influences
+	[55463] = 1462,
+	[55658] = 1462,
+	[55688] = 1462,
+	[55718] = 1462,
+	[55765] = 1462,
+	[55885] = 1462,
+	[56053] = 1462,
+	[55813] = 1462,
+	[56301] = 1462,
+	[56142] = 1462,
+	[55528] = 1462,
+	[56365] = 1462,
+	[56572] = 1462,
+	[56501] = 1462,
+	[56493] = 1462,
+	[56552] = 1462,
+	[56558] = 1462,
+	[55575] = 1462,
+	[55672] = 1462,
+	[55717] = 1462,
+	[56049] = 1462,
+	[56469] = 1462,
+	[55816] = 1462,
+	[55905] = 1462,
+	[56184] = 1462,
+	[56306] = 1462,
+	[54090] = 1462,
+	[56355] = 1462,
+	[56523] = 1462,
+	[56410] = 1462,
+	[56508] = 1462,
+	[56471] = 1462,
+	[56405] = 1462,
+}
+
 local function GetQuestZoneID(questID)
 	if WQA.questList[questID].isEmissary then return "Emissary" end
 	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
 	if WQA.questList[questID].info.zoneID then
 		return WQA.questList[questID].info.zoneID
 	else
-		WQA.questList[questID].info.zoneID = C_TaskQuest.GetQuestZoneID(questID)
+		WQA.questList[questID].info.zoneID = questZoneIDList[questID] or C_TaskQuest.GetQuestZoneID(questID)
 		return WQA.questList[questID].info.zoneID
 	end
 end
@@ -84,10 +121,18 @@ local function GetTaskZoneID(task)
 	end
 end
 
+local function GetMapInfo(mapID)
+	if mapID then
+		return C_Map.GetMapInfo(mapID)
+	else
+		return {name = "Unknown"}
+	end
+end
+
 local function GetQuestZoneName(questID)
 	if WQA.questList[questID].isEmissary then return "Emissary" end
 	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
-	WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or C_Map.GetMapInfo(GetQuestZoneID(questID)).name
+	WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or GetMapInfo(GetQuestZoneID(questID)).name
 	return WQA.questList[questID].info.zoneName
 end
 
