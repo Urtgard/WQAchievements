@@ -660,16 +660,18 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 			C_QuestLine.RequestQuestLinesForMap(achievement.mapID)
 			for i=1, GetAchievementNumCriteria(id) do
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
-				if t == 0 then
-					for _, questID in pairs(achievement.criteriaInfo[i]) do
+				if not completed or forced then
+					if t == 0 then
+						for _, questID in pairs(achievement.criteriaInfo[i]) do
+							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+							self.questPinMapList[achievement.mapID] = true
+							self.questPinList[questID] = true
+						end
+					else
 						self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 						self.questPinMapList[achievement.mapID] = true
 						self.questPinList[questID] = true
 					end
-				else
-					self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-					self.questPinMapList[achievement.mapID] = true
-					self.questPinList[questID] = true
 				end
 			end
 		elseif achievement.criteriaType ~= "SPECIAL" then
