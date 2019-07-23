@@ -163,7 +163,6 @@ local FactionIDList = {
 			1828, -- Highmountain Tribe
 			1948, -- Valarjar
 			1859, -- The Nightfallen
-			2391, -- Rustbolt Resistance
 		}
 	},
 	[8] = {

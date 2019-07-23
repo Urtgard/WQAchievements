@@ -92,6 +92,8 @@ local questZoneIDList = {
 	[56508] = 1462,
 	[56471] = 1462,
 	[56405] = 1462,
+	-- Periodic Destruction
+	[55121] = 1355,
 }
 
 local function GetQuestZoneID(questID)
@@ -210,7 +212,7 @@ end
 
 local function GetTaskLink(task)
 	if task.type == "WORLD_QUEST" then
-		if WQA.questPinList[task.id] then
+		if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
 			return C_QuestLog.GetQuestInfo(task.id)
 		else
 			return GetQuestLink(task.id)
@@ -594,6 +596,7 @@ do
 			{name = "Outside Influences", id = 13556, criteriaType = "QUEST_PIN", mapID = "1462", criteriaInfo = {[25] = {56552, 56558}}},
 			{name = "Nazjatarget Eliminated", id = 13690},
 			{name = "Puzzle Performer", id = 13764},-- criteriaType = "QUESTS", criteria= {56025, 56024, 56023, 56022, 56021, 56020, 56019, 56018, nil, 56008, 56007, 56009, 56006, 56003, 56010, 56011, 56014, 56016, 56015, 56013,  56012}},
+			{name = "Periodic Destruction", id = 13699, criteriaType = "QUEST_FLAG", criteria = 55121},
 		},
 		pets = {
 			{name = "Vengeful Chicken", itemID = 160940, creatureID = 139372, quest = {{trackingID = 0, wqID = 51212}}},
@@ -618,6 +621,7 @@ function WQA:CreateQuestList()
 	self.questPinList = {}
 	self.questPinMapList = {}
 	self.missionList = {}
+	self.questFlagList = {}
 
 	for _,v in pairs(self.data[7].achievements) do
 		self:AddAchievements(v)
@@ -674,6 +678,9 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 					end
 				end
 			end
+		elseif achievement.criteriaType == "QUEST_FLAG" then
+			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
+			self.questFlagList[achievement.criteria] = true
 		elseif achievement.criteriaType ~= "SPECIAL" then
 			if GetAchievementNumCriteria(id) > 0 then
 				for i=1, GetAchievementNumCriteria(id) do
@@ -900,7 +907,7 @@ function WQA:CheckWQ(mode)
 	local newQuests = {}
 	local retry = false
 	for questID,_ in pairs(self.questList) do
-		if IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) then
+		if IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) or self:IsQuestFlaggedCompleted(questID) then
 			local questLink = GetQuestLink(questID)
 			local link
 			for k,v in pairs(self.questList[questID].reward) do
@@ -928,7 +935,7 @@ function WQA:CheckWQ(mode)
 					end
 				end
 			end
-			if (not questLink or not link) and not self.questPinList[questID] then
+			if (not questLink or not link) and not (self.questPinList[questID] or self.questFlagList[questID])then
 				self:Debug(questID, questLink, link)
 				retry = true
 			else
@@ -1806,7 +1813,7 @@ function WQA:UpdateQTip(tasks)
 				tooltip:SetCellScript(i, j, "OnLeave", function() GameTooltip:Hide() end)
 				tooltip:SetCellScript(i, j, "OnMouseDown", function()
 					if ChatEdit_TryInsertChatLink(link) ~= true then
-						if task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and not self.questPinList[id] then
+						if task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and not (self.questPinList[id] or self.questFlagList[id]) then
 							if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
 								if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
 									WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
@@ -2374,4 +2381,12 @@ function WQA:isQuestPinActive(questID)
 		end
 	end
 	return false
+end
+
+function WQA:IsQuestFlaggedCompleted(questID)
+	if self.questFlagList[questID] then
+		return not IsQuestFlaggedCompleted(questID)
+	else
+		return false
+	end
 end
