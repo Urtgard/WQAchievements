@@ -623,18 +623,22 @@ function WQA:CreateQuestList()
 	self.missionList = {}
 	self.questFlagList = {}
 
-	for _,v in pairs(self.data[7].achievements) do
-		self:AddAchievements(v)
+	if UnitLevel("player") >= 110 then
+		for _,v in pairs(self.data[7].achievements) do
+			self:AddAchievements(v)
+		end
+		self:AddMounts(self.data[7].mounts)
+		self:AddPets(self.data[7].pets)
+		self:AddToys(self.data[7].toys)
 	end
-	self:AddMounts(self.data[7].mounts)
-	self:AddPets(self.data[7].pets)
-	self:AddToys(self.data[7].toys)
 
-	for _,v in pairs(self.data[8].achievements) do
-		self:AddAchievements(v)
+	if UnitLevel("player") >= 120 then
+		for _,v in pairs(self.data[8].achievements) do
+			self:AddAchievements(v)
+		end
+		self:AddPets(self.data[8].pets)
+		self:AddToys(self.data[8].toys)
 	end
-	self:AddPets(self.data[8].pets)
-	self:AddToys(self.data[8].toys)
 	
 	self:AddCustom()
 	self:Special()
@@ -908,7 +912,7 @@ function WQA:CheckWQ(mode)
 	local retry = false
 	for questID,_ in pairs(self.questList) do
 		if IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) or self:IsQuestFlaggedCompleted(questID) then
-			local questLink = GetQuestLink(questID)
+			local questLink = GetTaskLink({id = questID, type = "WORLD_QUEST"})
 			local link
 			for k,v in pairs(self.questList[questID].reward) do
 				if k == "custom" or k == "professionSkillup" or k == "gold" then
@@ -935,7 +939,7 @@ function WQA:CheckWQ(mode)
 					end
 				end
 			end
-			if (not questLink or not link) and not (self.questPinList[questID] or self.questFlagList[questID])then
+			if (not questLink or not link) then
 				self:Debug(questID, questLink, link)
 				retry = true
 			else
@@ -2080,7 +2084,7 @@ local function SortByExpansion(a,b)
 end
 
 local function GetQuestName(questID)
-	return C_TaskQuest.GetQuestInfoByQuestID(questID) or C_QuestLog.GetQuestInfo(questID) or select(3,string.find(GetQuestLink(questID), "%[(.+)%]"))
+	return C_TaskQuest.GetQuestInfoByQuestID(questID) or C_QuestLog.GetQuestInfo(questID) or select(3,string.find(GetQuestLink(questID) or "[unknown]", "%[(.+)%]"))
 end
 
 local function GetMissionName(missionID)
