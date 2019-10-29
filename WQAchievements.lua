@@ -213,7 +213,7 @@ end
 local function GetTaskLink(task)
 	if task.type == "WORLD_QUEST" then
 		if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
-			return C_QuestLog.GetQuestInfo(task.id)
+			return GetQuestLink(task.id) or C_QuestLog.GetQuestInfo(task.id)
 		else
 			return GetQuestLink(task.id)
 		end
@@ -231,7 +231,7 @@ do
 	end
 end
 
-WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none"}
+WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none", questType = "WORLD_QUEST"}
 WQA.data.custom.mission = {missionID = "", rewardID = "", rewardType = "none"}
 --WQA.data.customReward = 0
 
@@ -812,9 +812,17 @@ end
 function WQA:AddCustom()
 	-- Custom World Quests
 	if type(self.db.global.custom.worldQuest) == "table" then
-		for k,v in pairs(self.db.global.custom.worldQuest) do
-			if self.db.profile.custom.worldQuest[k] == true then
-				self:AddRewardToQuest(k, "CUSTOM")
+		for questID,v in pairs(self.db.global.custom.worldQuest) do
+			if self.db.profile.custom.worldQuest[questID] == true then
+				self:AddRewardToQuest(questID, "CUSTOM")
+				if v.questType == "QUEST_FLAG" then
+					self.questFlagList[questID] = true
+				elseif v.questType == "QUEST_PIN" then
+					print(v.mapID)
+					C_QuestLine.RequestQuestLinesForMap(v.mapID)
+					self.questPinMapList[v.mapID] = true
+					self.questPinList[questID] = true
+				end
 			end
 		end
 	end
@@ -2378,6 +2386,7 @@ for _,mission in pairs(C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowe
 
 function WQA:isQuestPinActive(questID)
 	for mapID in pairs(self.questPinMapList) do
+		print(mapID)
 		for _, questPin in pairs(C_QuestLine.GetAvailableQuestLines(mapID)) do
 			if questPin.questID == questID then
 				return true

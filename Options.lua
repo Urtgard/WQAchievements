@@ -409,9 +409,9 @@ function WQA:UpdateOptions()
 						inline = true,
 						args = {
 							--Add WQ
-							header1 = { type = "header", name = "Add a World Quest you want to track", order = newOrder(), },
+							header1 = { type = "header", name = "Add a Quest you want to track", order = newOrder(), },
 							addWQ = {
-								name = "WorldQuestID",
+								name = "QuestID",
 								--desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
 								type = "input",
 								order = newOrder(),
@@ -421,6 +421,30 @@ function WQA:UpdateOptions()
 								end,
 						 	get = function() return tostring(WQA.data.custom.wqID)  end
 							},
+							questType = {
+								name = "Quest type",
+								order = newOrder(),
+								desc = "IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+								type = "select",
+								values = {WORLD_QUEST = "World Quest", QUEST_PIN = "Quest Pin", QUEST_FLAG = "IsQuestFlaggedCompleted", IsActive = "IsActive"},
+								--width = .6,
+								set = function(info,val)
+									WQA.data.custom.questType = val
+								end,
+						 		get = function() return WQA.data.custom.questType end
+							},
+							mapID = {
+								name = "mapID",
+								desc = "Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
+								type = "input",
+								width = .5,
+								order = newOrder(),
+								set = function(info,val)
+									WQA.data.custom.mapID = val
+								end,
+						 	get = function() return tostring(WQA.data.custom.mapID or "")  end
+							},
+							--[[
 							rewardID = {
 								name = "Reward (optional)",
 								desc = "Enter an achievementID or itemID",
@@ -442,7 +466,7 @@ function WQA:UpdateOptions()
 									WQA.data.custom.rewardType = val
 								end,
 						 	get = function() return WQA.data.custom.rewardType end
-							},
+							},--]]
 							button = {
 								order = newOrder(),
 								type = "execute",
@@ -1171,7 +1195,7 @@ end
 function WQA:CreateCustomQuest()
 	 if not self.db.global.custom then self.db.global.custom = {} end
 	 if not self.db.global.custom.worldQuest then self.db.global.custom.worldQuest = {} end
- 	self.db.global.custom.worldQuest[tonumber(self.data.custom.wqID)] = {rewardID = tonumber(self.data.custom.rewardID), rewardType = self.data.custom.rewardType}
+ 	self.db.global.custom.worldQuest[tonumber(self.data.custom.wqID)] = {questType = self.data.custom.questType, mapID = self.data.custom.mapID}--{rewardID = tonumber(self.data.custom.rewardID), rewardType = self.data.custom.rewardType}
  	self:UpdateCustomQuests()
  end
 
@@ -1182,7 +1206,7 @@ function WQA:UpdateCustomQuests()
  	for id,object in pairs(data) do
 		args[tostring(id)] = {
 			type = "toggle",
-			name = GetQuestLink(id) or tostring(id),
+			name = GetQuestLink(id) or C_QuestLog.GetQuestInfo(id) or tostring(id),
 			width = "double",
 			set = function(info, val)
 				WQA.db.profile.custom.worldQuest[id] = val
@@ -1194,6 +1218,32 @@ function WQA:UpdateCustomQuests()
 		 order = newOrder(),
 		 width = 1.2
 		}
+
+		args[id.."questType"] = {
+			name = "Quest type",
+			order = newOrder(),
+			desc = "IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+			type = "select",
+			values = {WORLD_QUEST = "World Quest", QUEST_PIN = "Quest Pin", QUEST_FLAG = "IsQuestFlaggedCompleted", IsActive = "IsActive"},
+			width = .8,
+			set = function(info,val)
+				self.db.global.custom.worldQuest[id].questType = val
+			end,
+			get = function() return tostring(self.db.global.custom.worldQuest[id].questType or "") end
+		}
+		args[id.."mapID"] = {
+			name = "mapID",
+			desc = "Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
+			type = "input",
+			width = .4,
+			order = newOrder(),
+			set = function(info,val)
+				self.db.global.custom.worldQuest[id].mapID = val
+			end,
+		 get = function() return tostring(self.db.global.custom.worldQuest[id].mapID or "")  end
+		}
+
+		--[[
 		args[id.."Reward"] = {
 			name = "Reward (optional)",
 			desc = "Enter an achievementID or itemID",
@@ -1217,7 +1267,7 @@ function WQA:UpdateCustomQuests()
 				self.db.global.custom.worldQuest[id].rewardType = val
 			end,
 			get = function() return self.db.global.custom.worldQuest[id].rewardType or nil end
-		}
+		}--]]
 		args[id.."Delete"] = {
 			order = newOrder(),
 			type = "execute",
