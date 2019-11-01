@@ -2386,7 +2386,6 @@ for _,mission in pairs(C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowe
 
 function WQA:isQuestPinActive(questID)
 	for mapID in pairs(self.questPinMapList) do
-		print(mapID)
 		for _, questPin in pairs(C_QuestLine.GetAvailableQuestLines(mapID)) do
 			if questPin.questID == questID then
 				return true
