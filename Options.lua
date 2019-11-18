@@ -30,6 +30,7 @@ local CurrencyIDList = {
 		{id = 1717, faction = "Alliance"}, -- 7th Legion Service Medal
 		1721, -- Prismatic Manapearl
 		1602, -- Conquest
+		1166, -- Timewarped Badge
 	}
 }
 

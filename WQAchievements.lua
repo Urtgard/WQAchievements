@@ -2255,25 +2255,37 @@ end
 
 function WQA:formatTime(t)
 	local t = math.floor(t or 0)
-	local d, h, m
+	local d, h, m, timeString
 	d = math.floor(t/60/24)
 	h = math.floor(t/60 % 24)
 	m = t % 60
 	if d > 0 then
 		if h > 0 then
-			return d.."d "..h.."h"
+			timeString = string.format("%dd %dh", d, h)
 		else
-			return d.."d"
+			timeString = string.format("%dd", d)
 		end
 	elseif h > 0 then
 		if m > 0 then
-			return h.."h "..m.."m"
+			timeString = string.format("%dh %dm", h, m)
 		else
-			return h.."h"
+			timeString = string.format("%dh", h)
 		end
 	else
-		return m.."m"
+		timeString = string.format("%dm", m)
 	end
+	
+	if t > 0 then
+		if t <= 180 then
+			if t <= 30 then
+				timeString = string.format("|cffff3333%s|r", timeString)
+			else
+				timeString = string.format("|cffffff00%s|r", timeString)
+			end
+		end
+	end
+
+	return timeString
 end
 
 local LE_GARRISON_TYPE = {
