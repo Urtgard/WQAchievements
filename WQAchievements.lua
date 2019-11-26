@@ -593,7 +593,7 @@ do
 			{name = "Azeroth at War: Kalimdor on Fire", id = 12870, criteriaType = "MISSION_TABLE", faction = "Horde"},
 			{name = "Azeroth at War: After Lordaeron", id = 12869, criteriaType = "MISSION_TABLE", faction = "Horde"},
 			-- 8.2
-			{name = "Outside Influences", id = 13556, criteriaType = "QUEST_PIN", mapID = "1462", criteriaInfo = {[25] = {56552, 56558}}},
+			{name = "Outside Influences", id = 13556, criteriaType = "QUEST_PIN", mapID = "1462", criteriaInfo = {[4] = {55658, 55672}, [5] = {55658, 55688}, [6] = {55658, 55717}, [7] = {55658, 55718}, [8] = {55658, 56049}, [10] = {55658, 55469},[25] = {56552, 56558}}},
 			{name = "Nazjatarget Eliminated", id = 13690},
 			{name = "Puzzle Performer", id = 13764},-- criteriaType = "QUESTS", criteria= {56025, 56024, 56023, 56022, 56021, 56020, 56019, 56018, nil, 56008, 56007, 56009, 56006, 56003, 56010, 56011, 56014, 56016, 56015, 56013,  56012}},
 			{name = "Periodic Destruction", id = 13699, criteriaType = "QUEST_FLAG", criteria = 55121},
@@ -604,7 +604,7 @@ do
 			{name = "Rebuilt Mechanical Spider", itemID = 166723, creatureID = 149361, quest = {{trackingID = 0, wqID = 54273}}, faction = "Horde"},
 		},
 		toys = {
-			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}}},
+			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}, {trackingID = 0, wqID = 50957}}},
 			{name = "Toy Siege Tower", itemID = 163828, quest = {{trackingID = 0, wqID = 52847}}, faction = "Alliance"},
 			{name = "Toy War Machine", itemID = 163829, quest = {{trackingID = 0, wqID = 52848}}, faction = "Horde"},
 		}
@@ -669,7 +669,7 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 			for i=1, GetAchievementNumCriteria(id) do
 				local _,t,completed,_,_,_,_,questID = GetAchievementCriteriaInfo(id,i)
 				if not completed or forced then
-					if t == 0 then
+					if achievement.criteriaInfo[i] then
 						for _, questID in pairs(achievement.criteriaInfo[i]) do
 							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 							self.questPinMapList[achievement.mapID] = true
