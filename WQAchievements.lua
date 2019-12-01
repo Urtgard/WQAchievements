@@ -154,12 +154,23 @@ local function GetTaskZoneName(task)
 	end
 end
 
+ExpansionByZoneID = {
+	-- BfA
+	[1169] = 8, -- Tol Dagor
+}
+
 local function GetExpansionByQuestID(questID)
 	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
 	if WQA.questList[questID].info.expansion then
 		return WQA.questList[questID].info.expansion
 	else
 		local zoneID = GetQuestZoneID(questID)
+
+		if ExpansionByZoneID[zoneID] then
+			WQA.questList[questID].info.expansion = ExpansionByZoneID[zoneID]
+			return ExpansionByZoneID[zoneID]
+		end
+
 		for expansion,zones in pairs(WQA.ZoneIDList) do
 			for _, v in pairs(zones) do
 				if zoneID == v then
