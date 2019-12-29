@@ -593,7 +593,7 @@ do
 			{name = "Boxing Match", id = 13438, criteriaType = "QUESTS", criteria = {{54524, 54516}}, faction = "Horde"},
 			-- 8.1.5
 			-- Circle, Square, Triangle
-			{name = "Master Calligrapher", id = 13512, criteriaType = "QUESTS", criteria = {{55340, 55342, 55343, 55344}, {55264, 55342, 55343, 55344}, {55341, 55342, 55343, 55344}}},
+			{name = "Master Calligrapher", id = 13512, criteriaType = "QUESTS", criteria = {{55340, 55342}, {55264, 55343}, {55341, 55344}}},
 			-- Mission Table
 			-- Alliance
 			{name = "Azeroth at War: The Barrens", id = 12896, criteriaType = "MISSION_TABLE", faction = "Alliance"},
