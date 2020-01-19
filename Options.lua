@@ -119,6 +119,8 @@ WQA.ZoneIDList = {
 		1165, -- Dazar'alor
 		1355, -- Nazjatar
 		1462, -- Mechagon
+		1527, -- Uldum
+		1530, -- Vale of Eternal Blossoms
 	}
 }
 
