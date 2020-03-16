@@ -618,6 +618,9 @@ do
 			{name = "Echoes of Rezan", itemID = 160509, quest = {{trackingID = 0, wqID = 50855}, {trackingID = 0, wqID = 50957}}},
 			{name = "Toy Siege Tower", itemID = 163828, quest = {{trackingID = 0, wqID = 52847}}, faction = "Alliance"},
 			{name = "Toy War Machine", itemID = 163829, quest = {{trackingID = 0, wqID = 52848}}, faction = "Horde"},
+		},
+		mounts = {
+			{name = "Mollie", itemID = 174842, spellID = 298367, quest = {{wqID = 52196}}},
 		}
 	}
 	WQA.data[8] = bfa
@@ -647,6 +650,7 @@ function WQA:CreateQuestList()
 		for _,v in pairs(self.data[8].achievements) do
 			self:AddAchievements(v)
 		end
+		self:AddMounts(self.data[8].mounts)
 		self:AddPets(self.data[8].pets)
 		self:AddToys(self.data[8].toys)
 	end
@@ -754,7 +758,7 @@ function WQA:AddMounts(mounts)
 				for _,mount in pairs(mounts) do
 					if spellID == mount.spellID then
 						for _,v  in pairs(mount.quest) do
-							if not IsQuestFlaggedCompleted(v.trackingID) then
+							if not IsQuestFlaggedCompleted(v.trackingID or 0) then
 								self:AddRewardToQuest(v.wqID, "CHANCE", mount.itemID)
 							end
 						end
@@ -829,7 +833,6 @@ function WQA:AddCustom()
 				if v.questType == "QUEST_FLAG" then
 					self.questFlagList[questID] = true
 				elseif v.questType == "QUEST_PIN" then
-					print(v.mapID)
 					C_QuestLine.RequestQuestLinesForMap(v.mapID)
 					self.questPinMapList[v.mapID] = true
 					self.questPinList[questID] = true
