@@ -962,9 +962,6 @@ function WQA:CheckWQ(mode)
 				end
 			end
 			if (not questLink or not link) then
-				for k,v in pairs(self.questList[questID].reward) do
-					print(k,v)
-				end
 				self:Debug(questID, questLink, link)
 				retry = true
 			else
