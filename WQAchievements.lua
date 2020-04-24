@@ -1739,7 +1739,7 @@ function WQA:CheckCurrencies(questID, isEmissary)
 	end
 end
 
-WQA.debug = true
+WQA.debug = false
 function WQA:Debug(...)
 	if self.debug == true
 		then print(GetTime(),GetFramerate(),...)
