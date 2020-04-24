@@ -223,11 +223,11 @@ end
 
 local function GetTaskLink(task)
 	if task.type == "WORLD_QUEST" then
-		if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
+	--	if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
 			return GetQuestLink(task.id) or C_QuestLog.GetQuestInfo(task.id)
-		else
-			return GetQuestLink(task.id)
-		end
+	--	else
+	--		return GetQuestLink(task.id)
+	--	end
 	else
 		return C_Garrison.GetMissionLink(task.id)
 	end
@@ -962,6 +962,9 @@ function WQA:CheckWQ(mode)
 				end
 			end
 			if (not questLink or not link) then
+				for k,v in pairs(self.questList[questID].reward) do
+					print(k,v)
+				end
 				self:Debug(questID, questLink, link)
 				retry = true
 			else
@@ -1736,7 +1739,7 @@ function WQA:CheckCurrencies(questID, isEmissary)
 	end
 end
 
-WQA.debug = false
+WQA.debug = true
 function WQA:Debug(...)
 	if self.debug == true
 		then print(GetTime(),GetFramerate(),...)
