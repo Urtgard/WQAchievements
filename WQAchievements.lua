@@ -97,14 +97,15 @@ local questZoneIDList = {
 }
 
 local function GetQuestZoneID(questID)
-	if WQA.questList[questID].isEmissary then return "Emissary" end
-	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
-	if WQA.questList[questID].info.zoneID then
-		return WQA.questList[questID].info.zoneID
-	else
-		WQA.questList[questID].info.zoneID = questZoneIDList[questID] or C_TaskQuest.GetQuestZoneID(questID)
-		return WQA.questList[questID].info.zoneID
-	end
+	if WQA.questList[questID] and WQA.questList[questID].isEmissary then return "Emissary" end
+	--if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
+	--if WQA.questList[questID].info.zoneID then
+	--	return WQA.questList[questID].info.zoneID
+	--else
+	--	WQA.questList[questID].info.zoneID = questZoneIDList[questID] or C_TaskQuest.GetQuestZoneID(questID)
+	--	return WQA.questList[questID].info.zoneID
+	--end
+	return questZoneIDList[questID] or C_TaskQuest.GetQuestZoneID(questID)
 end
 
 local function GetMissionZoneID(missionID)
@@ -160,21 +161,21 @@ ExpansionByZoneID = {
 }
 
 local function GetExpansionByQuestID(questID)
-	if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
-	if WQA.questList[questID].info.expansion then
-		return WQA.questList[questID].info.expansion
-	else
+	--if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
+	--if WQA.questList[questID].info.expansion then
+	--	return WQA.questList[questID].info.expansion
+	--else
 		local zoneID = GetQuestZoneID(questID)
 
 		if ExpansionByZoneID[zoneID] then
-			WQA.questList[questID].info.expansion = ExpansionByZoneID[zoneID]
+		--	WQA.questList[questID].info.expansion = ExpansionByZoneID[zoneID]
 			return ExpansionByZoneID[zoneID]
 		end
 
 		for expansion,zones in pairs(WQA.ZoneIDList) do
 			for _, v in pairs(zones) do
 				if zoneID == v then
-					WQA.questList[questID].info.expansion = expansion
+		--			WQA.questList[questID].info.expansion = expansion
 					return expansion
 				end
 			end
@@ -184,12 +185,12 @@ local function GetExpansionByQuestID(questID)
 			for _,id in pairs(v) do
 				if type(id) == "table" then id = id.id end
 				if id == questID then
-					WQA.questList[questID].info.expansion = expansion
+--					WQA.questList[questID].info.expansion = expansion
 					return expansion
 				end
 			end
 		end
-	end
+	--end
 	return -1
 end
 
@@ -557,7 +558,7 @@ do
 			{name = "By de Power of de Loa!", id = 13035, criteriaType = "QUESTS", criteria = {{51178, 51232}}},
 			{name = "Bless the Rains Down in Freehold", id = 13050, criteriaType = "QUESTS", criteria = {{53196, 52159}}},
 			{name = "Kul Runnings", id = 13060, criteriaType = "QUESTS", criteria = {49994, 53188, 53189}, faction = "Alliance"},
-			{name = "Battle on Zandalar and Kul Tiras", id = 12936, criteriaType="QUESTS", criteria = {
+			{name = "Battle on Zandalar and Kul Tiras", id = 12936, criteriaType= "QUESTS", criteria = {
 				52009,
 				52126,
 				52165,
@@ -1430,8 +1431,8 @@ function WQA:Reward()
 											end
 										end
 									end
-
-									if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup then
+									
+									if not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup then
 										self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
 									end
 								end
@@ -1487,7 +1488,8 @@ function WQA:CheckItems(questID, isEmissary)
 				retry = true
 			end
 			
-			local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID, _, expacID = GetItemInfo(itemLink)
+			local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo(itemLink)
+			local expacID = GetExpansionByQuestID(questID)
 
 			-- Ask Pawn if this is an Upgrade
 			if PawnIsItemAnUpgrade and self.db.profile.options.reward.gear.PawnUpgrade then
@@ -1737,6 +1739,7 @@ function WQA:CheckItems(questID, isEmissary)
 				end
 			end
 
+			-- print(expacID, GetExpansionByQuestID(questID), itemLink, questID)
 			-- Recipe
 			if itemClassID == 9 then
 				if self.db.profile.options.reward.recipe[expacID] == true then
