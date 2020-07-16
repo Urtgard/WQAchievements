@@ -1390,6 +1390,10 @@ function WQA:Reward()
 						local questID = quests[i].questId
 						local worldQuestType = select(3,GetQuestTagInfo(questID)) or 0
 
+						if self.questList[questID] and not self.db.profile.options.reward.general.worldQuestType[worldQuestType] then
+							self.questList[questID] = nil
+						end
+
 						if self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and self.db.profile.options.reward.general.worldQuestType[worldQuestType] then
 							-- 100 different World Quests achievements
 							if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
