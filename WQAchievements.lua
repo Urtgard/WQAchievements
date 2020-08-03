@@ -279,6 +279,9 @@ function WQA:OnInitialize()
 				['*'] = true,
 				chat = true,
 				PopUp = false,
+				popupRememberPosition = false,
+				popupX = 600,
+				popupY = 800,
 				zone = { ['*'] = true},
 				reward = {
 					gear = {
@@ -2032,10 +2035,15 @@ function WQA:AnnouncePopUp(quests, silent)
 		PopUp:SetScript("OnDragStop", function(self)
 			self.moving = nil
 			self:StopMovingOrSizing()
+			if WQA.db.profile.options.popupRememberPosition then
+				WQA.db.profile.options.popupX = self:GetLeft()
+				WQA.db.profile.options.popupY = self:GetTop()
+			end
 		end)
 		PopUp:SetWidth(300)
 		PopUp:SetHeight(100)
-		PopUp:SetPoint("CENTER")
+		PopUp:SetPoint("CENTER") --, self.db.profile.options.popupX, self.db.profile.options.popupY)
+		--PopUp:SetPoint("TOPLEFT", self.db.profile.options.popupX, self.db.profile.options.popupY)
 		PopUp:Hide()
 
 		PopUp:SetScript("OnHide", function()
@@ -2059,6 +2067,11 @@ function WQA:AnnouncePopUp(quests, silent)
 	self:UpdateQTip(quests)
 	PopUp:SetWidth(self.tooltip:GetWidth()+8.5)
 	PopUp:SetHeight(self.tooltip:GetHeight()+32)
+
+	if self.db.profile.options.popupRememberPosition then
+		PopUp:ClearAllPoints()
+		PopUp:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", self.db.profile.options.popupX, self.db.profile.options.popupY)
+	end
 end
 
 function WQA:GetRewardTextByID(questID, key, value, i, type)

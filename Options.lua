@@ -626,6 +626,19 @@ function WQA:UpdateOptions()
 				 	end,
 					 order = newOrder()
 					},
+					popupRememberPosition = {
+						type = "toggle",
+						name = "Remember PopUp position",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.popupRememberPosition = val
+						end,
+						descStyle = "inline",
+					 get = function()
+					 	return WQA.db.profile.options.popupRememberPosition
+				 	end,
+					 order = newOrder()
+					},
 					sortByName = {
 						type = "toggle",
 						name = "Sort quests by name",
