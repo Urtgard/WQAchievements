@@ -2023,7 +2023,9 @@ end
 function WQA:AnnouncePopUp(quests, silent)
 	if not self.PopUp then
 		local PopUp = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
-		tinsert(UISpecialFrames, "WQAchievementsPopUp")
+		if self.db.profile.options.esc then
+			tinsert(UISpecialFrames, "WQAchievementsPopUp")
+		end
 		self.PopUp = PopUp
 		PopUp:SetMovable(true)
 		PopUp:EnableMouse(true)

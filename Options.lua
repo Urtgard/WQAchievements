@@ -776,6 +776,20 @@ function WQA:UpdateOptions()
 				 	end,
 					 order = newOrder()
 					},
+					esc = {
+						type = "toggle",
+						name = "Close PopUp with ESC",
+						desc = "Requires a reload",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.esc = val
+						end,
+						descStyle = "inline",
+					 get = function()
+					 	return WQA.db.profile.options.esc
+				 	end,
+					 order = newOrder()
+					},
 				}
 			}
 		},
