@@ -790,6 +790,20 @@ function WQA:UpdateOptions()
 				 	end,
 					 order = newOrder()
 					},
+					LibDBIcon = {
+						type = "toggle",
+						name = "Show Minimap Icon",
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.LibDBIcon.hide = not val
+							WQA:UpdateMinimapIcon()
+						end,
+						descStyle = "inline",
+						get = function()
+							return not WQA.db.profile.options.LibDBIcon.hide
+						end,
+						order = newOrder()
+					},
 				}
 			}
 		},

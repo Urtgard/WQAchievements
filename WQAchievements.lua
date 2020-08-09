@@ -247,6 +247,15 @@ WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none", questType = "W
 WQA.data.custom.mission = {missionID = "", rewardID = "", rewardType = "none"}
 --WQA.data.customReward = 0
 
+local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
+local dataobj = ldb:NewDataObject("WQAchievements", {
+	type = "data source",
+	text = "WQA",
+	icon = "Interface\\Icons\\INV_Misc_Map06",
+})
+
+local icon = LibStub("LibDBIcon-1.0")
+
 function WQA:OnInitialize()
 	-- Remove data for the other faction
 	local faction = UnitFactionGroup("player")
@@ -320,6 +329,7 @@ function WQA:OnInitialize()
 					},
 				},
 				delay = 5,
+				LibDBIcon = { hide = false}
 			},
 			["achievements"] = {exclusive = {}, ['*'] = "default"},
 			["mounts"] = {exclusive = {}, ['*'] = "default"},
@@ -354,6 +364,9 @@ function WQA:OnInitialize()
 		end
 		self.db.global.customReward = nil
 	end
+
+	-- Minimap Icon
+	icon:Register("WQAchievements", dataobj, self.db.profile.options.LibDBIcon)
 end
 
 function WQA:OnEnable()
@@ -2300,13 +2313,6 @@ function WQA:Special()
 	end
 end
 
-local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
-local dataobj = ldb:NewDataObject("WQAchievements", {
-	type = "data source",
-	text = "WQA",
-	icon = "Interface\\Icons\\INV_Misc_Map06",
-})
-
 local anchor
 function dataobj:OnEnter()
 	anchor = self
@@ -2509,5 +2515,13 @@ function WQA:IsQuestFlaggedCompleted(questID)
 		return not IsQuestFlaggedCompleted(questID)
 	else
 		return false
+	end
+end
+
+function WQA:UpdateMinimapIcon()
+	if self.db.profile.options.LibDBIcon.hide then
+		icon:Hide("WQAchievements")
+	else
+		icon:Show("WQAchievements")
 	end
 end
