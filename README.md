@@ -6,7 +6,10 @@ But wait - there's more! It can also let you know about world quests that award 
 
 Additionally it tracks emissaries and mission tables from Warlords of Draenor, Legion and Battle for Azeroth.
 
-You'll get notifications either in your chat or as a separate window.
+You'll get notifications either in your chat or as a separate window. You can also click on the mini map icon or write the following command to show the table with the world quests:
+```
+/wqa
+```
 
 ![chat](https://user-images.githubusercontent.com/13890391/54945075-4b7f3680-4f35-11e9-9e5d-b7c73290b0b0.png)
 
