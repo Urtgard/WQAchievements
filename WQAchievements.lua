@@ -298,6 +298,7 @@ function WQA:OnInitialize()
 						itemLevelUpgradeMin = 1,
 						PercentUpgradeMin = 1,
 						unknownSource = false,
+						azeriteTraits = "",
 					},
 					general = {
 						gold = false,
@@ -980,6 +981,14 @@ function WQA:AddReward(list, rewardType, reward, emissary)
 		l.professionSkillup = reward
 	elseif rewardType == "GOLD" then
 		l.gold = reward
+	elseif rewardType == "AZERITE_TRAIT" then
+		if not l.azeriteTraits then l.azeriteTraits = {} end
+		for k,v in pairs(l.azeriteTraits) do
+			if v.spellID == reward then
+				return
+			end
+		end
+		l.azeriteTraits[#l.azeriteTraits + 1] = {spellID = reward}
 	end
 end
 
@@ -1025,8 +1034,8 @@ function WQA:CheckWQ(mode)
 				else
 					self:SetRewardLinkByID(questID, k, v, 1, link)
 				end
-				
-				if k == "achievement" or k == "chance" then
+
+				if k == "achievement" or k == "chance" or k == "azeriteTraits" then
 					for i = 2, #v do
 						link = self:GetRewardLinkByID(questID, k, v, i)
 						if not link then
@@ -1234,7 +1243,7 @@ function WQA:AnnounceChat(tasks, silent)
 		local more
 		for k,v in pairs(l[task.id].reward) do
 			local rewardText = self:GetRewardTextByID(task.id, k, v, 1, task.type)
-			if k == "achievement" or k == "chance" then
+			if k == "achievement" or k == "chance" or k == "azeriteTraits" then
 				for j = 2, 3 do 
 					local t = self:GetRewardTextByID(task.id, k, v, j, task.type)
 					if t then
@@ -1397,6 +1406,14 @@ function WQA:Reward()
 	self.rewards = false
 	local retry = false
 
+	-- Azerite Traits
+	if self.db.profile.options.reward.gear.azeriteTraits ~= "" then
+		self.azeriteTraitsList = {}
+		for spellID in string.gmatch(self.db.profile.options.reward.gear.azeriteTraits, "(%d+)") do
+			self.azeriteTraitsList[tonumber(spellID)] = true
+		end
+	end
+
 	for i in pairs(self.ZoneIDList) do
 		for _,mapID in pairs(self.ZoneIDList[i]) do
 			if self.db.profile.options.zone[mapID] == true then
@@ -1510,7 +1527,7 @@ function WQA:CheckItems(questID, isEmissary)
 			
 			local itemName, _, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice, itemClassID, itemSubClassID = GetItemInfo(itemLink)
 			local expacID = GetExpansionByQuestID(questID)
-
+			
 			-- Ask Pawn if this is an Upgrade
 			if PawnIsItemAnUpgrade and self.db.profile.options.reward.gear.PawnUpgrade then
 				local Item = PawnGetItemData(itemLink)
@@ -1784,6 +1801,18 @@ function WQA:CheckItems(questID, isEmissary)
 				end
 			end
 
+			-- Azerite Traits
+			if self.db.profile.options.reward.gear.azeriteTraits ~= "" and C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink) then
+				for _,ring in pairs(C_AzeriteEmpoweredItem.GetAllTierInfoByItemID(itemLink)) do
+					for _,azeritePowerID in pairs(ring.azeritePowerIDs) do
+						local spellID = C_AzeriteEmpoweredItem.GetPowerInfo(azeritePowerID).spellID
+						if self.azeriteTraitsList[spellID] then
+							self:AddRewardToQuest(questID, "AZERITE_TRAIT", spellID, isEmissary)
+						end
+					end
+				end
+			end
+
 		else
 			retry = true
 		end
@@ -1967,7 +1996,7 @@ function WQA:UpdateQTip(tasks)
 				local more = false
 				for k,v in pairs(list) do
 					for n = 1,3 do
-						if n == 1 or (n > 1 and (k == "achievement" or k == "chance")) then
+						if n == 1 or (n > 1 and (k == "achievement" or k == "chance" or k == "azeriteTraits")) then
 							local text = self:GetRewardTextByID(id, k, v, n, task.type)
 							if text then
 								j = j + 1
@@ -2147,6 +2176,9 @@ function WQA:GetRewardLinkByID(questId, key, value, i)
 		return nil
 	elseif k == "gold" then
 		return nil
+	elseif k == "azeriteTraits" then
+		if not v[i] then return nil end
+		link = GetSpellLink(v[i].spellID)
 	end
 	return link
 end

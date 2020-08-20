@@ -396,6 +396,17 @@ function WQA:UpdateOptions()
 						 	end,
 							 order = newOrder()
 							},
+							azeriteTraits = {
+								name = "Azerite Traits",
+								desc = "Comma separated spellIDs",
+								type = "input",
+								order = newOrder(),
+								--width = .6,
+								set = function(info,val)
+									WQA.db.profile.options.reward.gear.azeriteTraits = val
+								end,
+						 	get = function() return WQA.db.profile.options.reward.gear.azeriteTraits end
+							},
 						},
 					},
 				}
