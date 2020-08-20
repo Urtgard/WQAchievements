@@ -2313,12 +2313,6 @@ function WQA:Special()
 	end
 end
 
-local anchor
-function dataobj:OnEnter()
-	anchor = self
-	WQA:Show("LDB")
-end
-
 local function PopUpIsShown()
 	if WQA.PopUp then
 		return WQA.PopUp.shown
@@ -2327,10 +2321,27 @@ local function PopUpIsShown()
 	end
 end
 
+local anchor
+function dataobj:OnEnter()
+	anchor = self
+	if not PopUpIsShown() then
+		WQA:Show("LDB")
+	end
+end
+
+function dataobj:OnClick(button)
+	if button == "LeftButton" then
+		WQA:Show("popup")
+	elseif button == "RightButton" then
+		InterfaceOptionsFrame_Show()
+		InterfaceOptionsFrame_OpenToCategory("WQAchievements")
+	end
+end
+
 function WQA:AnnounceLDB(quests)
 	-- Hide PopUp
 	if PopUpIsShown() then
-		self.PopUp:Hide()
+		return
 	end
 
 	self:CreateQTip()
