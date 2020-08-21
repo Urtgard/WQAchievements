@@ -1808,6 +1808,7 @@ function WQA:CheckItems(questID, isEmissary)
 						local spellID = C_AzeriteEmpoweredItem.GetPowerInfo(azeritePowerID).spellID
 						if self.azeriteTraitsList[spellID] then
 							self:AddRewardToQuest(questID, "AZERITE_TRAIT", spellID, isEmissary)
+							self:AddRewardToQuest(questID, "ITEM", {itemLink = itemLink}, isEmissary)
 						end
 					end
 				end
