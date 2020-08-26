@@ -5,6 +5,7 @@
 ## SavedVariables: WQADB
 ## X-Curse-Project-ID: 272039
 ## X-WoWI-ID: 24566
+## OptionalDeps: CanIMogIt, AllTheThings
 
 embeds.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua

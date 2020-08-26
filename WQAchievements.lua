@@ -1140,11 +1140,6 @@ function WQA:link(x)
 	end
 end
 
-local icons = {
-	unknown = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t",
-	known = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t",
-}
-
 function WQA:GetRewardForID(questID, key, type)
 	local l
 	if type == "MISSION" then 
@@ -1158,7 +1153,7 @@ function WQA:GetRewardForID(questID, key, type)
 		if l.item then
 			if l.item then
 				if l.item.transmog then
-					r = r..icons[l.item.transmog]
+					r = r..l.item.transmog
 				end
 				if l.item.itemLevelUpgrade then
 					if r ~= "" then r = r.." " end
@@ -1512,6 +1507,32 @@ local jewelryCache = {
 	[165785] = true, -- Tortollan Trader's Stock
 }
 
+-- CanIMogIt
+function WQA:IsTransmogable(itemLink)
+    -- Returns whether the item is transmoggable or not.
+
+    -- White items are not transmoggable.
+    local quality = select(3, GetItemInfo(itemLink))
+    if quality == nil then return end
+    if quality <= 1 then
+        return false
+    end
+
+    local itemID, _, _, slotName = GetItemInfoInstant(itemLink)
+
+    -- See if the game considers it transmoggable
+    local transmoggable = select(3, C_Transmog.GetItemInfo(itemID))
+    if transmoggable == false then
+        return false
+    end
+
+	-- See if the item is in a valid transmoggable slot
+	local slot = EquipLocToSlot1[slotName]
+    if slot == nil or slot == 11 or slot == 13 then
+        return false
+    end
+    return true
+end
 
 function WQA:CheckItems(questID, isEmissary)
 	local retry = false
@@ -1752,13 +1773,24 @@ function WQA:CheckItems(questID, isEmissary)
 			end
 
 			-- Transmog
-			if CanIMogIt and self.db.profile.options.reward.gear.unknownAppearance then
-				if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+			if self.db.profile.options.reward.gear.unknownAppearance and self:IsTransmogable(itemLink) then
+				if itemClassID == 2 or itemClassID == 4 then
 					local transmog
-					if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
-						transmog = "unknown"
-					elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.profile.options.reward.gear.unknownSource then
-						transmog = "known"
+					if AllTheThings then
+						local state = AllTheThings.SearchForLink(itemLink)[1].collected
+						if not state then
+							transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
+						elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
+							transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
+						end
+					elseif CanIMogIt then
+						if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+							if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
+								transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t"
+							elseif not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.profile.options.reward.gear.unknownSource then
+								transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t"
+							end
+						end
 					end
 					if transmog then
 						local item = {itemLink = itemLink, transmog = transmog}
