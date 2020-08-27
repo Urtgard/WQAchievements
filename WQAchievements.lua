@@ -1528,7 +1528,7 @@ function WQA:IsTransmogable(itemLink)
 
 	-- See if the item is in a valid transmoggable slot
 	local slot = EquipLocToSlot1[slotName]
-    if slot == nil or slot == 11 or slot == 13 then
+    if slot == nil or slot == 11 or slot == 13 or slot == 2 then
         return false
     end
     return true
