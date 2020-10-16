@@ -1,6 +1,10 @@
 local WQA = WQAchievements
 local L = WQA.L
 
+-- Blizzard
+local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
+local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
+
 local optionsTimer
 local start
 
@@ -17,6 +21,9 @@ local IDToExpansionID = {
 }
 
 local CurrencyIDList = {
+	[6] = {
+		824, -- Garrison Resources
+	},
 	[7] = {
 		1220, -- Order Resources
 		1226, -- Nethershard
@@ -912,9 +919,9 @@ function WQA:UpdateOptions()
 				for k,v in pairs(CurrencyIDList[i]) do
 					if not (type(v) == "table" and v.faction ~= self.faction) then
 						if type(v) == "table" then v = v.id end
-						args.currency.args[GetCurrencyInfo(v)] = {
+						args.currency.args[GetCurrencyInfo(v).name] = {
 							type = "toggle",
-							name = GetCurrencyInfo(v),
+							name = GetCurrencyInfo(v).name,
 							set = function(info, val)
 								WQA.db.profile.options.reward.currency[v] = val
 							end,
@@ -967,9 +974,9 @@ function WQA:UpdateOptions()
 				for k,v in pairs(self.EmissaryQuestIDList[i]) do
 					if not (type(v) == "table" and v.faction ~= self.faction) then
 						if type(v) == "table" then v = v.id end
-						args.emissary.args[C_QuestLog.GetQuestInfo(v) or tostring(v)] = {
+						args.emissary.args[GetTitleForQuestID(v) or tostring(v)] = {
 							type = "toggle",
-							name = C_QuestLog.GetQuestInfo(v) or tostring(v),
+							name = GetTitleForQuestID(v) or tostring(v),
 							set = function(info, val)
 								WQA.db.profile.options.emissary[v] = val
 							end,
@@ -1107,9 +1114,9 @@ function WQA:UpdateOptions()
 			for k,v in pairs(CurrencyIDList[i]) do
 				if not (type(v) == "table" and v.faction ~= self.faction) then
 					if type(v) == "table" then v = v.id end
-					args.currency.args[GetCurrencyInfo(v)] = {
+					args.currency.args[GetCurrencyInfo(v).name] = {
 						type = "toggle",
-						name = GetCurrencyInfo(v),
+						name = GetCurrencyInfo(v).name,
 						set = function(info, val)
 							WQA.db.profile.options.missionTable.reward.currency[v] = val
 						end,
@@ -1262,7 +1269,7 @@ function WQA:UpdateCustomQuests()
  	for id,object in pairs(data) do
 		args[tostring(id)] = {
 			type = "toggle",
-			name = GetQuestLink(id) or C_QuestLog.GetQuestInfo(id) or tostring(id),
+			name = GetQuestLink(id) or GetTitleForQuestID(id) or tostring(id),
 			width = "double",
 			set = function(info, val)
 				WQA.db.profile.custom.worldQuest[id] = val

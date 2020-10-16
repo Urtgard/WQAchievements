@@ -9,6 +9,10 @@ WQA.links = {}
 
 -- Blizzard
 local IsActive = C_TaskQuest.IsActive
+local GetQuestTagInfo = C_QuestLog.GetQuestTagInfo
+local GetQuestBountyInfoForMapID = C_QuestLog.GetBountiesForMapID
+local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
+local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
 
 -- Locales
 local locale = GetLocale()
@@ -225,7 +229,7 @@ end
 local function GetTaskLink(task)
 	if task.type == "WORLD_QUEST" then
 	--	if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
-			return GetQuestLink(task.id) or C_QuestLog.GetQuestInfo(task.id)
+			return GetQuestLink(task.id) or GetTitleForQuestID(task.id)
 	--	else
 	--		return GetQuestLink(task.id)
 	--	end
@@ -2009,10 +2013,8 @@ function WQA:UpdateQTip(tasks)
 									f(widget)
 								end
 							else
-								if IsWorldQuestHardWatched(id) or (IsWorldQuestWatched(id) and GetSuperTrackedQuestID() == id) then
-									BonusObjectiveTracker_UntrackWorldQuest(id)
-								else
-									BonusObjectiveTracker_TrackWorldQuest(id, true)
+								if not C_QuestLog.AddWorldQuestWatch(id, 1) then
+									C_QuestLog.RemoveWorldQuestWatch(id)
 								end
 							end				
 						end
@@ -2267,7 +2269,7 @@ local function SortByExpansion(a,b)
 end
 
 local function GetQuestName(questID)
-	return C_TaskQuest.GetQuestInfoByQuestID(questID) or C_QuestLog.GetQuestInfo(questID) or select(3,string.find(GetQuestLink(questID) or "[unknown]", "%[(.+)%]"))
+	return C_TaskQuest.GetQuestInfoByQuestID(questID) or GetTitleForQuestID(questID) or select(3,string.find(GetQuestLink(questID) or "[unknown]", "%[(.+)%]"))
 end
 
 local function GetMissionName(missionID)
@@ -2362,8 +2364,8 @@ function WQA:EmissaryIsActive(questID)
 	end
 
 	local i = 1
-	while GetQuestLogTitle(i) do
-		local _,_,_,_,_,_,_, questLogQuestID = GetQuestLogTitle(i)
+	while C_QuestLog.GetInfo(i) do
+		local questLogQuestID = C_QuestLog.GetInfo(i).questID
 		if questLogQuestID == questID then
 			return true
 		end
@@ -2468,9 +2470,9 @@ function WQA:formatTime(t)
 end
 
 local LE_GARRISON_TYPE = {
-	[6] = LE_GARRISON_TYPE_6_0,
-	[7] = LE_GARRISON_TYPE_7_0,
-	[8] = LE_GARRISON_TYPE_8_0,
+	[6] = Enum.GarrisonType.Type_6_0,
+	[7] = Enum.GarrisonType.Type_7_0,
+	[8] = Enum.GarrisonType.Type_8_0,
 }
 
 function WQA:CheckMissions()
@@ -2483,7 +2485,7 @@ function WQA:CheckMissions()
 			local missions = C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowerType(type))
 			-- Add Shipyard Missions
 			if i == 6 and C_Garrison.HasShipyard() then
-				for missionID,mission in ipairs(C_Garrison.GetAvailableMissions(LE_FOLLOWER_TYPE_SHIPYARD_6_2)) do
+				for missionID,mission in ipairs(C_Garrison.GetAvailableMissions(Enum.GarrisonFollowerType.FollowerType_6_2)) do
 					mission.followerType = LE_FOLLOWER_TYPE_SHIPYARD_6_2
 					missions[#missions + 1] = mission
 				end
