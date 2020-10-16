@@ -10,9 +10,10 @@ WQA.links = {}
 -- Blizzard
 local IsActive = C_TaskQuest.IsActive
 local GetQuestTagInfo = C_QuestLog.GetQuestTagInfo
-local GetQuestBountyInfoForMapID = C_QuestLog.GetBountiesForMapID
+local GetBountiesForMapID = C_QuestLog.GetBountiesForMapID
 local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 local GetCurrencyLink = C_CurrencyInfo.GetCurrencyLink
+local IsQuestFlaggedCompleted = C_QuestLog.IsQuestFlaggedCompleted
 
 -- Locales
 local locale = GetLocale()
@@ -719,23 +720,23 @@ function WQA:CreateQuestList()
 	self.missionList = {}
 	self.questFlagList = {}
 
-	if UnitLevel("player") >= 110 then
+	--if UnitLevel("player") >= 50 then
 		for _,v in pairs(self.data[7].achievements) do
 			self:AddAchievements(v)
 		end
 		self:AddMounts(self.data[7].mounts)
 		self:AddPets(self.data[7].pets)
 		self:AddToys(self.data[7].toys)
-	end
+	--end
 
-	if UnitLevel("player") >= 120 then
+	--if UnitLevel("player") >= 50 then
 		for _,v in pairs(self.data[8].achievements) do
 			self:AddAchievements(v)
 		end
 		self:AddMounts(self.data[8].mounts)
 		self:AddPets(self.data[8].pets)
 		self:AddToys(self.data[8].toys)
-	end
+	--end
 	
 	self:AddCustom()
 	self:Special()
@@ -2319,31 +2320,34 @@ function WQA:SortQuestList(list)
 	return list
 end
 
-local GetQuestBountyInfoForMapIDRequested = false
+local GetBountiesForMapIDRequested = false
 function WQA:EmissaryReward()
 	self.emissaryRewards = false
 	local retry = false
 	
 	for _, mapID in pairs({627,875}) do
-		for _, emissary in ipairs(GetQuestBountyInfoForMapID(mapID)) do
-			local questID = emissary.questID
-			if self.db.profile.options.emissary[questID] == true then
-				self:AddEmissaryReward(questID, "CUSTOM", nil, true)
-			end
-			if HaveQuestData(questID) and HaveQuestRewardData(questID) then
-				retry = (self:CheckItems(questID, true) or retry)
-				self:CheckCurrencies(questID, true)
-			else
-				retry = true
+		local bounties = GetBountiesForMapID(mapID)
+		if bounties then
+			for _, emissary in ipairs(GetBountiesForMapID(mapID)) do
+				local questID = emissary.questID
+				if self.db.profile.options.emissary[questID] == true then
+					self:AddEmissaryReward(questID, "CUSTOM", nil, true)
+				end
+				if HaveQuestData(questID) and HaveQuestRewardData(questID) then
+					retry = (self:CheckItems(questID, true) or retry)
+					self:CheckCurrencies(questID, true)
+				else
+					retry = true
+				end
 			end
 		end
 	end
 
-	if retry == true or GetQuestBountyInfoForMapIDRequested == false then
-		GetQuestBountyInfoForMapIDRequested = true
+	if retry == true or GetBountiesForMapIDRequested == false then
+		GetBountiesForMapIDRequested = true
 		self:ScheduleTimer(function() self:EmissaryReward() end, 1.5)
 	else
-		GetQuestBountyInfoForMapIDRequested = false
+		GetBountiesForMapIDRequested = false
 		self.emissaryRewards = true
 	end
 end
