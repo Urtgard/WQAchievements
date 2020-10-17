@@ -1421,7 +1421,11 @@ function WQA:Reward()
 				if quests then
 					for i=1,#quests do
 						local questID = quests[i].questId
-						local worldQuestType = select(3,GetQuestTagInfo(questID)) or 0
+						local questTagInfo = GetQuestTagInfo(questID)
+						local worldQuestType = 0
+						if questTagInfo then
+							worldQuestType = questTagInfo.worldQuestType
+						end
 
 						if self.questList[questID] and not self.db.profile.options.reward.general.worldQuestType[worldQuestType] then
 							self.questList[questID] = nil
@@ -1455,23 +1459,25 @@ function WQA:Reward()
 							self:CheckCurrencies(questID)
 
 							-- Profession
-							local _,_,_,_,_, tradeskillLineIndex = GetQuestTagInfo(questID)
-							if tradeskillLineIndex then
-								local professionName,_,_,_,_,_, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
-								if tradeskillLineIndex then
-									local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-									local exp = 0
-									for expansion,zones in pairs(WQA.ZoneIDList) do
-										for _, v in pairs(zones) do
-											if zoneID == v then
-												exp = expansion
-											end
+							local tradeskillLineID
+							if questTagInfo then
+								tradeskillLineID = GetQuestTagInfo(questID).tradeskillLineID
+							end
+
+							if tradeskillLineID then
+								local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(tradeskillLineID)
+								local zoneID = C_TaskQuest.GetQuestZoneID(questID)
+								local exp = 0
+								for expansion,zones in pairs(WQA.ZoneIDList) do
+									for _, v in pairs(zones) do
+										if zoneID == v then
+											exp = expansion
 										end
 									end
-									
-									if not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup then
-										self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
-									end
+								end
+								
+								if not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup then
+									self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
 								end
 							end
 						end
@@ -2490,7 +2496,7 @@ function WQA:CheckMissions()
 			-- Add Shipyard Missions
 			if i == 6 and C_Garrison.HasShipyard() then
 				for missionID,mission in ipairs(C_Garrison.GetAvailableMissions(Enum.GarrisonFollowerType.FollowerType_6_2)) do
-					mission.followerType = LE_FOLLOWER_TYPE_SHIPYARD_6_2
+					mission.followerType = Enum.GarrisonFollowerType.FollowerType_6_2
 					missions[#missions + 1] = mission
 				end
 			end

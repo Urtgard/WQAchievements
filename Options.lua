@@ -89,10 +89,10 @@ local CraftingReagentIDList = {
 }
 
 local worldQuestType = {
-	["LE_QUEST_TAG_TYPE_PVP"] = LE_QUEST_TAG_TYPE_PVP,
-	["LE_QUEST_TAG_TYPE_PET_BATTLE"] = LE_QUEST_TAG_TYPE_PET_BATTLE,
-	["LE_QUEST_TAG_TYPE_PROFESSION"] = LE_QUEST_TAG_TYPE_PROFESSION,
-	["LE_QUEST_TAG_TYPE_DUNGEON"] = LE_QUEST_TAG_TYPE_DUNGEON,
+	["LE_QUEST_TAG_TYPE_PVP"] = Enum.QuestTagType.PvP,
+	["LE_QUEST_TAG_TYPE_PET_BATTLE"] = Enum.QuestTagType.PetBattle,
+	["LE_QUEST_TAG_TYPE_PROFESSION"] = Enum.QuestTagType.Profession,
+	["LE_QUEST_TAG_TYPE_DUNGEON"] = Enum.QuestTagType.Dungeon,
 }
 
 WQA.ZoneIDList = {
