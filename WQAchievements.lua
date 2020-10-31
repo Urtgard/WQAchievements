@@ -2763,6 +2763,8 @@ function WQA:AnnouncePopUp(quests, silent)
 	self:UpdateQTip(quests)
 	PopUp:SetWidth(self.tooltip:GetWidth() + 8.5)
 	PopUp:SetHeight(self.tooltip:GetHeight() + 32)
+	PopUp:SetScale(self.tooltip:GetScale())
+	PopUp:SetFrameLevel(self.tooltip:GetFrameLevel())
 
 	if self.db.profile.options.popupRememberPosition then
 		PopUp:ClearAllPoints()
