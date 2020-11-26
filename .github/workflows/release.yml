@@ -1,0 +1,50 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Package and release
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    tags:
+      - '**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # "release" is a job, you can name it anything you want
+  release:
+
+    # we can run our steps on pretty much anything, but the "ubuntu-latest" image is a safe bet
+    runs-on: ubuntu-latest
+
+    # specify the environment variables used by the packager, matching the secrets from the project on GitHub
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}  # "GITHUB_TOKEN" is a secret always provided to the workflow
+                                                 # for your own token, the name cannot start with "GITHUB_"
+
+    # "steps" holds a list of all the steps needed to package and release our AddOn
+    steps:
+
+      # we first have to clone the AddOn project, this is a required step
+      - name: Clone project
+        uses: actions/checkout@v1
+        with:
+          # you can specify how much of the commit history you want to fetch,
+          # which is useful for controlling the length of the automated changelog
+          fetch-depth: 50
+
+      # once cloned, we just run the GitHub Action for the packager project
+      - name: Package and release
+        uses: BigWigsMods/packager@master
+
+      # another example where we supply additional arguments, this example is specifically to release
+      # for the Classic version of the game
+      - name: Package and release for Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g 1.13.5 -w 0
