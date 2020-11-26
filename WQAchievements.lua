@@ -2021,6 +2021,8 @@ function WQA:CheckItems(questID, isEmissary)
 			local itemLink = select(2, inspectScantip:GetItem())
 			if not itemLink then
 				retry = true
+			elseif string.find(itemLink, "%[]") then
+				retry = true
 			end
 
 			local itemName,
