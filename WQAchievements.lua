@@ -2020,9 +2020,9 @@ function WQA:CheckItems(questID, isEmissary)
 			inspectScantip:SetQuestLogItem("reward", 1, questID)
 			local itemLink = select(2, inspectScantip:GetItem())
 			if not itemLink then
-				retry = true
+				return true
 			elseif string.find(itemLink, "%[]") then
-				retry = true
+				return true
 			end
 
 			local itemName,
