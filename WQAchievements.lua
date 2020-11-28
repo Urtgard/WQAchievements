@@ -1088,6 +1088,17 @@ do
 	}
 	WQA.data[8] = bfa
 end
+-- Shadowlands
+do
+	local shadowlands = {}
+	shadowlands = {
+		name = "Shadowlands",
+		toys = {
+			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
+		}
+	}
+	WQA.data[9] = shadowlands
+end
 
 -- Terrors of the Shore
 -- Commander of Argus
@@ -1100,23 +1111,24 @@ function WQA:CreateQuestList()
 	self.missionList = {}
 	self.questFlagList = {}
 
-	--if UnitLevel("player") >= 50 then
+	-- Legion
 	for _, v in pairs(self.data[7].achievements) do
 		self:AddAchievements(v)
 	end
 	self:AddMounts(self.data[7].mounts)
 	self:AddPets(self.data[7].pets)
 	self:AddToys(self.data[7].toys)
-	--end
 
-	--if UnitLevel("player") >= 50 then
+	-- Battle for Azeroth
 	for _, v in pairs(self.data[8].achievements) do
 		self:AddAchievements(v)
 	end
 	self:AddMounts(self.data[8].mounts)
 	self:AddPets(self.data[8].pets)
 	self:AddToys(self.data[8].toys)
-	--end
+
+	-- Shadowlands
+	self:AddToys(self.data[9].toys)
 
 	self:AddCustom()
 	self:Special()
@@ -3125,6 +3137,9 @@ function WQA:CheckMissions()
 	local activeMissions = {}
 	local retry
 	for i in pairs(WQA.ExpansionList) do
+		if i > 8 then
+			break
+		end
 		local type = LE_GARRISON_TYPE[i]
 		local followerType = GetPrimaryGarrisonFollowerType(type)
 		if C_Garrison.HasGarrison(type) then

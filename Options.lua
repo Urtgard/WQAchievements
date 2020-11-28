@@ -11,13 +11,15 @@ local start
 WQA.ExpansionList = {
 	[6] = "Warlords of Draenor",
 	[7] = "Legion",
-	[8] = "Battle for Azeroth"
+	[8] = "Battle for Azeroth",
+	[9] = "Shadowlands"
 }
 
 local IDToExpansionID = {
 	[1] = 6,
 	[2] = 7,
-	[3] = 8
+	[3] = 8,
+	[4] = 9
 }
 
 local CurrencyIDList = {
@@ -123,6 +125,12 @@ WQA.ZoneIDList = {
 		1462, -- Mechagon
 		1527, -- Uldum
 		1530 -- Vale of Eternal Blossoms
+	},
+	[9] = {
+		1525, -- Revendreth
+		1533, -- Bastion
+		1536, -- Maldraxxus
+		1565 -- Ardenweald
 	}
 }
 
