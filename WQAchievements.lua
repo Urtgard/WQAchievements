@@ -1093,6 +1093,41 @@ do
 	local shadowlands = {}
 	shadowlands = {
 		name = "Shadowlands",
+		achievements = {
+			{name = "Tea Tales", id = 14233, criteriaType = "QUESTS", criteria = {59848, 59850, 59852, 59853}},
+			{name = "Something's Not Quite Right....", id = 14671, criteriaType = "QUEST_SINGLE", criteria = 60739},
+			{name = "A Bit of This, A Bit of That", id = 14672, criteriaType = "QUEST_SINGLE", criteria = 60475},
+			{name = "Flight School Graduate", id = 14735, criteriaType = "QUESTS", criteria = {60844, 60858, 60911}},
+			{name = "What Bastion Remembered", id = 14737, criteriaType = "QUEST_SINGLE", criteria = 59717},
+			{name = "Aerial Ace", id = 14741, criteriaType = "QUEST_SINGLE", criteria = 60911},
+			{name = "Breaking the Stratus Fear", id = 14762, criteriaType = "QUEST_SINGLE", criteria = 60858},
+			{name = "Ramparts Racer", id = 14765, criteriaType = "QUEST_SINGLE", criteria = 59643},
+			{name = "Parasoling", id = 14766, criteriaType = "QUEST_SINGLE", criteria = 59718},
+			{name = "Caught in a Bat Romance", id = 14772, criteriaType = "QUEST_SINGLE", criteria = 60602},
+			{
+				name = "Battle in the Shadowlands",
+				id = 14625,
+				criteriaType = "QUESTS",
+				criteria = {
+					61949,
+					61948,
+					61947,
+					61946,
+					61886,
+					61885,
+					61883, -- Sylla
+					61879,
+					61870,
+					61868,
+					61867, -- Rotgut
+					61866,
+					61791,
+					61787, -- Zolla
+					61784,
+					61783
+				}
+			}
+		},
 		toys = {
 			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
 		}
@@ -1128,6 +1163,9 @@ function WQA:CreateQuestList()
 	self:AddToys(self.data[8].toys)
 
 	-- Shadowlands
+	for _, v in pairs(self.data[9].achievements) do
+		self:AddAchievements(v)
+	end
 	self:AddToys(self.data[9].toys)
 
 	self:AddCustom()
