@@ -3168,20 +3168,18 @@ end
 local LE_GARRISON_TYPE = {
 	[6] = Enum.GarrisonType.Type_6_0,
 	[7] = Enum.GarrisonType.Type_7_0,
-	[8] = Enum.GarrisonType.Type_8_0
+	[8] = Enum.GarrisonType.Type_8_0,
+	[9] = Enum.GarrisonType.Type_9_0
 }
 
 function WQA:CheckMissions()
 	local activeMissions = {}
 	local retry
 	for i in pairs(WQA.ExpansionList) do
-		if i > 8 then
-			break
-		end
 		local type = LE_GARRISON_TYPE[i]
 		local followerType = GetPrimaryGarrisonFollowerType(type)
 		if C_Garrison.HasGarrison(type) then
-			local missions = C_Garrison.GetAvailableMissions(GetPrimaryGarrisonFollowerType(type))
+			local missions = C_Garrison.GetAvailableMissions(followerType)
 			-- Add Shipyard Missions
 			if i == 6 and C_Garrison.HasShipyard() then
 				for missionID, mission in ipairs(C_Garrison.GetAvailableMissions(Enum.GarrisonFollowerType.FollowerType_6_2)) do
@@ -3197,11 +3195,11 @@ function WQA:CheckMissions()
 					if self.missionList[missionID] then
 						addMission = true
 					end
-					if mission.rewards[1] then
-						if mission.rewards[1].currencyID then
-							if mission.rewards[1].currencyID ~= 0 then
-								local currencyID = mission.rewards[1].currencyID
-								local amount = mission.rewards[1].quantity
+					for _, reward in ipairs(mission.rewards) do
+						if reward.currencyID then
+							if reward.currencyID ~= 0 then
+								local currencyID = reward.currencyID
+								local amount = reward.quantity
 								if self.db.profile.options.missionTable.reward.currency[currencyID] then
 									local currency = {currencyID = currencyID, amount = amount}
 									self:AddRewardToMission(missionID, "CURRENCY", currency)
@@ -3216,7 +3214,7 @@ function WQA:CheckMissions()
 									end
 								end
 							else
-								local gold = math.floor(mission.rewards[1].quantity / 10000)
+								local gold = math.floor(reward.quantity / 10000)
 								if
 									self.db.profile.options.missionTable.reward.gold and
 										gold >= self.db.profile.options.missionTable.reward.goldMin
@@ -3227,9 +3225,21 @@ function WQA:CheckMissions()
 							end
 						end
 
-						if mission.rewards[1].itemID then
-							local itemID = mission.rewards[1].itemID
-							local itemLink = select(2, GetItemInfo(itemID))
+						if reward.itemID then
+							local itemID = reward.itemID
+							local itemName,
+								itemLink,
+								itemRarity,
+								itemLevel,
+								itemMinLevel,
+								itemType,
+								itemSubType,
+								itemStackCount,
+								itemEquipLoc,
+								itemTexture,
+								itemSellPrice,
+								itemClassID,
+								itemSubClassID = GetItemInfo(itemID)
 
 							if not itemLink then
 								retry = true
@@ -3248,6 +3258,36 @@ function WQA:CheckMissions()
 										local reputation = {itemLink = itemLink, factionID = factionID}
 										self:AddRewardToMission(missionID, "REPUTATION", reputation)
 										addMission = true
+									end
+								end
+
+								-- Transmog
+								if self.db.profile.options.reward.gear.unknownAppearance and self:IsTransmogable(itemLink) then
+									if itemClassID == 2 or itemClassID == 4 then
+										local transmog
+										if AllTheThings then
+											local state = AllTheThings.SearchForLink(itemLink)[1].collected
+											if not state then
+												transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
+											elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
+												transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
+											end
+										elseif CanIMogIt then
+											if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
+												if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
+													transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t"
+												elseif
+													not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.profile.options.reward.gear.unknownSource
+												 then
+													transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t"
+												end
+											end
+										end
+										if transmog then
+											local item = {itemLink = itemLink, transmog = transmog}
+											self:AddRewardToMission(missionID, "ITEM", item)
+											addMission = true
+										end
 									end
 								end
 							end

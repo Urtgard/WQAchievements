@@ -40,6 +40,9 @@ local CurrencyIDList = {
 		1721, -- Prismatic Manapearl
 		1602, -- Conquest
 		1166 -- Timewarped Badge
+	},
+	[9] = {
+		1889 -- Adventure Campaign Progress
 	}
 }
 
