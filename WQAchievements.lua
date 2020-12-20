@@ -1126,7 +1126,8 @@ do
 					61784,
 					61783
 				}
-			}
+			},
+			{name = "Adventures: Into the Breach", id = 14844, criteriaType = "MISSION_TABLE", criteria = {2296}}
 		},
 		toys = {
 			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
@@ -1242,7 +1243,9 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
 							end
 						elseif achievement.criteriaType == "MISSION_TABLE" then
-							--self.missionList[questID] = {name = C_Garrison.GetMissionName(questID), reward = {{rewardType = "ACHIEVEMENT", achievement[1] = {id = id}}}}
+							if achievement.criteria and achievement.criteria[i] then
+								questID = achievement.criteria[i]
+							end
 							self:AddRewardToMission(questID, "ACHIEVEMENT", id)
 						else
 							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
