@@ -1129,6 +1129,9 @@ do
 			},
 			{name = "Adventures: Into the Breach", id = 14844, criteriaType = "MISSION_TABLE", criteria = {2296}}
 		},
+		pets = {
+			{name = "Dal", itemID = 183859, creatureID = 171136, quest = {{trackingID = 0, wqID = 60655}}}
+		},
 		toys = {
 			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
 		}
@@ -1167,6 +1170,7 @@ function WQA:CreateQuestList()
 	for _, v in pairs(self.data[9].achievements) do
 		self:AddAchievements(v)
 	end
+	self:AddPets(self.data[9].pets)
 	self:AddToys(self.data[9].toys)
 
 	self:AddCustom()
