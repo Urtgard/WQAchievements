@@ -1098,7 +1098,17 @@ do
 			{name = "Something's Not Quite Right....", id = 14671, criteriaType = "QUEST_SINGLE", criteria = 60739},
 			{name = "A Bit of This, A Bit of That", id = 14672, criteriaType = "QUEST_SINGLE", criteria = 60475},
 			{name = "Flight School Graduate", id = 14735, criteriaType = "QUESTS", criteria = {60844, 60858, 60911}},
-			{name = "What Bastion Remembered", id = 14737, criteriaType = "QUEST_SINGLE", criteria = 59717},
+			{
+				name = "What Bastion Remembered",
+				id = 14737,
+				criteriaType = "QUESTS",
+				criteria = {
+					{
+						59717,
+						59705
+					}
+				}
+			},
 			{name = "Aerial Ace", id = 14741, criteriaType = "QUEST_SINGLE", criteria = 60911},
 			{name = "Breaking the Stratus Fear", id = 14762, criteriaType = "QUEST_SINGLE", criteria = 60858},
 			{name = "Ramparts Racer", id = 14765, criteriaType = "QUEST_SINGLE", criteria = 59643},
