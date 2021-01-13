@@ -1127,7 +1127,12 @@ do
 					61783
 				}
 			},
-			{name = "Adventures: Into the Breach", id = 14844, criteriaType = "MISSION_TABLE", criteria = {2296}}
+			{
+				name = "Adventures: Into the Breach",
+				id = 14844,
+				criteriaType = "MISSION_TABLE",
+				criteria = {{2296, 2250}, {2251, 2297}, {2252, 2298}, {2299, 2253}, 2254, 2255, 2256, 2258, 2259, 2260}
+			}
 		},
 		pets = {
 			{name = "Dal", itemID = 183859, creatureID = 171136, quest = {{trackingID = 0, wqID = 60655}}}
