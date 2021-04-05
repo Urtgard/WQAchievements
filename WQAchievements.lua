@@ -1159,7 +1159,7 @@ do
 			{name = "Carpal", itemID = 183114, creatureID = 173847, source = {type = "ITEM", itemID = 183111}}
 		},
 		toys = {
-			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
+			{name = "Tithe Collector's Vessel", itemID = 180947, source = {type = "ITEM", itemID = 180947}}
 		}
 	}
 	WQA.data[9] = shadowlands
@@ -1389,12 +1389,16 @@ function WQA:AddToys(toys)
 			end
 
 			if not PlayerHasToy(toy.itemID) or forced then
-				if toy.questID then
-					self:AddRewardToQuest(toy.questID, "CHANCE", toy.itemID)
+				if toy.source and toy.source.type == "ITEM" then
+					self.itemList[toy.source.itemID] = true
 				else
-					for _, v in pairs(toy.quest) do
-						if not IsQuestFlaggedCompleted(v.trackingID) then
-							self:AddRewardToQuest(v.wqID, "CHANCE", toy.itemID)
+					if toy.questID then
+						self:AddRewardToQuest(toy.questID, "CHANCE", toy.itemID)
+					else
+						for _, v in pairs(toy.quest) do
+							if not IsQuestFlaggedCompleted(v.trackingID) then
+								self:AddRewardToQuest(v.wqID, "CHANCE", toy.itemID)
+							end
 						end
 					end
 				end
