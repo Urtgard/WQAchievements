@@ -1142,6 +1142,17 @@ do
 				id = 14844,
 				criteriaType = "MISSION_TABLE",
 				criteria = {{2296, 2250}, {2251, 2297}, {2252, 2298}, {2299, 2253}, 2254, 2255, 2256, 2258, 2259, 2260}
+			},
+			{
+				name = "Impressing Zo'Sorg",
+				id = 14516,
+				criteriaType = "QUESTS",
+				criteria = {
+					{59658},
+					{59803},
+					{59825},
+					{60231}
+				}
 			}
 		},
 		pets = {
