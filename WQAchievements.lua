@@ -1101,12 +1101,10 @@ do
 			{
 				name = "What Bastion Remembered",
 				id = 14737,
-				criteriaType = "QUESTS",
+				criteriaType = "QUEST_SINGLE",
 				criteria = {
-					{
-						59717,
-						59705
-					}
+					59717,
+					59705
 				}
 			},
 			{name = "Aerial Ace", id = 14741, criteriaType = "QUEST_SINGLE", criteria = 60911},
@@ -1230,7 +1228,13 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 				self:AddAchievements(v, forced, forcedByMe)
 			end
 		elseif achievement.criteriaType == "QUEST_SINGLE" then
-			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
+			if type(achievement.criteria) == "table" then
+				for _, questID in pairs(achievement.criteria) do
+					self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
+				end
+			else
+				self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
+			end
 		elseif achievement.criteriaType == "QUEST_PIN" then
 			C_QuestLine.RequestQuestLinesForMap(achievement.mapID)
 			for i = 1, GetAchievementNumCriteria(id) do
