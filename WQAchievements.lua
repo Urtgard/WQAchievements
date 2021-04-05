@@ -5,6 +5,7 @@ WQA.watched = {}
 WQA.watchedMissions = {}
 WQA.questList = {}
 WQA.missionList = {}
+WQA.itemList = {}
 WQA.links = {}
 
 -- Blizzard
@@ -1154,7 +1155,8 @@ do
 			}
 		},
 		pets = {
-			{name = "Dal", itemID = 183859, creatureID = 171136, quest = {{trackingID = 0, wqID = 60655}}}
+			{name = "Dal", itemID = 183859, creatureID = 171136, quest = {{trackingID = 0, wqID = 60655}}},
+			{name = "Carpal", itemID = 183114, creatureID = 173847, source = {type = "ITEM", itemID = 183111}}
 		},
 		toys = {
 			{name = "Tithe Collector's Vessel", itemID = 180947, quest = {{trackingID = 0, wqID = 59789}}}
@@ -1348,16 +1350,20 @@ function WQA:AddPets(pets)
 
 			if not owned or forced then
 				for _, pet in pairs(pets) do
-					if companionID == pet.creatureID then
-						if pet.emissary == true then
-							self:AddEmissaryReward(pet.questID, "CHANCE", pet.itemID)
-						else
-							if pet.questID then
-								self:AddRewardToQuest(pet.questID, "CHANCE", pet.itemID)
+					if pet.source and pet.source.type == "ITEM" then
+						self.itemList[pet.source.itemID] = true
+					else
+						if companionID == pet.creatureID then
+							if pet.emissary == true then
+								self:AddEmissaryReward(pet.questID, "CHANCE", pet.itemID)
 							else
-								for _, v in pairs(pet.quest) do
-									if not IsQuestFlaggedCompleted(v.trackingID) then
-										self:AddRewardToQuest(v.wqID, "CHANCE", pet.itemID)
+								if pet.questID then
+									self:AddRewardToQuest(pet.questID, "CHANCE", pet.itemID)
+								else
+									for _, v in pairs(pet.quest) do
+										if not IsQuestFlaggedCompleted(v.trackingID) then
+											self:AddRewardToQuest(v.wqID, "CHANCE", pet.itemID)
+										end
 									end
 								end
 							end
@@ -2444,6 +2450,12 @@ function WQA:CheckItems(questID, isEmissary)
 				if self.db.profile.custom.worldQuestReward[itemID] == true then
 					self:AddRewardToQuest(questID, "CUSTOM_ITEM", itemLink, isEmissary)
 				end
+			end
+
+			-- Items
+			if self.itemList[itemID] == true then
+				local item = {itemLink = itemLink}
+				self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 			end
 
 			-- Azerite Traits
