@@ -2477,6 +2477,11 @@ function WQA:CheckItems(questID, isEmissary)
 					end
 				end
 			end
+
+			-- Conduit
+			if self.db.profile.options.reward.gear.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
+				self:AddRewardToQuest(questID, "ITEM", {itemLink = itemLink}, isEmissary)
+			end
 		else
 			retry = true
 		end
@@ -3342,6 +3347,12 @@ function WQA:CheckMissions()
 											addMission = true
 										end
 									end
+								end
+
+								-- Conduit
+								if self.db.profile.options.reward.gear.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
+									self:AddRewardToMission(missionID, "ITEM", {itemLink = itemLink})
+									addMission = true
 								end
 							end
 						end

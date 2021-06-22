@@ -6,7 +6,6 @@ local GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
 local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 
 local optionsTimer
-local start
 
 WQA.ExpansionList = {
 	[6] = "Warlords of Draenor",
@@ -422,6 +421,18 @@ function WQA:UpdateOptions()
 								end,
 								get = function()
 									return WQA.db.profile.options.reward.gear.azeriteTraits
+								end
+							},
+							conduit = {
+								name = "Conduit",
+								desc = "Track conduit",
+								type = "toggle",
+								order = newOrder(),
+								set = function(info, val)
+									WQA.db.profile.options.reward.gear.conduit = val
+								end,
+								get = function()
+									return WQA.db.profile.options.reward.gear.conduit
 								end
 							}
 						}
@@ -1359,7 +1370,6 @@ function WQA:CreateGroup(options, data, groupName)
 			if object.itemID then
 				if not select(2, GetItemInfo(object.itemID)) then
 					self:CancelTimer(optionsTimer)
-					start = GetTime()
 					optionsTimer =
 						self:ScheduleTimer(
 						function()
