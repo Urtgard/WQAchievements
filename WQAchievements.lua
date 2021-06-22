@@ -2095,7 +2095,7 @@ function WQA:IsTransmogable(itemLink)
 	local itemID, _, _, slotName = GetItemInfoInstant(itemLink)
 
 	-- See if the game considers it transmoggable
-	local transmoggable = select(3, C_Transmog.GetItemInfo(itemID))
+	local transmoggable = select(3, C_Transmog.CanTransmogItem(itemID))
 	if transmoggable == false then
 		return false
 	end
