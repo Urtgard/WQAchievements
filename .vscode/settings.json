@@ -4,6 +4,8 @@
         "LibStub",
         "C_QuestLog",
         "C_CurrencyInfo",
-        "AllTheThings"
+        "AllTheThings",
+        "GameTooltip",
+        "GameTooltip_SetDefaultAnchor"
     ]
 }

@@ -2605,7 +2605,7 @@ function WQA:UpdateQTip(tasks)
 						GameTooltip:ClearAllPoints()
 						GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
 						if task.type == "WORLD_QUEST" then
-							if linke then
+							if string.find(link, "|Hquest:") then
 								GameTooltip:SetHyperlink(link)
 							end
 						else
