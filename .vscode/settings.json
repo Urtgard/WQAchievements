@@ -3,6 +3,7 @@
         "C_TaskQuest",
         "LibStub",
         "C_QuestLog",
-        "C_CurrencyInfo"
+        "C_CurrencyInfo",
+        "AllTheThings"
     ]
 }
