@@ -1164,7 +1164,8 @@ do
 			{name = "Carpal", itemID = 183114, creatureID = 173847, source = {type = "ITEM", itemID = 183111}}
 		},
 		toys = {
-			{name = "Tithe Collector's Vessel", itemID = 180947, source = {type = "ITEM", itemID = 180947}}
+			{name = "Tithe Collector's Vessel", itemID = 180947, source = {type = "ITEM", itemID = 180947}},
+			{name = "Gormling in a Bag", itemID = 184487, source = {type = "ITEM", itemID = 184487}}
 		}
 	}
 	WQA.data[9] = shadowlands
