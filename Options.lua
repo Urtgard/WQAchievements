@@ -132,7 +132,8 @@ WQA.ZoneIDList = {
 		1525, -- Revendreth
 		1533, -- Bastion
 		1536, -- Maldraxxus
-		1565 -- Ardenweald
+		1565, -- Ardenweald
+		1543 -- The Maw
 	}
 }
 
