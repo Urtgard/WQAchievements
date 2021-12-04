@@ -133,7 +133,8 @@ WQA.ZoneIDList = {
 		1533, -- Bastion
 		1536, -- Maldraxxus
 		1565, -- Ardenweald
-		1543 -- The Maw
+		1543, -- The Maw
+		1961 -- Korthia
 	}
 }
 
