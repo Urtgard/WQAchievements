@@ -1999,22 +1999,18 @@ function WQA:Reward()
 								end
 
 								if
-									self.db.profile.achievements["Variety is the Spice of Life"] == true and
-										not select(4, GetAchievementInfo(11189)) == true and
-										exp == 7 and
-										not mapID == 885 and
-										not mapID == 830 and
-										not mapID == 882
+									self.db.profile.achievements[11189] ~= "disabled" and not select(4, GetAchievementInfo(11189)) and exp == 7 and
+										mapID ~= 830 and
+										mapID ~= 885 and
+										mapID ~= 882
 								 then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
 								elseif
-									self.db.profile.achievements["Wide World of Quests"] == true and
-										not select(4, GetAchievementInfo(13144)) == true and
-										exp == 8
+									self.db.profile.achievements[13144] ~= "disabled" and not select(4, GetAchievementInfo(13144)) and exp == 8
 								 then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
 								elseif
-									self.db.profile.achievements["The World Beyond"] and not select(4, GetAchievementInfo(14758)) and exp == 9
+									self.db.profile.achievements[14758] ~= "disabled" and not select(4, GetAchievementInfo(14758)) and exp == 9
 								 then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
 								end
@@ -3139,10 +3135,9 @@ end
 
 function WQA:Special()
 	if
-		(self.db.profile.achievements["Variety is the Spice of Life"] == true and
-			not select(4, GetAchievementInfo(11189)) == true) or
-			(self.db.profile.achievements["Wide World of Quests"] == true and not select(4, GetAchievementInfo(13144)) == true) or
-			(self.db.profile.achievements["The World Beyond"] and not select(4, GetAchievementInfo(14758)))
+		(self.db.profile.achievements[11189] ~= "disabled" and not select(4, GetAchievementInfo(11189)) == true) or
+			(self.db.profile.achievements[13144] ~= "disabled" and not select(4, GetAchievementInfo(13144)) == true) or
+			(self.db.profile.achievements[14758] ~= "disabled" and not select(4, GetAchievementInfo(14758)))
 	 then
 		self.event:RegisterEvent("QUEST_TURNED_IN")
 	end
