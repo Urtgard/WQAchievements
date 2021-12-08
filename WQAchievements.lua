@@ -1289,7 +1289,6 @@ function WQA:AddAchievements(achievement, forced, forcedByMe)
 							if achievement.criteria and achievement.criteria[i] then
 								if type(achievement.criteria[i]) == "table" then
 									for _, questID in pairs(achievement.criteria[i]) do
-										print("criteria", questID, id)
 										self:AddRewardToMission(questID, "ACHIEVEMENT", id)
 									end
 								else
