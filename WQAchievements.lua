@@ -1113,6 +1113,9 @@ do
 			{name = "Ramparts Racer", id = 14765, criteriaType = "QUEST_SINGLE", criteria = 59643},
 			{name = "Parasoling", id = 14766, criteriaType = "QUEST_SINGLE", criteria = 59718},
 			{name = "Caught in a Bat Romance", id = 14772, criteriaType = "QUEST_SINGLE", criteria = 60602},
+            {name = "Friend of Ooz", id = 15055, criteriaType = "QUEST_SINGLE", criteria = 64016},
+            {name = "Friend of Bloop", id = 15056, criteriaType = "QUEST_SINGLE", criteria = 64017},
+            {name = "Friend of Plaguey", id = 15057, criteriaType = "QUEST_SINGLE", criteria = 63989},
 			{
 				name = "Battle in the Shadowlands",
 				id = 14625,
