@@ -29,6 +29,7 @@ local CurrencyIDList = {
 		1220, -- Order Resources
 		1226, -- Nethershard
 		1342, -- Legionfall War Supplies
+		1508, -- Veiled Argunite
 		1533 -- Wakening Essence
 	},
 	[8] = {
