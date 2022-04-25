@@ -2591,7 +2591,8 @@ function WQA:UpdateQTip(tasks)
 					j = 2
 					if GetExpansion(task) ~= expansion then
 						expansion = GetExpansion(task)
-						tooltip:AddLine(GetExpansionName(expansion))
+						local row = tooltip:AddLine(GetExpansionName(expansion))
+						tooltip:SetLineTextColor(row, 0, 1, 0)
 						i = i + 1
 						zoneID = nil
 					end
@@ -2604,7 +2605,7 @@ function WQA:UpdateQTip(tasks)
 					j = 2
 					if GetTaskZoneID(task) ~= zoneID then
 						zoneID = GetTaskZoneID(task)
-						tooltip:SetCell(i, 1, GetTaskZoneName(task))
+						tooltip:SetCell(i, 1, "     " .. GetTaskZoneName(task))
 					end
 				end
 
