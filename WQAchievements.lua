@@ -2591,8 +2591,7 @@ function WQA:UpdateQTip(tasks)
 					j = 2
 					if GetExpansion(task) ~= expansion then
 						expansion = GetExpansion(task)
-						local row = tooltip:AddLine(GetExpansionName(expansion))
-						tooltip:SetLineTextColor(row, 0, 1, 0)
+						tooltip:AddLine(string.format("|cff33ff33%s|r", GetExpansionName(expansion)))
 						i = i + 1
 						zoneID = nil
 					end
