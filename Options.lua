@@ -535,6 +535,12 @@ function WQA:UpdateOptions()
 								width = .3,
 								func = function()
 									WQA:CreateCustomQuest()
+								end,
+								disabled = function()
+									local mapId = self.data.custom.mapID
+									local questId = self.data.custom.wqID
+									return (questId == nil or questId == "") or
+										(self.data.custom.questType == "QUEST_PIN" and (mapId == nil or mapId == ""))
 								end
 							},
 							-- Configure

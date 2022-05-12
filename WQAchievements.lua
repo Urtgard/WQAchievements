@@ -1465,7 +1465,7 @@ function WQA:AddCustom()
 				self:AddRewardToQuest(questID, "CUSTOM")
 				if v.questType == "QUEST_FLAG" then
 					self.questFlagList[questID] = true
-				elseif v.questType == "QUEST_PIN" then
+				elseif v.questType == "QUEST_PIN" and v.mapID then
 					C_QuestLine.RequestQuestLinesForMap(v.mapID)
 					self.questPinMapList[v.mapID] = true
 					self.questPinList[questID] = true
