@@ -1092,6 +1092,19 @@ end
 -- Shadowlands
 do
 	local shadowlands = {}
+	local trainer = {
+		61883,
+		61885,
+		61886,
+		61867,
+		61868,
+		61866,
+		61787,
+		61791,
+		61784,
+		61946,
+		61948
+	}
 	shadowlands = {
 		name = "Shadowlands",
 		achievements = {
@@ -1113,9 +1126,9 @@ do
 			{name = "Ramparts Racer", id = 14765, criteriaType = "QUEST_SINGLE", criteria = 59643},
 			{name = "Parasoling", id = 14766, criteriaType = "QUEST_SINGLE", criteria = 59718},
 			{name = "Caught in a Bat Romance", id = 14772, criteriaType = "QUEST_SINGLE", criteria = 60602},
-            {name = "Friend of Ooz", id = 15055, criteriaType = "QUEST_SINGLE", criteria = 64016},
-            {name = "Friend of Bloop", id = 15056, criteriaType = "QUEST_SINGLE", criteria = 64017},
-            {name = "Friend of Plaguey", id = 15057, criteriaType = "QUEST_SINGLE", criteria = 63989},
+			{name = "Friend of Ooz", id = 15055, criteriaType = "QUEST_SINGLE", criteria = 64016},
+			{name = "Friend of Bloop", id = 15056, criteriaType = "QUEST_SINGLE", criteria = 64017},
+			{name = "Friend of Plaguey", id = 15057, criteriaType = "QUEST_SINGLE", criteria = 63989},
 			{
 				name = "Battle in the Shadowlands",
 				id = 14625,
@@ -1160,6 +1173,23 @@ do
 				name = "The World Beyond",
 				id = 14758,
 				criteriaType = "SPECIAL"
+			},
+			{
+				name = "Family Exorcist",
+				id = 14879,
+				criteriaType = "ACHIEVEMENT",
+				criteria = {
+					{id = 14868, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14869, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14870, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14871, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14872, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14873, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14874, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14875, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14876, criteriaType = "QUESTS", criteria = trainer},
+					{id = 14877, criteriaType = "QUESTS", criteria = trainer}
+				}
 			}
 		},
 		pets = {
