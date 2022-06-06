@@ -1400,24 +1400,28 @@ function WQA:AddPets(pets)
 
 			if not owned or forced then
 				for _, pet in pairs(pets) do
-					if pet.source and pet.source.type == "ITEM" then
-						self.itemList[pet.source.itemID] = true
-					else
-						if companionID == pet.creatureID then
-							if pet.emissary == true then
-								self:AddEmissaryReward(pet.questID, "CHANCE", pet.itemID)
-							else
-								if pet.questID then
-									self:AddRewardToQuest(pet.questID, "CHANCE", pet.itemID)
-								else
-									for _, v in pairs(pet.quest) do
-										if not IsQuestFlaggedCompleted(v.trackingID) then
-											self:AddRewardToQuest(v.wqID, "CHANCE", pet.itemID)
-										end
-									end
+					if companionID == pet.creatureID then
+						if pet.emissary == true then
+							self:AddEmissaryReward(pet.questID, "CHANCE", pet.itemID)
+						end
+
+						if pet.source and pet.source.type == "ITEM" then
+							self.itemList[pet.source.itemID] = true
+						end
+
+						if pet.questID then
+							self:AddRewardToQuest(pet.questID, "CHANCE", pet.itemID)
+						end
+
+						if pet.quest then
+							for _, v in pairs(pet.quest) do
+								if not IsQuestFlaggedCompleted(v.trackingID) then
+									self:AddRewardToQuest(v.wqID, "CHANCE", pet.itemID)
 								end
 							end
 						end
+
+						break
 					end
 				end
 			end
