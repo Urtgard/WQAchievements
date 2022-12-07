@@ -3211,8 +3211,7 @@ function dataobj:OnClick(button)
 	if button == "LeftButton" then
 		WQA:Show("popup")
 	elseif button == "RightButton" then
-		InterfaceOptionsFrame_Show()
-		InterfaceOptionsFrame_OpenToCategory("WQAchievements")
+		Settings.OpenToCategory("WQAchievements")
 	end
 end
 
