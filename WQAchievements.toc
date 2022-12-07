@@ -10,4 +10,6 @@
 embeds.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
 WQAchievements.lua
+DB\Expansions.lua
+DB\Zones.lua
 Options.lua

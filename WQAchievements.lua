@@ -3297,7 +3297,7 @@ function WQA:CheckMissions()
 	for i in pairs(WQA.ExpansionList) do
 		local type = LE_GARRISON_TYPE[i]
 		local followerType = GetPrimaryGarrisonFollowerType(type)
-		if C_Garrison.HasGarrison(type) then
+		if type and C_Garrison.HasGarrison(type) then
 			local missions = C_Garrison.GetAvailableMissions(followerType)
 			-- Add Shipyard Missions
 			if i == 6 and C_Garrison.HasShipyard() then

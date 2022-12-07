@@ -7,20 +7,6 @@ local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 
 local optionsTimer
 
-WQA.ExpansionList = {
-	[6] = "Warlords of Draenor",
-	[7] = "Legion",
-	[8] = "Battle for Azeroth",
-	[9] = "Shadowlands"
-}
-
-local IDToExpansionID = {
-	[1] = 6,
-	[2] = 7,
-	[3] = 8,
-	[4] = 9
-}
-
 local CurrencyIDList = {
 	[6] = {
 		824 -- Garrison Resources
@@ -93,51 +79,6 @@ local worldQuestType = {
 	["LE_QUEST_TAG_TYPE_PET_BATTLE"] = Enum.QuestTagType.PetBattle,
 	["LE_QUEST_TAG_TYPE_PROFESSION"] = Enum.QuestTagType.Profession,
 	["LE_QUEST_TAG_TYPE_DUNGEON"] = Enum.QuestTagType.Dungeon
-}
-
-WQA.ZoneIDList = {
-	[7] = {
-		619, -- Broken Isles
-		627, -- Dalaran
-		630, -- Azsuna
-		641, -- Val'sharah
-		650, -- Highmountain
-		-- 625, -- Dalaran
-		680, -- Suramar
-		634, -- Stormheim
-		646, -- Broken Shore
-		790, -- Eye of Azshara
-		885,
-		830,
-		882
-	},
-	[8] = {
-		14, -- Arathi Highlands
-		62, -- Darkshore
-		875,
-		876,
-		862,
-		863,
-		864,
-		895, -- Tiragarde Sound
-		942,
-		896, -- Drustvar
-		1161, -- Boralus
-		1165, -- Dazar'alor
-		1355, -- Nazjatar
-		1462, -- Mechagon
-		1527, -- Uldum
-		1530 -- Vale of Eternal Blossoms
-	},
-	[9] = {
-		1525, -- Revendreth
-		1533, -- Bastion
-		1536, -- Maldraxxus
-		1565, -- Ardenweald
-		1543, -- The Maw
-		1961, -- Korthia
-		1970 --	Zereth Mortis
-	}
 }
 
 WQA.EmissaryQuestIDList = {
@@ -971,7 +912,7 @@ function WQA:UpdateOptions()
 		end
 	end
 
-	for _, i in ipairs(IDToExpansionID) do
+	for i = 6, 10 do
 		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),
 			name = self.ExpansionList[i],
