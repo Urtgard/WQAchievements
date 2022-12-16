@@ -9,7 +9,15 @@
 
 embeds.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
-WQAchievements.lua
+
+Core.lua
+
+DB\Data\Legion.lua
+DB\Data\BattleForAzeroth.lua
+DB\Data\Shadowlands.lua
+
 DB\Expansions.lua
 DB\Zones.lua
+
+WQAchievements.lua
 Options.lua
