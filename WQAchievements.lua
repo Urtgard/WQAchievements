@@ -501,6 +501,11 @@ function WQA:CreateQuestList()
 	self:AddPets(self.data[9].pets)
 	self:AddToys(self.data[9].toys)
 
+	-- Dragonflight
+	for _, v in pairs(self.data[10].achievements) do
+		self:AddAchievements(v)
+	end
+
 	self:AddCustom()
 	self:Special()
 	self:Reward()
