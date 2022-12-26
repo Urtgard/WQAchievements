@@ -40,5 +40,16 @@ data.achievements = {
             {72019},
             {71225}
         }
+    },
+    {
+        name = "Wildlife Photographer",
+        id = 16560,
+        criteriaType = "QUESTS",
+        criteria = {
+            {70075, 70632},
+            {70079, 70659},
+            {70100},
+            {70110, 70699}
+        }
     }
 }
