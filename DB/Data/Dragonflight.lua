@@ -29,5 +29,16 @@ data.achievements = {
             {70439},
             {69949}
         }
+    },
+    {
+        name = "A Champion's Pursuit",
+        id = 16599,
+        criteriaType = "QUESTS",
+        criteria = {
+            {72008},
+            {72058},
+            {72019},
+            {71225}
+        }
     }
 }
