@@ -51,5 +51,19 @@ data.achievements = {
             {70100},
             {70110, 70699}
         }
+    },
+    {
+        name = "Legendary Photographs",
+        id = 16573,
+        criteriaType = "QUESTS",
+        criteria = {
+            {70075},
+            {70632},
+            {70100},
+            {70659},
+            {70110},
+            {70079},
+            {70699}
+        }
     }
 }
