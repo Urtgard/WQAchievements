@@ -65,5 +65,21 @@ data.achievements = {
             {70079},
             {70699}
         }
+    },
+    {
+        name = "Great Shots Galore!",
+        id = 16568,
+        criteriaType = "QUESTS",
+        criteria = {
+            {
+                70075,
+                70632,
+                70079,
+                70659,
+                70100,
+                70110,
+                70699
+            }
+        }
     }
 }
