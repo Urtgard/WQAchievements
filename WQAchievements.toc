@@ -20,5 +20,7 @@ DB\Data\Dragonflight.lua
 DB\Expansions.lua
 DB\Zones.lua
 
+Achievements.lua
+
 WQAchievements.lua
 Options.lua

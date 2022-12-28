@@ -480,7 +480,7 @@ function WQA:CreateQuestList()
 
 	-- Legion
 	for _, v in pairs(self.data[7].achievements) do
-		self:AddAchievements(v)
+		self.Achievements:Register(v)
 	end
 	self:AddMounts(self.data[7].mounts)
 	self:AddPets(self.data[7].pets)
@@ -488,7 +488,7 @@ function WQA:CreateQuestList()
 
 	-- Battle for Azeroth
 	for _, v in pairs(self.data[8].achievements) do
-		self:AddAchievements(v)
+		self.Achievements:Register(v)
 	end
 	self:AddMounts(self.data[8].mounts)
 	self:AddPets(self.data[8].pets)
@@ -496,131 +496,20 @@ function WQA:CreateQuestList()
 
 	-- Shadowlands
 	for _, v in pairs(self.data[9].achievements) do
-		self:AddAchievements(v)
+		self.Achievements:Register(v)
 	end
 	self:AddPets(self.data[9].pets)
 	self:AddToys(self.data[9].toys)
 
 	-- Dragonflight
 	for _, v in pairs(self.data[10].achievements) do
-		self:AddAchievements(v)
+		self.Achievements:Register(v)
 	end
 
 	self:AddCustom()
 	self:Special()
 	self:Reward()
 	self:EmissaryReward()
-end
-
-function WQA:AddAchievements(achievement, forced, forcedByMe)
-	local id = achievement.id
-	local forced = forced or false
-	local forcedByMe = false
-
-	if self.db.profile.achievements[id] == "disabled" then
-		return
-	end
-	if self.db.profile.achievements[id] == "exclusive" and self.db.profile.achievements.exclusive[id] ~= self.playerName then
-		return
-	end
-	if self.db.profile.achievements[id] == "always" then
-		forced = true
-	end
-	if self.db.profile.achievements[id] == "wasEarnedByMe" then
-		forcedByMe = true
-	end
-
-	local _, _, _, completed, _, _, _, _, _, _, _, _, wasEarnedByMe = GetAchievementInfo(id)
-	if (achievement.notAccountwide and not wasEarnedByMe) or not completed or forced or forcedByMe then
-		if achievement.criteriaType == "ACHIEVEMENT" then
-			for _, v in pairs(achievement.criteria) do
-				self:AddAchievements(v, forced, forcedByMe)
-			end
-		elseif achievement.criteriaType == "QUEST_SINGLE" then
-			if type(achievement.criteria) == "table" then
-				for _, questID in pairs(achievement.criteria) do
-					self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-				end
-			else
-				self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
-			end
-		elseif achievement.criteriaType == "QUEST_PIN" then
-			C_QuestLine.RequestQuestLinesForMap(achievement.mapID)
-			for i = 1, GetAchievementNumCriteria(id) do
-				local _, t, completed, _, _, _, _, questID = GetAchievementCriteriaInfo(id, i)
-				if not completed or forced then
-					if achievement.criteriaInfo[i] then
-						for _, questID in pairs(achievement.criteriaInfo[i]) do
-							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-							self.questPinMapList[achievement.mapID] = true
-							self.questPinList[questID] = true
-						end
-					else
-						self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-						self.questPinMapList[achievement.mapID] = true
-						self.questPinList[questID] = true
-					end
-				end
-			end
-		elseif achievement.criteriaType == "QUEST_FLAG" then
-			self:AddRewardToQuest(achievement.criteria, "ACHIEVEMENT", id)
-			self.questFlagList[achievement.criteria] = true
-		elseif achievement.criteriaType ~= "SPECIAL" then
-			if GetAchievementNumCriteria(id) > 0 then
-				for i = 1, GetAchievementNumCriteria(id) do
-					local _, t, completed, _, _, _, _, questID = GetAchievementCriteriaInfo(id, i)
-					if not completed or forced then
-						if achievement.criteriaType == "QUESTS" then
-							if type(achievement.criteria[i]) == "table" then
-								for _, questID in pairs(achievement.criteria[i]) do
-									self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-								end
-							else
-								questID = achievement.criteria[i]
-								if questID then
-									self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-								end
-							end
-						elseif achievement.criteriaType == 1 and t == 0 then
-							for _, questID in pairs(achievement.criteria[i]) do
-								self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-							end
-						elseif achievement.criteriaType == "MISSION_TABLE" then
-							if achievement.criteria and achievement.criteria[i] then
-								if type(achievement.criteria[i]) == "table" then
-									for _, questID in pairs(achievement.criteria[i]) do
-										self:AddRewardToMission(questID, "ACHIEVEMENT", id)
-									end
-								else
-									local questID = achievement.criteria[i]
-									if questID then
-										self:AddRewardToMission(questID, "ACHIEVEMENT", id)
-									end
-								end
-							else
-								self:AddRewardToMission(questID, "ACHIEVEMENT", id)
-							end
-						else
-							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-						end
-					end
-				end
-			else
-				if achievement.criteriaType == "QUESTS" then
-					if type(achievement.criteria[1]) == "table" then
-						for _, questID in pairs(achievement.criteria[1]) do
-							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-						end
-					else
-						local questID = achievement.criteria[1]
-						if questID then
-							self:AddRewardToQuest(questID, "ACHIEVEMENT", id)
-						end
-					end
-				end
-			end
-		end
-	end
 end
 
 function WQA:AddMounts(mounts)
