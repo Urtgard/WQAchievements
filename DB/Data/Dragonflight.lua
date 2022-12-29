@@ -81,5 +81,42 @@ data.achievements = {
                 70699
             }
         }
+    },
+    -- Grand Hunt
+    {
+        name = "Hunt Master",
+        id = 16540,
+        criteriaType = "AREA_POI",
+        criteria = {
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7344, MapId = 1978},
+            {AreaPoiId = 7344, MapId = 1978}
+        }
+    },
+    {
+        name = "The Disgruntled Hunter",
+        id = 16542,
+        criteriaType = "AREA_POI",
+        criteria = {
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7342, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7343, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7345, MapId = 1978},
+            {AreaPoiId = 7344, MapId = 1978},
+            {AreaPoiId = 7344, MapId = 1978}
+        }
     }
 }
