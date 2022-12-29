@@ -47,6 +47,7 @@ WQA.ZoneIDList = {
         2022, -- The Waking Shores
         2023, -- Ohn'ahran Plains
         2024, -- The Azure Span	Zone
-        2025 -- Thaldraszus	Zone
+        2025, -- Thaldraszus Zone
+        1978 -- Dragon Isles
     }
 }

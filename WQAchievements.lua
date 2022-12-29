@@ -154,15 +154,35 @@ end
 local function GetTaskZoneName(task)
 	if task.type == "MISSION" then
 		return GetMissionZoneName(task.id)
-	else
-		return GetQuestZoneName(task.id)
 	end
+
+	if task.type == "AREA_POI" then
+		return GetMapInfo(task.mapId).name
+	end
+
+	return GetQuestZoneName(task.id)
 end
 
 ExpansionByZoneID = {
 	-- BfA
 	[1169] = 8 -- Tol Dagor
 }
+
+local function GetExpansionByMapId(mapId)
+	if ExpansionByZoneID[mapId] then
+		return ExpansionByZoneID[mapId]
+	end
+
+	for expansion, zones in pairs(WQA.ZoneIDList) do
+		for _, v in pairs(zones) do
+			if mapId == v then
+				return expansion
+			end
+		end
+	end
+
+	return -1
+end
 
 local function GetExpansionByQuestID(questID)
 	--if not WQA.questList[questID].info then	WQA.questList[questID].info = {} end
@@ -171,18 +191,10 @@ local function GetExpansionByQuestID(questID)
 	--else
 	local zoneID = GetQuestZoneID(questID)
 
-	if ExpansionByZoneID[zoneID] then
-		--	WQA.questList[questID].info.expansion = ExpansionByZoneID[zoneID]
-		return ExpansionByZoneID[zoneID]
-	end
+	local expansionId = GetExpansionByMapId(zoneID)
 
-	for expansion, zones in pairs(WQA.ZoneIDList) do
-		for _, v in pairs(zones) do
-			if zoneID == v then
-				--			WQA.questList[questID].info.expansion = expansion
-				return expansion
-			end
-		end
+	if (expansionId > 0) then
+		return expansionId
 	end
 
 	for expansion, v in pairs(WQA.EmissaryQuestIDList) do
@@ -191,21 +203,23 @@ local function GetExpansionByQuestID(questID)
 				id = id.id
 			end
 			if id == questID then
-				--					WQA.questList[questID].info.expansion = expansion
 				return expansion
 			end
 		end
 	end
-	--end
 	return -1
 end
 
 local function GetExpansion(task)
 	if task.type == "MISSION" then
 		return GetExpansionByMissionID(task.id)
-	else
-		return GetExpansionByQuestID(task.id)
 	end
+
+	if task.type == "AREA_POI" then
+		return GetExpansionByMapId(task.mapId)
+	end
+
+	return GetExpansionByQuestID(task.id)
 end
 
 local function GetExpansionName(id)
@@ -223,8 +237,10 @@ end
 local function GetTaskTime(task)
 	if task.type == "WORLD_QUEST" then
 		return C_TaskQuest.GetQuestTimeLeftMinutes(task.id)
-	else
+	elseif task.type == "MISSION" then
 		return GetMissionTimeLeftMinutes(task.id)
+	elseif task.type == "AREA_POI" then
+		return C_AreaPoiInfo.GetAreaPOISecondsLeft(task.id) / 60
 	end
 end
 
@@ -235,8 +251,10 @@ local function GetTaskLink(task)
 		--	end
 		--	if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
 		return GetQuestLink(task.id) or GetTitleForQuestID(task.id)
-	else
+	elseif task.type == "MISSION" then
 		return C_Garrison.GetMissionLink(task.id)
+	elseif task.type == "AREA_POI" then
+		return C_AreaPoiInfo.GetAreaPOIInfo(task.mapId, task.id).name
 	end
 end
 
@@ -477,6 +495,7 @@ function WQA:CreateQuestList()
 	self.questPinMapList = {}
 	self.missionList = {}
 	self.questFlagList = {}
+	self.Criterias.AreaPoi.list = {}
 
 	-- Legion
 	for _, v in pairs(self.data[7].achievements) do
@@ -757,6 +776,7 @@ function WQA:CheckWQ(mode)
 		self:ScheduleTimer("CheckWQ", .4, mode)
 		return
 	end
+
 	local activeQuests = {}
 	local newQuests = {}
 	local retry = false
@@ -833,6 +853,12 @@ function WQA:CheckWQ(mode)
 		retry = true
 	end
 
+	local pois = self.Criterias.AreaPoi:Check()
+
+	if pois.retry then
+		retry = true
+	end
+
 	if retry == true then
 		self:Debug("NoLink")
 		self:ScheduleTimer("CheckWQ", 1, mode)
@@ -846,6 +872,11 @@ function WQA:CheckWQ(mode)
 	for id in pairs(activeMissions) do
 		table.insert(self.activeTasks, {id = id, type = "MISSION"})
 	end
+	for poiId, mapIds in pairs(pois.active) do
+		for mapId in pairs(mapIds) do
+			table.insert(self.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+		end
+	end
 
 	self.activeTasks = self:SortQuestList(self.activeTasks)
 
@@ -857,6 +888,16 @@ function WQA:CheckWQ(mode)
 	for id in pairs(newMissions) do
 		self.watchedMissions[id] = true
 		table.insert(self.newTasks, {id = id, type = "MISSION"})
+	end
+	for poiId, mapIds in pairs(pois.new) do
+		for mapId in pairs(mapIds) do
+			if not self.Criterias.AreaPoi.watched[poiId] then
+				self.Criterias.AreaPoi.watched[poiId] = {}
+			end
+			self.Criterias.AreaPoi.watched[poiId][mapId] = true
+
+			table.insert(self.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+		end
 	end
 
 	if mode == "new" then
@@ -992,13 +1033,17 @@ function WQA:AnnounceChat(tasks, silent)
 
 		local l
 		if task.type == "WORLD_QUEST" then
-			l = self.questList
-		else
-			l = self.missionList
+			l = self.questList[task.id]
+		elseif task.type == "MISSION" then
+			l = self.missionList[task.id]
+		elseif task.type == "AREA_POI" then
+			l = self.Criterias.AreaPoi.list[task.id][task.mapId]
 		end
 
+		local rewards = l.reward
+
 		local more
-		for k, v in pairs(l[task.id].reward) do
+		for k, v in pairs(rewards) do
 			local rewardText = self:GetRewardTextByID(task.id, k, v, 1, task.type)
 			if k == "achievement" or k == "chance" or k == "azeriteTraits" then
 				for j = 2, 3 do
@@ -1770,11 +1815,16 @@ function WQA:UpdateQTip(tasks)
 	else
 		tooltip.quests = tooltip.quests or {}
 		tooltip.missions = tooltip.missions or {}
+		tooltip.pois = tooltip.pois or {}
+
 		local i = tooltip:GetLineCount()
 		local expansion, zoneID
 		for _, task in ipairs(tasks) do
 			local id = task.id
-			if (task.type == "WORLD_QUEST" and not tooltip.quests[id]) or (task.type == "MISSION" and not tooltip.missions[id]) then
+			if
+				(task.type == "WORLD_QUEST" and not tooltip.quests[id]) or (task.type == "MISSION" and not tooltip.missions[id]) or
+					(task.type == "AREA_POI" and not tooltip.pois[id])
+			 then
 				local j = 1
 
 				if self.db.profile.options.popupShowExpansion then
@@ -1825,7 +1875,7 @@ function WQA:UpdateQTip(tasks)
 							if string.find(link, "|Hquest:") then
 								GameTooltip:SetHyperlink(link)
 							end
-						else
+						elseif task.type == "MISSION" then
 							GameTooltip:SetText(C_Garrison.GetMissionName(id))
 							GameTooltip:AddLine(
 								string.format(GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS, C_Garrison.GetMissionMaxFollowers(id)),
@@ -1850,6 +1900,38 @@ function WQA:UpdateQTip(tasks)
 									nil,
 									1
 								)
+							end
+						elseif task.type == "AREA_POI" then
+							local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(task.mapId, task.id)
+
+							GameTooltip_SetTitle(GameTooltip, poiInfo.name, HIGHLIGHT_FONT_COLOR)
+
+							if poiInfo.description then
+								GameTooltip_AddNormalLine(GameTooltip, poiInfo.description)
+							end
+
+							if C_AreaPoiInfo.IsAreaPOITimed(poiInfo.areaPoiID) then
+								local secondsLeft = C_AreaPoiInfo.GetAreaPOISecondsLeft(poiInfo.areaPoiID)
+								if secondsLeft and secondsLeft > 0 then
+									local timeString = SecondsToTime(secondsLeft)
+									GameTooltip_AddNormalLine(GameTooltip, BONUS_OBJECTIVE_TIME_LEFT:format(timeString))
+								end
+							end
+
+							if poiInfo.textureKit == "OribosGreatVault" then
+								GameTooltip_AddBlankLineToTooltip(GameTooltip)
+								GameTooltip_AddInstructionLine(GameTooltip, ORIBOS_GREAT_VAULT_POI_TOOLTIP_INSTRUCTIONS)
+							end
+
+							if poiInfo.widgetSetID then
+								GameTooltip_AddWidgetSet(GameTooltip, poiInfo.widgetSetID, 10)
+							end
+
+							if poiInfo.textureKit then
+								local backdropStyle = GAME_TOOLTIP_TEXTUREKIT_BACKDROP_STYLES[poiInfo.textureKit]
+								if (backdropStyle) then
+									SharedTooltip_SetBackdropStyle(GameTooltip, backdropStyle)
+								end
 							end
 						end
 						GameTooltip:Show()
@@ -1928,6 +2010,8 @@ function WQA:UpdateQTip(tasks)
 					list = WQA.questList[id].reward
 				elseif task.type == "MISSION" then
 					list = WQA.missionList[id].reward
+				elseif task.type == "AREA_POI" then
+					list = WQA.Criterias.AreaPoi.list[task.id][task.mapId].reward
 				end
 
 				local more = false
@@ -2196,20 +2280,19 @@ local function SortByZoneName(a, b)
 		return true
 	elseif a.type == "MISSION" and b.type == "MISSION" then
 		return GetTaskZoneName(a) < GetTaskZoneName(b)
-	else
-		a = a.id
-		b = b.id
 	end
-	if WQA.questList[a].isEmissary then
-		if WQA.questList[b].isEmissary then
+
+	if a.type == "WORLD_QUEST" and WQA.questList[a.id].isEmissary ~= nil then
+		if b.type == "WORLD_QUEST" and WQA.questList[b.id].isEmissary ~= nil then
 			return false
 		else
 			return true
 		end
-	elseif WQA.questList[b].isEmissary then
+	elseif b.type == "WORLD_QUEST" and WQA.questList[b.id].isEmissary ~= nil then
 		return false
 	end
-	return GetQuestZoneName(a) < GetQuestZoneName(b)
+
+	return GetTaskZoneName(a) < GetTaskZoneName(b)
 end
 
 local function SortByExpansion(a, b)

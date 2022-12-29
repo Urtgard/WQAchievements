@@ -9,3 +9,4 @@ WQA.questList = {}
 WQA.missionList = {}
 WQA.itemList = {}
 WQA.links = {}
+WQA.Criterias = {}

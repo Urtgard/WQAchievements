@@ -46,6 +46,8 @@ function WQA.Achievements:Register(achievement, forced, forcedByMe)
                             self:Register_QUESTS(achievement, i)
                         elseif achievement.criteriaType == "MISSION_TABLE" then
                             self:Register_MISSION_TABLE(achievement, i, questID)
+                        elseif achievement.criteriaType == "AREA_POI" then
+                            self:Register_AREA_POI(achievement, i)
                         else
                             WQA:AddRewardToQuest(questID, "ACHIEVEMENT", id)
                         end
@@ -141,5 +143,20 @@ function WQA.Achievements:Register_MISSION_TABLE(achievement, index, criteriaQue
         end
     else
         WQA:AddRewardToMission(criteriaQuestId, "ACHIEVEMENT", id)
+    end
+end
+
+function WQA.Achievements:Register_AREA_POI(achievement, index)
+    local id = achievement.id
+
+    if not achievement.criteria[index].AreaPoiId then
+        for _, areaPoi in pairs(achievement.criteria[index]) do
+            WQA.Criterias.AreaPoi:AddReward(areaPoi, "ACHIEVEMENT", id)
+        end
+    else
+        local areaPoi = achievement.criteria[index]
+        if areaPoi then
+            WQA.Criterias.AreaPoi:AddReward(areaPoi, "ACHIEVEMENT", id)
+        end
     end
 end

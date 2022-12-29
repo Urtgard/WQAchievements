@@ -20,6 +20,8 @@ DB\Data\Dragonflight.lua
 DB\Expansions.lua
 DB\Zones.lua
 
+Criterias\AreaPoi.lua
+
 Achievements.lua
 
 WQAchievements.lua
