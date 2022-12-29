@@ -119,8 +119,10 @@ end
 local function GetTaskZoneID(task)
 	if task.type == "MISSION" then
 		return GetMissionZoneID(task.id)
-	else
+	elseif task.type == "WORLD_QUEST" then
 		return GetQuestZoneID(task.id)
+	elseif task.type == "AREA_POI" then
+		return task.mapId
 	end
 end
 
@@ -240,7 +242,10 @@ local function GetTaskTime(task)
 	elseif task.type == "MISSION" then
 		return GetMissionTimeLeftMinutes(task.id)
 	elseif task.type == "AREA_POI" then
-		return C_AreaPoiInfo.GetAreaPOISecondsLeft(task.id) / 60
+		local seconds = C_AreaPoiInfo.GetAreaPOISecondsLeft(task.id)
+		if seconds then
+			return seconds / 60
+		end
 	end
 end
 
