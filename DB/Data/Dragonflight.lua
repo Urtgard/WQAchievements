@@ -53,8 +53,8 @@ data.achievements = {
         }
     },
     {
-        name = "Legendary Photographs",
-        id = 16573,
+        name = "A Legendary Album",
+        id = 16570,
         criteriaType = "QUESTS",
         criteria = {
             {70075},
