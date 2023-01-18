@@ -9,6 +9,7 @@ local optionsTimer
 
 local CurrencyIDList = {
 	[6] = {
+		823, -- Apexis Crystal
 		824 -- Garrison Resources
 	},
 	[7] = {
