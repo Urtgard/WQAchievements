@@ -2180,6 +2180,9 @@ function WQA:AnnouncePopUp(quests, silent)
 	PopUp:SetWidth(self.tooltip:GetWidth() + 8.5)
 	PopUp:SetHeight(self.tooltip:GetHeight() + 32)
 	PopUp:SetScale(self.tooltip:GetScale())
+	if (PopUp:GetEffectiveScale() ~= self.tooltip:GetEffectiveScale()) then -- consider applied SetIgnoreParentScale() on tooltip regarding scaling of the popup
+		PopUp:SetScale(PopUp:GetScale() * self.tooltip:GetEffectiveScale() / PopUp:GetEffectiveScale());
+	end
 	PopUp:SetFrameLevel(self.tooltip:GetFrameLevel())
 
 	if self.db.profile.options.popupRememberPosition then
