@@ -119,6 +119,7 @@ data.achievements = {
             {AreaPoiId = 7344, MapId = 1978}
         }
     },
+    --
     -- Primal Storms
     {
         name = "Chasing Storms in The Waking Shores",
@@ -346,6 +347,22 @@ data.achievements = {
                 },
                 notAccountwide = true
             }
+        }
+    },
+    --
+    {
+        name = "Battle on the Dragon Isles",
+        id = 16464,
+        criteriaType = "QUESTS",
+        criteria = {
+            71206,
+            71202,
+            66588,
+            71145,
+            71166,
+            66551,
+            71140,
+            71180
         }
     }
 }
