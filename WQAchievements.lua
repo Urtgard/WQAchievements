@@ -2531,10 +2531,10 @@ function WQA:formatTime(t)
 end
 
 local LE_GARRISON_TYPE = {
-	[6] = Enum.GarrisonType.FollowerType_6_0_GarrisonFollower,
-	[7] = Enum.GarrisonType.FollowerType_7_0_GarrisonFollower,
-	[8] = Enum.GarrisonType.FollowerType_8_0_GarrisonFollower,
-	[9] = Enum.GarrisonType.FollowerType_9_0_GarrisonFollower
+	[6] = Enum.GarrisonType.Type_6_0_Garrison,
+	[7] = Enum.GarrisonType.Type_7_0_Garrison,
+	[8] = Enum.GarrisonType.Type_8_0_Garrison,
+	[9] = Enum.GarrisonType.Type_9_0_Garrison
 }
 
 function WQA:CheckMissions()
@@ -2548,7 +2548,7 @@ function WQA:CheckMissions()
 			-- Add Shipyard Missions
 			if i == 6 and C_Garrison.HasShipyard() then
 				for missionID, mission in ipairs(C_Garrison.GetAvailableMissions(Enum.GarrisonFollowerType.FollowerType_6_0_Boat)) do
-					mission.followerType = Enum.GarrisonFollowerType.Boat
+					mission.followerType = Enum.GarrisonFollowerType.FollowerType_6_0_Boat
 					missions[#missions + 1] = mission
 				end
 			end
