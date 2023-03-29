@@ -364,5 +364,20 @@ data.achievements = {
             71140,
             71180
         }
+    },
+    {
+        name = "Battle on the Dragon Isles II",
+        id = 17406,
+        criteriaType = "QUESTS",
+        criteria = {
+            74841,
+            74838,
+            74835,
+            74794,
+            74840,
+            74837,
+            74836,
+            202458
+        }
     }
 }
