@@ -48,6 +48,8 @@ WQA.ZoneIDList = {
         2023, -- Ohn'ahran Plains
         2024, -- The Azure Span	Zone
         2025, -- Thaldraszus Zone
-        1978 -- Dragon Isles
+        1978, -- Dragon Isles
+        2085, -- Primalist Tomorrow
+        2151 -- The Forbidden Reach
     }
 }
