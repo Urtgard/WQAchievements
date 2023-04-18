@@ -379,5 +379,44 @@ data.achievements = {
             74836,
             202458
         }
+    },
+    {
+        name = "Global Swarming",
+        id = 17541,
+        criteriaType = "QUESTS",
+        criteria = {
+            73146,
+            73147,
+            73148,
+            73149
+        }
+    }
+}
+
+-- Pets
+data.pets = {
+    {
+        name = "Wildfire",
+        itemID = 202412,
+        creatureID = 200771,
+        quest = {{trackingID = 0, wqID = 73148}}
+    },
+    {
+        name = "Vortex",
+        itemID = 202413,
+        creatureID = 200769,
+        quest = {{trackingID = 0, wqID = 73146}}
+    },
+    {
+        name = "Tremblor",
+        itemID = 202411,
+        creatureID = 200770,
+        quest = {{trackingID = 0, wqID = 73147}}
+    },
+    {
+        name = "Flow",
+        itemID = 202407,
+        creatureID = 200772,
+        quest = {{trackingID = 0, wqID = 73149}}
     }
 }

@@ -529,6 +529,7 @@ function WQA:CreateQuestList()
 	for _, v in pairs(self.data[10].achievements) do
 		self.Achievements:Register(v)
 	end
+	self:AddPets(self.data[10].pets)
 
 	self:AddCustom()
 	self:Special()
