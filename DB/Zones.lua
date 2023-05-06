@@ -50,6 +50,7 @@ WQA.ZoneIDList = {
         2025, -- Thaldraszus Zone
         1978, -- Dragon Isles
         2085, -- Primalist Tomorrow
-        2151 -- The Forbidden Reach
+        2151, -- The Forbidden Reach
+        2133 -- Zaralek Cavern
     }
 }
