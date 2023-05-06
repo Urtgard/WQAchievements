@@ -390,6 +390,17 @@ data.achievements = {
             73148,
             73149
         }
+    },
+    {
+        name = "Battle in Zaralek Cavern",
+        id = 17880,
+        criteriaType = "QUESTS",
+        criteria = {
+            75680,
+            75750,
+            75834,
+            75835
+        }
     }
 }
 
