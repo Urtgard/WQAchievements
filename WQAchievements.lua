@@ -1669,13 +1669,18 @@ function WQA:CheckItems(questID, isEmissary)
 				if itemClassID == 2 or itemClassID == 4 then
 					local transmog
 					if AllTheThings then
-						local state = AllTheThings.SearchForLink(itemLink)[1].collected
-						if not state then
-							transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
-						elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
-							transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
+						local searchForLinkResult = AllTheThings.SearchForLink(itemLink)
+						if (searchForLinkResult) then
+							local state = searchForLinkResult[1].collected
+							if not state then
+								transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
+							elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
+								transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
+							end
 						end
-					elseif CanIMogIt then
+					end
+
+					if CanIMogIt and not transmog then
 						if CanIMogIt:IsEquippable(itemLink) and CanIMogIt:CharacterCanLearnTransmog(itemLink) then
 							if not CanIMogIt:PlayerKnowsTransmog(itemLink) then
 								transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t"
