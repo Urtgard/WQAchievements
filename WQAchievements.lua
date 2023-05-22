@@ -712,6 +712,13 @@ function WQA:AddReward(list, rewardType, reward, emissary)
 		if not l.chance then
 			l.chance = {}
 		end
+
+		for _, v in pairs(l.chance) do
+			if v.id == reward then
+				return
+			end
+		end
+
 		l.chance[#l.chance + 1] = {id = reward}
 	elseif rewardType == "CUSTOM" then
 		if not l.custom then
