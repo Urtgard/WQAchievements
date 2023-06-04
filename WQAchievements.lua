@@ -130,7 +130,7 @@ local function GetMapInfo(mapID)
 	if mapID then
 		return C_Map.GetMapInfo(mapID)
 	else
-		return {name = "Unknown"}
+		return { name = "Unknown" }
 	end
 end
 
@@ -141,7 +141,8 @@ local function GetQuestZoneName(questID)
 	if not WQA.questList[questID].info then
 		WQA.questList[questID].info = {}
 	end
-	WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or GetMapInfo(GetQuestZoneID(questID)).name
+	WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or
+	GetMapInfo(GetQuestZoneID(questID)).name
 	return WQA.questList[questID].info.zoneName
 end
 
@@ -272,20 +273,20 @@ do
 	end
 end
 
-WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none", questType = "WORLD_QUEST"}
-WQA.data.custom.mission = {missionID = "", rewardID = "", rewardType = "none"}
+WQA.data.custom = { wqID = "", rewardID = "", rewardType = "none", questType = "WORLD_QUEST" }
+WQA.data.custom.mission = { missionID = "", rewardID = "", rewardType = "none" }
 --WQA.data.customReward = 0
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local dataobj =
 	ldb:NewDataObject(
-	"WQAchievements",
-	{
-		type = "data source",
-		text = "WQA",
-		icon = "Interface\\Icons\\INV_Misc_Map06"
-	}
-)
+		"WQAchievements",
+		{
+			type = "data source",
+			text = "WQA",
+			icon = "Interface\\Icons\\INV_Misc_Map06"
+		}
+	)
 
 local icon = LibStub("LibDBIcon-1.0")
 
@@ -324,7 +325,7 @@ function WQA:OnInitialize()
 				popupRememberPosition = false,
 				popupX = 600,
 				popupY = 800,
-				zone = {["*"] = true},
+				zone = { ["*"] = true },
 				reward = {
 					gear = {
 						["*"] = true,
@@ -340,9 +341,9 @@ function WQA:OnInitialize()
 							["*"] = true
 						}
 					},
-					reputation = {["*"] = false},
+					reputation = { ["*"] = false },
 					currency = {},
-					craftingreagent = {["*"] = false},
+					craftingreagent = { ["*"] = false },
 					["*"] = {
 						["*"] = true,
 						profession = {
@@ -352,7 +353,7 @@ function WQA:OnInitialize()
 						}
 					}
 				},
-				emissary = {["*"] = false},
+				emissary = { ["*"] = false },
 				missionTable = {
 					reward = {
 						gold = false,
@@ -363,21 +364,21 @@ function WQA:OnInitialize()
 					}
 				},
 				delay = 5,
-				LibDBIcon = {hide = false}
+				LibDBIcon = { hide = false }
 			},
-			["achievements"] = {exclusive = {}, ["*"] = "default"},
-			["mounts"] = {exclusive = {}, ["*"] = "default"},
-			["pets"] = {exclusive = {}, ["*"] = "default"},
-			["toys"] = {exclusive = {}, ["*"] = "default"},
+			["achievements"] = { exclusive = {}, ["*"] = "default" },
+			["mounts"] = { exclusive = {}, ["*"] = "default" },
+			["pets"] = { exclusive = {}, ["*"] = "default" },
+			["toys"] = { exclusive = {}, ["*"] = "default" },
 			custom = {
-				["*"] = {["*"] = true}
+				["*"] = { ["*"] = true }
 			},
-			["*"] = {["*"] = true}
+			["*"] = { ["*"] = true }
 		},
 		global = {
-			completed = {["*"] = false},
+			completed = { ["*"] = false },
 			custom = {
-				["*"] = {["*"] = false}
+				["*"] = { ["*"] = false }
 			}
 		}
 	}
@@ -438,7 +439,8 @@ function WQA:OnEnable()
 									local questID = quests[i].questId
 									local numQuestRewards = GetNumQuestLogRewards(questID)
 									if numQuestRewards > 0 then
-										local itemName, itemTexture, quantity, quality, isUsable, itemID = GetQuestLogRewardInfo(1, questID)
+										local itemName, itemTexture, quantity, quality, isUsable, itemID =
+										GetQuestLogRewardInfo(1, questID)
 									end
 								end
 							end
@@ -545,7 +547,7 @@ function WQA:AddMounts(mounts)
 		if
 			not (self.db.profile.mounts[spellID] == "disabled" or
 				(self.db.profile.mounts[spellID] == "exclusive" and self.db.profile.mounts.exclusive[spellID] ~= self.playerName))
-		 then
+		then
 			if self.db.profile.mounts[spellID] == "always" then
 				forced = true
 			end
@@ -574,7 +576,7 @@ function WQA:AddPets(pets)
 		if
 			not (self.db.profile.pets[companionID] == "disabled" or
 				(self.db.profile.pets[companionID] == "exclusive" and self.db.profile.pets.exclusive[companionID] ~= self.playerName))
-		 then
+		then
 			if self.db.profile.pets[companionID] == "always" then
 				forced = true
 			end
@@ -618,7 +620,7 @@ function WQA:AddToys(toys)
 		if
 			not (self.db.profile.toys[itemID] == "disabled" or
 				(self.db.profile.toys[itemID] == "exclusive" and self.db.profile.toys.exclusive[itemID] ~= self.playerName))
-		 then
+		then
 			if self.db.profile.toys[itemID] == "always" then
 				forced = true
 			end
@@ -707,7 +709,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
 			end
 		end
 
-		l.achievement[#l.achievement + 1] = {id = reward}
+		l.achievement[#l.achievement + 1] = { id = reward }
 	elseif rewardType == "CHANCE" then
 		if not l.chance then
 			l.chance = {}
@@ -719,7 +721,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
 			end
 		end
 
-		l.chance[#l.chance + 1] = {id = reward}
+		l.chance[#l.chance + 1] = { id = reward }
 	elseif rewardType == "CUSTOM" then
 		if not l.custom then
 			l.custom = true
@@ -762,7 +764,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
 				return
 			end
 		end
-		l.azeriteTraits[#l.azeriteTraits + 1] = {spellID = reward}
+		l.azeriteTraits[#l.azeriteTraits + 1] = { spellID = reward }
 	end
 end
 
@@ -796,9 +798,9 @@ function WQA:CheckWQ(mode)
 	for questID, _ in pairs(self.questList) do
 		if
 			IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) or
-				self:IsQuestFlaggedCompleted(questID)
-		 then
-			local questLink = GetTaskLink({id = questID, type = "WORLD_QUEST"})
+			self:IsQuestFlaggedCompleted(questID)
+		then
+			local questLink = GetTaskLink({ id = questID, type = "WORLD_QUEST" })
 			local link
 			for k, v in pairs(self.questList[questID].reward) do
 				if k == "custom" or k == "professionSkillup" or k == "gold" then
@@ -880,14 +882,14 @@ function WQA:CheckWQ(mode)
 
 	self.activeTasks = {}
 	for id in pairs(activeQuests) do
-		table.insert(self.activeTasks, {id = id, type = "WORLD_QUEST"})
+		table.insert(self.activeTasks, { id = id, type = "WORLD_QUEST" })
 	end
 	for id in pairs(activeMissions) do
-		table.insert(self.activeTasks, {id = id, type = "MISSION"})
+		table.insert(self.activeTasks, { id = id, type = "MISSION" })
 	end
 	for poiId, mapIds in pairs(pois.active) do
 		for mapId in pairs(mapIds) do
-			table.insert(self.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+			table.insert(self.activeTasks, { id = poiId, mapId = mapId, type = "AREA_POI" })
 		end
 	end
 
@@ -896,11 +898,11 @@ function WQA:CheckWQ(mode)
 	self.newTasks = {}
 	for id in pairs(newQuests) do
 		self.watched[id] = true
-		table.insert(self.newTasks, {id = id, type = "WORLD_QUEST"})
+		table.insert(self.newTasks, { id = id, type = "WORLD_QUEST" })
 	end
 	for id in pairs(newMissions) do
 		self.watchedMissions[id] = true
-		table.insert(self.newTasks, {id = id, type = "MISSION"})
+		table.insert(self.newTasks, { id = id, type = "MISSION" })
 	end
 	for poiId, mapIds in pairs(pois.new) do
 		for mapId in pairs(mapIds) do
@@ -909,7 +911,7 @@ function WQA:CheckWQ(mode)
 			end
 			self.Criterias.AreaPoi.watched[poiId][mapId] = true
 
-			table.insert(self.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+			table.insert(self.newTasks, { id = poiId, mapId = mapId, type = "AREA_POI" })
 		end
 	end
 
@@ -999,9 +1001,10 @@ function WQA:GetRewardForID(questID, key, type)
 					r =
 						r ..
 						"|cFF" ..
-							upgradeChance ..
-								"FF" .. upgradeChance .. cache.upgradeNum .. "/" .. cache.n .. " max +" .. cache.upgradeMax .. "|r"
-					local item = {itemLink = itemLink, cache = {upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax}}
+						upgradeChance ..
+						"FF" ..
+						upgradeChance .. cache.upgradeNum .. "/" .. cache.n .. " max +" .. cache.upgradeMax .. "|r"
+					local item = { itemLink = itemLink, cache = { upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax } }
 				end
 			end
 			r = l.item.itemLink .. " " .. r
@@ -1082,7 +1085,8 @@ function WQA:AnnounceChat(tasks, silent)
 		end
 
 		if self.db.profile.options.chatShowTime then
-			output = "   " .. string.format(L["WQforAchTime"], GetTaskLink(task), self:formatTime(GetTaskTime(task)), text)
+			output = "   " ..
+			string.format(L["WQforAchTime"], GetTaskLink(task), self:formatTime(GetTaskTime(task)), text)
 		else
 			output = "   " .. string.format(L["WQforAch"], GetTaskLink(task), text)
 		end
@@ -1246,8 +1250,8 @@ function WQA:Reward()
 
 						if
 							self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
-								self.db.profile.options.reward.general.worldQuestType[worldQuestType]
-						 then
+							self.db.profile.options.reward.general.worldQuestType[worldQuestType]
+						then
 							-- 100 different World Quests achievements
 							if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
 								local zoneID = C_TaskQuest.GetQuestZoneID(questID)
@@ -1262,18 +1266,18 @@ function WQA:Reward()
 
 								if
 									self.db.profile.achievements[11189] ~= "disabled" and not select(4, GetAchievementInfo(11189)) and exp == 7 and
-										mapID ~= 830 and
-										mapID ~= 885 and
-										mapID ~= 882
-								 then
+									mapID ~= 830 and
+									mapID ~= 885 and
+									mapID ~= 882
+								then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
 								elseif
 									self.db.profile.achievements[13144] ~= "disabled" and not select(4, GetAchievementInfo(13144)) and exp == 8
-								 then
+								then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
 								elseif
 									self.db.profile.achievements[14758] ~= "disabled" and not select(4, GetAchievementInfo(14758)) and exp == 9
-								 then
+								then
 									self:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
 								end
 							end
@@ -1305,8 +1309,8 @@ function WQA:Reward()
 
 								if
 									not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and
-										self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
-								 then
+									self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
+								then
 									self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
 								end
 							end
@@ -1322,11 +1326,11 @@ function WQA:Reward()
 		self.start = GetTime()
 		self.timer =
 			self:ScheduleTimer(
-			function()
-				self:Reward()
-			end,
-			2
-		)
+				function()
+					self:Reward()
+				end,
+				2
+			)
 		self.event:RegisterEvent("QUEST_LOG_UPDATE")
 		self.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 	else
@@ -1398,18 +1402,18 @@ function WQA:CheckItems(questID, isEmissary)
 			end
 
 			local itemName,
-				_,
-				itemRarity,
-				itemLevel,
-				itemMinLevel,
-				itemType,
-				itemSubType,
-				itemStackCount,
-				itemEquipLoc,
-				itemTexture,
-				itemSellPrice,
-				itemClassID,
-				itemSubClassID = GetItemInfo(itemLink)
+			_,
+			itemRarity,
+			itemLevel,
+			itemMinLevel,
+			itemType,
+			itemSubType,
+			itemStackCount,
+			itemEquipLoc,
+			itemTexture,
+			itemSellPrice,
+			itemClassID,
+			itemSubClassID = GetItemInfo(itemLink)
 			local expacID = GetExpansionByQuestID(questID)
 
 			-- Ask Pawn if this is an Upgrade
@@ -1419,9 +1423,10 @@ function WQA:CheckItems(questID, isEmissary)
 					local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
 					if
 						UpgradeInfo and UpgradeInfo[1].PercentUpgrade * 100 >= self.db.profile.options.reward.gear.PercentUpgradeMin and
-							UpgradeInfo[1].PercentUpgrade < 10
-					 then
-						local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade * 100 + .5)}
+						UpgradeInfo[1].PercentUpgrade < 10
+					then
+						local item = { itemLink = itemLink,
+							itemPercentUpgrade = math.floor(UpgradeInfo[1].PercentUpgrade * 100 + .5) }
 						self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 					end
 				end
@@ -1441,23 +1446,23 @@ function WQA:CheckItems(questID, isEmissary)
 						if spec.Enabled then
 							local score =
 								ScoreModule:CalculateItemScore(
-								itemLink,
-								slotID,
-								ScanningTooltipModule:ScanTooltip(itemLink),
-								spec,
-								equippedItemHasUniqueGem
-							).Score
+									itemLink,
+									slotID,
+									ScanningTooltipModule:ScanTooltip(itemLink),
+									spec,
+									equippedItemHasUniqueGem
+								).Score
 							local equippedScore
 							local equippedLink = GetInventoryItemLink("player", slotID)
 							if equippedLink then
 								equippedScore =
 									ScoreModule:CalculateItemScore(
-									equippedLink,
-									slotID,
-									ScanningTooltipModule:ScanTooltip(equippedLink),
-									spec,
-									equippedItemHasUniqueGem
-								).Score
+										equippedLink,
+										slotID,
+										ScanningTooltipModule:ScanTooltip(equippedLink),
+										spec,
+										equippedItemHasUniqueGem
+									).Score
 							else
 								retry = true
 							end
@@ -1468,12 +1473,12 @@ function WQA:CheckItems(questID, isEmissary)
 								if equippedLink then
 									local equippedScore2 =
 										ScoreModule:CalculateItemScore(
-										equippedLink,
-										slotID2,
-										ScanningTooltipModule:ScanTooltip(equippedLink),
-										spec,
-										equippedItemHasUniqueGem
-									).Score
+											equippedLink,
+											slotID2,
+											ScanningTooltipModule:ScanTooltip(equippedLink),
+											spec,
+											equippedItemHasUniqueGem
+										).Score
 									if equippedScore or 0 > equippedScore2 then
 										equippedScore = equippedScore2
 									end
@@ -1490,7 +1495,7 @@ function WQA:CheckItems(questID, isEmissary)
 						end
 					end
 					if itemPercentUpgrade >= self.db.profile.options.reward.gear.PercentUpgradeMin then
-						local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(itemPercentUpgrade + .5)}
+						local item = { itemLink = itemLink, itemPercentUpgrade = math.floor(itemPercentUpgrade + .5) }
 						self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 					end
 				end
@@ -1530,7 +1535,7 @@ function WQA:CheckItems(questID, isEmissary)
 				itemLevel = GetDetailedItemLevelInfo(itemLink)
 				local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
 				if itemLevel - itemLevelEquipped >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
-					local item = {itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped}
+					local item = { itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped }
 					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 				end
 			end
@@ -1564,7 +1569,7 @@ function WQA:CheckItems(questID, isEmissary)
 					end
 				end
 				if AzeriteArmorCacheIsUpgrade == true then
-					local item = {itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache}
+					local item = { itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache }
 					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 				end
 			end
@@ -1572,9 +1577,9 @@ function WQA:CheckItems(questID, isEmissary)
 			-- Equipment Cache
 			if
 				(weaponCache[itemID] and self.db.profile.options.reward.gear.weaponCache) or
-					(armorCache[itemID] and self.db.profile.options.reward.gear.armorCache) or
-					(jewelryCache[itemID] and self.db.profile.options.reward.gear.jewelryCache)
-			 then
+				(armorCache[itemID] and self.db.profile.options.reward.gear.armorCache) or
+				(jewelryCache[itemID] and self.db.profile.options.reward.gear.jewelryCache)
+			then
 				itemLevel = GetDetailedItemLevelInfo(itemLink)
 				local n = 0
 				local upgrade
@@ -1666,7 +1671,7 @@ function WQA:CheckItems(questID, isEmissary)
 				end
 
 				if upgradeNum > 0 then
-					local item = {itemLink = itemLink, cache = {upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax}}
+					local item = { itemLink = itemLink, cache = { upgradeNum = upgradeNum, n = n, upgradeMax = upgradeMax } }
 					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 				end
 			end
@@ -1697,7 +1702,7 @@ function WQA:CheckItems(questID, isEmissary)
 						end
 					end
 					if transmog then
-						local item = {itemLink = itemLink, transmog = transmog}
+						local item = { itemLink = itemLink, transmog = transmog }
 						self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 					end
 				end
@@ -1707,7 +1712,7 @@ function WQA:CheckItems(questID, isEmissary)
 			local factionID = ReputationItemList[itemID] or nil
 			if factionID then
 				if self.db.profile.options.reward.reputation[factionID] == true then
-					local reputation = {itemLink = itemLink, factionID = factionID}
+					local reputation = { itemLink = itemLink, factionID = factionID }
 					self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
 				end
 			end
@@ -1738,21 +1743,21 @@ function WQA:CheckItems(questID, isEmissary)
 
 			-- Items
 			if self.itemList[itemID] == true then
-				local item = {itemLink = itemLink}
+				local item = { itemLink = itemLink }
 				self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
 			end
 
 			-- Azerite Traits
 			if
 				self.db.profile.options.reward.gear.azeriteTraits ~= "" and
-					C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink)
-			 then
+				C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink)
+			then
 				for _, ring in pairs(C_AzeriteEmpoweredItem.GetAllTierInfoByItemID(itemLink)) do
 					for _, azeritePowerID in pairs(ring.azeritePowerIDs) do
 						local spellID = C_AzeriteEmpoweredItem.GetPowerInfo(azeritePowerID).spellID
 						if self.azeriteTraitsList[spellID] then
 							self:AddRewardToQuest(questID, "AZERITE_TRAIT", spellID, isEmissary)
-							self:AddRewardToQuest(questID, "ITEM", {itemLink = itemLink}, isEmissary)
+							self:AddRewardToQuest(questID, "ITEM", { itemLink = itemLink }, isEmissary)
 						end
 					end
 				end
@@ -1760,7 +1765,7 @@ function WQA:CheckItems(questID, isEmissary)
 
 			-- Conduit
 			if self.db.profile.options.reward.gear.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
-				self:AddRewardToQuest(questID, "ITEM", {itemLink = itemLink}, isEmissary)
+				self:AddRewardToQuest(questID, "ITEM", { itemLink = itemLink }, isEmissary)
 			end
 		else
 			retry = true
@@ -1775,7 +1780,7 @@ function WQA:CheckCurrencies(questID, isEmissary)
 	for i = 1, numQuestCurrencies do
 		local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
 		if self.db.profile.options.reward.currency[currencyID] then
-			local currency = {currencyID = currencyID, amount = numItems}
+			local currency = { currencyID = currencyID, amount = numItems }
 			self:AddRewardToQuest(questID, "CURRENCY", currency, isEmissary)
 		end
 
@@ -1783,7 +1788,7 @@ function WQA:CheckCurrencies(questID, isEmissary)
 		local factionID = ReputationCurrencyList[currencyID] or nil
 		if factionID then
 			if self.db.profile.options.reward.reputation[factionID] == true then
-				local reputation = {name = name, currencyID = currencyID, amount = numItems, factionID = factionID}
+				local reputation = { name = name, currencyID = currencyID, amount = numItems, factionID = factionID }
 				self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
 			end
 		end
@@ -1841,8 +1846,8 @@ function WQA:UpdateQTip(tasks)
 			local id = task.id
 			if
 				(task.type == "WORLD_QUEST" and not tooltip.quests[id]) or (task.type == "MISSION" and not tooltip.missions[id]) or
-					(task.type == "AREA_POI" and not tooltip.pois[id])
-			 then
+				(task.type == "AREA_POI" and not tooltip.pois[id])
+			then
 				local j = 1
 
 				if self.db.profile.options.popupShowExpansion then
@@ -1896,7 +1901,8 @@ function WQA:UpdateQTip(tasks)
 						elseif task.type == "MISSION" then
 							GameTooltip:SetText(C_Garrison.GetMissionName(id))
 							GameTooltip:AddLine(
-								string.format(GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS, C_Garrison.GetMissionMaxFollowers(id)),
+								string.format(GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS,
+									C_Garrison.GetMissionMaxFollowers(id)),
 								1,
 								1,
 								1
@@ -1905,14 +1911,16 @@ function WQA:UpdateQTip(tasks)
 								id,
 								WQA.missionList[task.id].followerType,
 								false,
-								C_Garrison.GetFollowerAbilityCountersForMechanicTypes(WQA.missionList[task.id].followerType)
+								C_Garrison.GetFollowerAbilityCountersForMechanicTypes(WQA.missionList[task.id]
+								.followerType)
 							)
 							GameTooltip:AddLine(GARRISON_MISSION_AVAILABILITY)
 							GameTooltip:AddLine(WQA.missionList[task.id].offerTimeRemaining, 1, 1, 1)
 							if not C_Garrison.IsPlayerInGarrison(WQA.missionList[task.id].followerType) then
 								GameTooltip:AddLine(" ")
 								GameTooltip:AddLine(
-									GarrisonFollowerOptions[WQA.missionList[task.id].followerType].strings.RETURN_TO_START,
+									GarrisonFollowerOptions[WQA.missionList[task.id].followerType].strings
+									.RETURN_TO_START,
 									nil,
 									nil,
 									nil,
@@ -1971,8 +1979,8 @@ function WQA:UpdateQTip(tasks)
 						if ChatEdit_TryInsertChatLink(link) ~= true then
 							if
 								task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and
-									not (self.questPinList[id] or self.questFlagList[id])
-							 then
+								not (self.questPinList[id] or self.questFlagList[id])
+							then
 								if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
 									if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
 										WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
@@ -1984,19 +1992,22 @@ function WQA:UpdateQTip(tasks)
 										)
 									else
 										local _, _, numObjectives = GetTaskInfo(id)
-										local widget = {questID = id, mapID = GetQuestZoneID(id), numObjectives = numObjectives}
+										local widget = { questID = id, mapID = GetQuestZoneID(id),
+											numObjectives = numObjectives }
 										zoneID = GetQuestZoneID(id)
 										local x, y = C_TaskQuest.GetQuestLocation(id, zoneID)
 										widget.questX, widget.questY = x or 0, y or 0
 										widget.IconTexture =
-											select(2, GetQuestLogRewardInfo(1, id)) or select(2, GetQuestLogRewardCurrencyInfo(1, id)) or
+											select(2, GetQuestLogRewardInfo(1, id)) or
+											select(2, GetQuestLogRewardCurrencyInfo(1, id)) or
 											[[Interface\GossipFrame\auctioneerGossipIcon]]
 										local function f(widget)
 											if not widget.IconTexture then
 												WQA:ScheduleTimer(
 													function()
 														widget.IconTexture =
-															select(2, GetQuestLogRewardInfo(1, id)) or select(2, GetQuestLogRewardCurrencyInfo(1, id))
+															select(2, GetQuestLogRewardInfo(1, id)) or
+															select(2, GetQuestLogRewardCurrencyInfo(1, id))
 														f(widget)
 													end,
 													1.5
@@ -2094,9 +2105,11 @@ function WQA:UpdateQTip(tasks)
 										local moreTooltipText = ""
 										while self:GetRewardTextByID(id, k, v, m, task.type) do
 											if m == 4 then
-												moreTooltipText = moreTooltipText .. self:GetRewardTextByID(id, k, v, m, task.type)
+												moreTooltipText = moreTooltipText ..
+												self:GetRewardTextByID(id, k, v, m, task.type)
 											else
-												moreTooltipText = moreTooltipText .. "\n" .. self:GetRewardTextByID(id, k, v, m, task.type)
+												moreTooltipText = moreTooltipText ..
+												"\n" .. self:GetRewardTextByID(id, k, v, m, task.type)
 											end
 											m = m + 1
 										end
@@ -2381,7 +2394,7 @@ function WQA:EmissaryReward()
 	self.emissaryRewards = false
 	local retry = false
 
-	for _, mapID in pairs({627, 875}) do
+	for _, mapID in pairs({ 627, 875 }) do
 		local bounties = GetBountiesForMapID(mapID)
 		if bounties then
 			for _, emissary in ipairs(GetBountiesForMapID(mapID)) do
@@ -2444,9 +2457,9 @@ end
 function WQA:Special()
 	if
 		(self.db.profile.achievements[11189] ~= "disabled" and not select(4, GetAchievementInfo(11189)) == true) or
-			(self.db.profile.achievements[13144] ~= "disabled" and not select(4, GetAchievementInfo(13144)) == true) or
-			(self.db.profile.achievements[14758] ~= "disabled" and not select(4, GetAchievementInfo(14758)))
-	 then
+		(self.db.profile.achievements[13144] ~= "disabled" and not select(4, GetAchievementInfo(13144)) == true) or
+		(self.db.profile.achievements[14758] ~= "disabled" and not select(4, GetAchievementInfo(14758)))
+	then
 		self.event:RegisterEvent("QUEST_TURNED_IN")
 	end
 end
@@ -2579,14 +2592,15 @@ function WQA:CheckMissions()
 								local currencyID = reward.currencyID
 								local amount = reward.quantity
 								if self.db.profile.options.missionTable.reward.currency[currencyID] then
-									local currency = {currencyID = currencyID, amount = amount}
+									local currency = { currencyID = currencyID, amount = amount }
 									self:AddRewardToMission(missionID, "CURRENCY", currency)
 									addMission = true
 								else
 									local factionID = ReputationCurrencyList[currencyID] or nil
 									if factionID then
 										if self.db.profile.options.missionTable.reward.reputation[factionID] == true then
-											local reputation = {currencyID = currencyID, amount = amount, factionID = factionID}
+											local reputation = { currencyID = currencyID, amount = amount,
+												factionID = factionID }
 											self:AddRewardToMission(missionID, "REPUTATION", reputation)
 										end
 									end
@@ -2595,8 +2609,8 @@ function WQA:CheckMissions()
 								local gold = math.floor(reward.quantity / 10000)
 								if
 									self.db.profile.options.missionTable.reward.gold and
-										gold >= self.db.profile.options.missionTable.reward.goldMin
-								 then
+									gold >= self.db.profile.options.missionTable.reward.goldMin
+								then
 									self:AddRewardToMission(missionID, "GOLD", gold)
 									addMission = true
 								end
@@ -2606,25 +2620,25 @@ function WQA:CheckMissions()
 						if reward.itemID then
 							local itemID = reward.itemID
 							local itemName,
-								itemLink,
-								itemRarity,
-								itemLevel,
-								itemMinLevel,
-								itemType,
-								itemSubType,
-								itemStackCount,
-								itemEquipLoc,
-								itemTexture,
-								itemSellPrice,
-								itemClassID,
-								itemSubClassID = GetItemInfo(itemID)
+							itemLink,
+							itemRarity,
+							itemLevel,
+							itemMinLevel,
+							itemType,
+							itemSubType,
+							itemStackCount,
+							itemEquipLoc,
+							itemTexture,
+							itemSellPrice,
+							itemClassID,
+							itemSubClassID = GetItemInfo(itemID)
 
 							if not itemLink then
 								retry = true
 							else
 								-- Custom Mission Reward
 								if self.db.global.custom.missionReward[itemID] and self.db.profile.custom.missionReward[itemID] then
-									local item = {itemLink = itemLink}
+									local item = { itemLink = itemLink }
 									self:AddRewardToMission(missionID, "ITEM", item)
 									addMission = true
 								end
@@ -2633,7 +2647,7 @@ function WQA:CheckMissions()
 								local factionID = ReputationItemList[itemID] or nil
 								if factionID then
 									if self.db.profile.options.missionTable.reward.reputation[factionID] == true then
-										local reputation = {itemLink = itemLink, factionID = factionID}
+										local reputation = { itemLink = itemLink, factionID = factionID }
 										self:AddRewardToMission(missionID, "REPUTATION", reputation)
 										addMission = true
 									end
@@ -2652,7 +2666,8 @@ function WQA:CheckMissions()
 												if not state then
 													transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
 												elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
-													transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
+													transmog =
+													"|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
 												end
 											end
 										elseif CanIMogIt then
@@ -2661,13 +2676,13 @@ function WQA:CheckMissions()
 													transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t"
 												elseif
 													not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and self.db.profile.options.reward.gear.unknownSource
-												 then
+												then
 													transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t"
 												end
 											end
 										end
 										if transmog then
-											local item = {itemLink = itemLink, transmog = transmog}
+											local item = { itemLink = itemLink, transmog = transmog }
 											self:AddRewardToMission(missionID, "ITEM", item)
 											addMission = true
 										end
@@ -2676,7 +2691,7 @@ function WQA:CheckMissions()
 
 								-- Conduit
 								if self.db.profile.options.reward.gear.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
-									self:AddRewardToMission(missionID, "ITEM", {itemLink = itemLink})
+									self:AddRewardToMission(missionID, "ITEM", { itemLink = itemLink })
 									addMission = true
 								end
 							end
