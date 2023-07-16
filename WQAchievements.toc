@@ -5,6 +5,7 @@
 ## SavedVariables: WQADB
 ## X-Curse-Project-ID: 272039
 ## X-WoWI-ID: 24566
+## X-Wago-ID: BKpqEXGE
 ## OptionalDeps: CanIMogIt, AllTheThings
 
 embeds.xml

@@ -2,12 +2,12 @@
 
 name: Package and release
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     tags:
-     - 'v*.*.*-**'
+      - "v*.*.*-**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,7 +16,6 @@ on:
 jobs:
   # "release" is a job, you can name it anything you want
   release:
-
     # we can run our steps on pretty much anything, but the "ubuntu-latest" image is a safe bet
     runs-on: ubuntu-latest
 
@@ -24,12 +23,13 @@ jobs:
     env:
       CF_API_KEY: ${{ secrets.CF_API_KEY }}
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}  # "GITHUB_TOKEN" is a secret always provided to the workflow
-                                                 # for your own token, the name cannot start with "GITHUB_"
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      GITHUB_OAUTH:
+        ${{ secrets.GITHUB_TOKEN }} # "GITHUB_TOKEN" is a secret always provided to the workflow
+        # for your own token, the name cannot start with "GITHUB_"
 
     # "steps" holds a list of all the steps needed to package and release our AddOn
     steps:
-
       # we first have to clone the AddOn project, this is a required step
       - name: Clone project
         uses: actions/checkout@v1
@@ -41,4 +41,3 @@ jobs:
       # once cloned, we just run the GitHub Action for the packager project
       - name: Package and release
         uses: BigWigsMods/packager@master
-        
