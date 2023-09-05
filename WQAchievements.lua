@@ -49,6 +49,28 @@ if locale == "deDE" then
 	L["tracking_wasEarnedByMe"] = "Verfolgen, wenn nicht mit aktiven Charakter errungen"
 	L["tracking_exclusive"] = "Nur mit diesem Charakter verfolgen"
 	L["tracking_other"] = "Nur mit %s verfolgen"
+
+elseif locale == "frFR" then
+	L["NO_QUESTS"] = "Aucune quête mondiale intéressante n’est disponible pour le moment !"
+	L["WQChat"] = "Quête mondiale intéressante disponible :"
+	L["WQforAch"] = "%s pour %s"
+	L["WQforAchTime"] = "%s (%s) pour %s"
+	L["achievements"] = "Hauts faits"
+	L["mounts"] = "Montures"
+	L["pets"] = "Mascottes"
+	L["toys"] = "Jouets"
+	L["completed"] = "Terminé"
+	L["notCompleted"] = "Pas terminé"
+	L["tracking_disabled"] = "Ne pas suivre"
+	L["tracking_default"] = "Par défaut"
+	L["tracking_always"] = "Toujours suivre"
+	L["tracking_wasEarnedByMe"] = "Suivre si le personnage actif ne l’a pas obtenu"
+	L["tracking_exclusive"] = "Suivre uniquement avec ce personnage"
+	L["tracking_other"] = "Suivi uniquement par %s"
+	L["LE_QUEST_TAG_TYPE_PVP"] = "JcJ"
+	L["LE_QUEST_TAG_TYPE_PET_BATTLE"] = "Combat de mascotte"
+	L["LE_QUEST_TAG_TYPE_PROFESSION"] = "Métier"
+	L["LE_QUEST_TAG_TYPE_DUNGEON"] = "Donjon"
 end
 
 local function GetExpansionByMissionID(missionID)
