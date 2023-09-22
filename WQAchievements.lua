@@ -2692,7 +2692,7 @@ function WQA:CheckMissions()
 										local transmog
 										if AllTheThings then
 											local searchForLinkResult = AllTheThings.SearchForLink(itemLink)
-											if not searchForLinkResult then
+											if not searchForLinkResult or not searchForLinkResult[1] then
 												retry = true
 											else
 												local state = searchForLinkResult[1].collected
