@@ -32,6 +32,7 @@ local CurrencyIDList = {
 		1889 -- Adventure Campaign Progress
 	},
 	[10] = {
+		2003, -- Dragon Isles Supplies
 		2123 -- Bloody Tokens
 	}
 }
