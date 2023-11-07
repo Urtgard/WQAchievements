@@ -20,16 +20,19 @@ local CurrencyIDList = {
 		1533 -- Wakening Essence
 	},
 	[8] = {
-		1553, -- Azerite
-		1560, -- War Ressource
-		{id = 1716, faction = "Horde"}, -- Honorbound Service Medal
-		{id = 1717, faction = "Alliance"}, -- 7th Legion Service Medal
-		1721, -- Prismatic Manapearl
-		1602, -- Conquest
-		1166 -- Timewarped Badge
+		1553,                          -- Azerite
+		1560,                          -- War Ressource
+		{ id = 1716, faction = "Horde" }, -- Honorbound Service Medal
+		{ id = 1717, faction = "Alliance" }, -- 7th Legion Service Medal
+		1721,                          -- Prismatic Manapearl
+		1602,                          -- Conquest
+		1166                           -- Timewarped Badge
 	},
 	[9] = {
 		1889 -- Adventure Campaign Progress
+	},
+	[10] = {
+		2123 -- Bloody Tokens
 	}
 }
 
@@ -96,20 +99,20 @@ WQA.EmissaryQuestIDList = {
 		43179 -- Kirin Tor
 	},
 	[8] = {
-		50604, -- Tortollan Seekers
-		50562, -- Champions of Azeroth
-		{id = 50599, faction = "Alliance"}, -- Proudmoore Admiralty
-		{id = 50600, faction = "Alliance"}, -- Order of Embers
-		{id = 50601, faction = "Alliance"}, -- Storm's Wake
-		{id = 50605, faction = "Alliance"}, -- 7th Legion
-		{id = 50598, faction = "Horde"}, -- Zandalari Empire
-		{id = 50603, faction = "Horde"}, -- Voldunai
-		{id = 50602, faction = "Horde"}, -- Talanji's Expedition
-		{id = 50606, faction = "Horde"}, -- The Honorbound
+		50604,                          -- Tortollan Seekers
+		50562,                          -- Champions of Azeroth
+		{ id = 50599, faction = "Alliance" }, -- Proudmoore Admiralty
+		{ id = 50600, faction = "Alliance" }, -- Order of Embers
+		{ id = 50601, faction = "Alliance" }, -- Storm's Wake
+		{ id = 50605, faction = "Alliance" }, -- 7th Legion
+		{ id = 50598, faction = "Horde" }, -- Zandalari Empire
+		{ id = 50603, faction = "Horde" }, -- Voldunai
+		{ id = 50602, faction = "Horde" }, -- Talanji's Expedition
+		{ id = 50606, faction = "Horde" }, -- The Honorbound
 		-- 8.2
 		-- 2391, -- Rustbolt Resistance
-		{id = 56119, faction = "Alliance"}, -- Waveblade Ankoan
-		{id = 56120, faction = "Horde"} -- The Unshackled
+		{ id = 56119, faction = "Alliance" }, -- Waveblade Ankoan
+		{ id = 56120, faction = "Horde" } -- The Unshackled
 	}
 }
 
@@ -419,7 +422,8 @@ function WQA:UpdateOptions()
 							questType = {
 								name = "Quest type",
 								order = newOrder(),
-								desc = "IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+								desc =
+								"IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
 								type = "select",
 								values = {
 									WORLD_QUEST = "World Quest",
@@ -436,7 +440,8 @@ function WQA:UpdateOptions()
 							},
 							mapID = {
 								name = "mapID",
-								desc = "Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
+								desc =
+								"Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
 								type = "input",
 								width = .5,
 								order = newOrder(),
@@ -929,7 +934,8 @@ function WQA:UpdateOptions()
 				type = "group",
 				args = {}
 			}
-			local args = self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i] .. "WorldQuests"].args
+			local args = self.options.args.reward.args[self.ExpansionList[i]].args
+				[self.ExpansionList[i] .. "WorldQuests"].args
 
 			-- Zones
 			if WQA.ZoneIDList[i] then
@@ -1071,7 +1077,7 @@ function WQA:UpdateOptions()
 
 				-- Skillup
 				-- if not self.db.char[exp+5].profession[tradeskillLineID].isMaxLevel and self.db.profile.options.reward[exp+5].profession[tradeskillLineID].skillup thenthen
-				for _, tradeskillLineIndex in pairs({GetProfessions()}) do
+				for _, tradeskillLineIndex in pairs({ GetProfessions() }) do
 					local professionName, _, _, _, _, _, tradeskillLineID = GetProfessionInfo(tradeskillLineIndex)
 					args.profession.args[tradeskillLineID .. "Header"] = {
 						type = "header",
@@ -1103,27 +1109,27 @@ function WQA:UpdateOptions()
 						order = newOrder()
 					}
 				end
-			-- Crafting Reagents
-			--
-			-- for k,v in pairs(CraftingReagentIDList[i] or {}) do
-			--	local name = GetItemInfo(v)
-			--	if name then
-			--		self.options.args.reward.args[ExpansionList[i]].args.profession.args[GetItemInfo(v)] = {
-			--			type = "toggle",
-			--			name = GetItemInfo(v),
-			--			set = function(info, val)
-			--				WQA.db.profile.options.reward.craftingreagent[v] = val
-			--			end,
-			--			descStyle = "inline",
-			--		 get = function()
-			--		 	return WQA.db.profile.options.reward.craftingreagent[v]
-			--	 	end,
-			--		 order = newOrder()
-			--		}
-			--	else
-			--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
-			--	end
-			-- end
+				-- Crafting Reagents
+				--
+				-- for k,v in pairs(CraftingReagentIDList[i] or {}) do
+				--	local name = GetItemInfo(v)
+				--	if name then
+				--		self.options.args.reward.args[ExpansionList[i]].args.profession.args[GetItemInfo(v)] = {
+				--			type = "toggle",
+				--			name = GetItemInfo(v),
+				--			set = function(info, val)
+				--				WQA.db.profile.options.reward.craftingreagent[v] = val
+				--			end,
+				--			descStyle = "inline",
+				--		 get = function()
+				--		 	return WQA.db.profile.options.reward.craftingreagent[v]
+				--	 	end,
+				--		 order = newOrder()
+				--		}
+				--	else
+				--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+				--	end
+				-- end
 			end
 		end
 
@@ -1134,7 +1140,8 @@ function WQA:UpdateOptions()
 			type = "group",
 			args = {}
 		}
-		local args = self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i] .. "MissionTable"].args
+		local args = self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i] .. "MissionTable"]
+			.args
 
 		-- Currencies
 		if CurrencyIDList[i] then
@@ -1201,7 +1208,7 @@ function WQA:UpdateOptions()
 				type = "group",
 				args = {}
 			}
-			for _, factionGroup in pairs {"Neutral", UnitFactionGroup("player")} do
+			for _, factionGroup in pairs { "Neutral", UnitFactionGroup("player") } do
 				if FactionIDList[i][factionGroup] then
 					for k, v in pairs(FactionIDList[i][factionGroup]) do
 						args.reputation.args[GetFactionInfoByID(v)] = {
@@ -1311,7 +1318,8 @@ function WQA:CreateGroup(options, data, groupName)
 						local name, server = UnitFullName("player")
 						name = name .. "-" .. server
 						if WQA.db.profile[info[#info - 1]].exclusive[id] ~= name then
-							info.option.values.other = string.format(L["tracking_other"], WQA.db.profile[info[#info - 1]].exclusive[id])
+							info.option.values.other = string.format(L["tracking_other"],
+								WQA.db.profile[info[#info - 1]].exclusive[id])
 							return "other"
 						end
 					end
@@ -1324,11 +1332,11 @@ function WQA:CreateGroup(options, data, groupName)
 					self:CancelTimer(optionsTimer)
 					optionsTimer =
 						self:ScheduleTimer(
-						function()
-							LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
-						end,
-						2
-					)
+							function()
+								LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+							end,
+							2
+						)
 				end
 				args[idString .. "Name"].name = select(2, GetItemInfo(object.itemID)) or object.name
 			else
@@ -1376,7 +1384,8 @@ function WQA:UpdateCustomQuests()
 		args[id .. "questType"] = {
 			name = "Quest type",
 			order = newOrder(),
-			desc = "IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+			desc =
+			"IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
 			type = "select",
 			values = {
 				WORLD_QUEST = "World Quest",
@@ -1563,7 +1572,7 @@ function WQA:UpdateCustomMissions()
 			name = "Reward type",
 			order = newOrder(),
 			type = "select",
-			values = {item = "Item", achievement = "Achievement", none = "none"},
+			values = { item = "Item", achievement = "Achievement", none = "none" },
 			width = .6,
 			set = function(info, val)
 				self.db.global.custom.mission[id].rewardType = val
@@ -1672,7 +1681,8 @@ function WQA:SortOptions()
 						completed = select(4, GetAchievementInfo(id))
 					elseif kk == "mounts" then
 						for _, mountID in pairs(C_MountJournal.GetMountIDs()) do
-							local _, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+							local _, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(
+								mountID)
 							if spellID == id then
 								completed = isCollected
 								break
