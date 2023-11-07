@@ -24,15 +24,15 @@ WQA.ZoneIDList = {
         862,
         863,
         864,
-        895, -- Tiragarde Sound
+        895,  -- Tiragarde Sound
         942,
-        896, -- Drustvar
+        896,  -- Drustvar
         1161, -- Boralus
         1165, -- Dazar'alor
         1355, -- Nazjatar
         1462, -- Mechagon
         1527, -- Uldum
-        1530 -- Vale of Eternal Blossoms
+        1530  -- Vale of Eternal Blossoms
     },
     [9] = {
         1525, -- Revendreth
@@ -41,7 +41,7 @@ WQA.ZoneIDList = {
         1565, -- Ardenweald
         1543, -- The Maw
         1961, -- Korthia
-        1970 --	Zereth Mortis
+        1970  --	Zereth Mortis
     },
     [10] = {
         2022, -- The Waking Shores
@@ -50,7 +50,8 @@ WQA.ZoneIDList = {
         2025, -- Thaldraszus Zone
         1978, -- Dragon Isles
         2085, -- Primalist Tomorrow
+        2112, -- Valdrakken
         2151, -- The Forbidden Reach
-        2133 -- Zaralek Cavern
+        2133  -- Zaralek Cavern
     }
 }
