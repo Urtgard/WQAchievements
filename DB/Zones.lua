@@ -52,6 +52,7 @@ WQA.ZoneIDList = {
         2085, -- Primalist Tomorrow
         2112, -- Valdrakken
         2151, -- The Forbidden Reach
-        2133  -- Zaralek Cavern
+        2133, -- Zaralek Cavern
+        2200  -- Emerald Dream
     }
 }
