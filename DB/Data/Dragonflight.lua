@@ -13,10 +13,10 @@ data.achievements = {
         id = 16589,
         criteriaType = "QUESTS",
         criteria = {
-            {67005},
-            {70209},
-            {70439},
-            {69949}
+            { 67005 },
+            { 70209 },
+            { 70439 },
+            { 69949 }
         }
     },
     {
@@ -24,10 +24,10 @@ data.achievements = {
         id = 16590,
         criteriaType = "QUESTS",
         criteria = {
-            {67005},
-            {70209},
-            {70439},
-            {69949}
+            { 67005 },
+            { 70209 },
+            { 70439 },
+            { 69949 }
         }
     },
     {
@@ -35,10 +35,10 @@ data.achievements = {
         id = 16599,
         criteriaType = "QUESTS",
         criteria = {
-            {72008},
-            {72058},
-            {72019},
-            {71225}
+            { 72008 },
+            { 72058 },
+            { 72019 },
+            { 71225 }
         }
     },
     {
@@ -46,10 +46,10 @@ data.achievements = {
         id = 16560,
         criteriaType = "QUESTS",
         criteria = {
-            {70075, 70632},
-            {70079, 70659},
-            {70100},
-            {70110, 70699}
+            { 70075, 70632 },
+            { 70079, 70659 },
+            { 70100 },
+            { 70110, 70699 }
         }
     },
     {
@@ -57,13 +57,13 @@ data.achievements = {
         id = 16570,
         criteriaType = "QUESTS",
         criteria = {
-            {70075},
-            {70632},
-            {70100},
-            {70659},
-            {70110},
-            {70079},
-            {70699}
+            { 70075 },
+            { 70632 },
+            { 70100 },
+            { 70659 },
+            { 70110 },
+            { 70079 },
+            { 70699 }
         }
     },
     {
@@ -88,17 +88,17 @@ data.achievements = {
         id = 16540,
         criteriaType = "AREA_POI",
         criteria = {
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7344, MapId = 1978},
-            {AreaPoiId = 7344, MapId = 1978}
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7344, MapId = 1978 },
+            { AreaPoiId = 7344, MapId = 1978 }
         }
     },
     {
@@ -106,17 +106,17 @@ data.achievements = {
         id = 16542,
         criteriaType = "AREA_POI",
         criteria = {
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7342, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7343, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7345, MapId = 1978},
-            {AreaPoiId = 7344, MapId = 1978},
-            {AreaPoiId = 7344, MapId = 1978}
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7342, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7343, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7345, MapId = 1978 },
+            { AreaPoiId = 7344, MapId = 1978 },
+            { AreaPoiId = 7344, MapId = 1978 }
         }
     },
     --
@@ -132,9 +132,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7249, MapId = 2022},
-                        {AreaPoiId = 7253, MapId = 2022},
-                        {AreaPoiId = 7257, MapId = 2022}
+                        { AreaPoiId = 7249, MapId = 2022 },
+                        { AreaPoiId = 7253, MapId = 2022 },
+                        { AreaPoiId = 7257, MapId = 2022 }
                     }
                 },
                 notAccountwide = true
@@ -145,9 +145,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7250, MapId = 2022},
-                        {AreaPoiId = 7254, MapId = 2022},
-                        {AreaPoiId = 7258, MapId = 2022}
+                        { AreaPoiId = 7250, MapId = 2022 },
+                        { AreaPoiId = 7254, MapId = 2022 },
+                        { AreaPoiId = 7258, MapId = 2022 }
                     }
                 },
                 notAccountwide = true
@@ -158,9 +158,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7251, MapId = 2022},
-                        {AreaPoiId = 7255, MapId = 2022},
-                        {AreaPoiId = 7259, MapId = 2022}
+                        { AreaPoiId = 7251, MapId = 2022 },
+                        { AreaPoiId = 7255, MapId = 2022 },
+                        { AreaPoiId = 7259, MapId = 2022 }
                     }
                 },
                 notAccountwide = true
@@ -171,9 +171,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7252, MapId = 2022},
-                        {AreaPoiId = 7256, MapId = 2022},
-                        {AreaPoiId = 7260, MapId = 2022}
+                        { AreaPoiId = 7252, MapId = 2022 },
+                        { AreaPoiId = 7256, MapId = 2022 },
+                        { AreaPoiId = 7260, MapId = 2022 }
                     }
                 },
                 notAccountwide = true
@@ -191,8 +191,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7221, MapId = 2023},
-                        {AreaPoiId = 7225, MapId = 2023}
+                        { AreaPoiId = 7221, MapId = 2023 },
+                        { AreaPoiId = 7225, MapId = 2023 }
                     }
                 },
                 notAccountwide = true
@@ -203,8 +203,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7222, MapId = 2023},
-                        {AreaPoiId = 7226, MapId = 2023}
+                        { AreaPoiId = 7222, MapId = 2023 },
+                        { AreaPoiId = 7226, MapId = 2023 }
                     }
                 },
                 notAccountwide = true
@@ -215,8 +215,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7223, MapId = 2023},
-                        {AreaPoiId = 7227, MapId = 2023}
+                        { AreaPoiId = 7223, MapId = 2023 },
+                        { AreaPoiId = 7227, MapId = 2023 }
                     }
                 },
                 notAccountwide = true
@@ -227,8 +227,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7224, MapId = 2023},
-                        {AreaPoiId = 7228, MapId = 2023}
+                        { AreaPoiId = 7224, MapId = 2023 },
+                        { AreaPoiId = 7228, MapId = 2023 }
                     }
                 },
                 notAccountwide = true
@@ -246,9 +246,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7237, MapId = 2024},
-                        {AreaPoiId = 7233, MapId = 2024},
-                        {AreaPoiId = 7229, MapId = 2024}
+                        { AreaPoiId = 7237, MapId = 2024 },
+                        { AreaPoiId = 7233, MapId = 2024 },
+                        { AreaPoiId = 7229, MapId = 2024 }
                     }
                 },
                 notAccountwide = true
@@ -259,9 +259,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7238, MapId = 2024},
-                        {AreaPoiId = 7234, MapId = 2024},
-                        {AreaPoiId = 7230, MapId = 2024}
+                        { AreaPoiId = 7238, MapId = 2024 },
+                        { AreaPoiId = 7234, MapId = 2024 },
+                        { AreaPoiId = 7230, MapId = 2024 }
                     }
                 },
                 notAccountwide = true
@@ -272,9 +272,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7239, MapId = 2024},
-                        {AreaPoiId = 7235, MapId = 2024},
-                        {AreaPoiId = 7231, MapId = 2024}
+                        { AreaPoiId = 7239, MapId = 2024 },
+                        { AreaPoiId = 7235, MapId = 2024 },
+                        { AreaPoiId = 7231, MapId = 2024 }
                     }
                 },
                 notAccountwide = true
@@ -285,9 +285,9 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7240, MapId = 2024},
-                        {AreaPoiId = 7236, MapId = 2024},
-                        {AreaPoiId = 7232, MapId = 2024}
+                        { AreaPoiId = 7240, MapId = 2024 },
+                        { AreaPoiId = 7236, MapId = 2024 },
+                        { AreaPoiId = 7232, MapId = 2024 }
                     }
                 },
                 notAccountwide = true
@@ -305,8 +305,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7298, MapId = 2025},
-                        {AreaPoiId = 7245, MapId = 2025}
+                        { AreaPoiId = 7298, MapId = 2025 },
+                        { AreaPoiId = 7245, MapId = 2025 }
                     }
                 },
                 notAccountwide = true
@@ -317,8 +317,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7299, MapId = 2025},
-                        {AreaPoiId = 7246, MapId = 2025}
+                        { AreaPoiId = 7299, MapId = 2025 },
+                        { AreaPoiId = 7246, MapId = 2025 }
                     }
                 },
                 notAccountwide = true
@@ -329,8 +329,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7300, MapId = 2025},
-                        {AreaPoiId = 7247, MapId = 2025}
+                        { AreaPoiId = 7300, MapId = 2025 },
+                        { AreaPoiId = 7247, MapId = 2025 }
                     }
                 },
                 notAccountwide = true
@@ -341,8 +341,8 @@ data.achievements = {
                 criteriaType = "AREA_POI",
                 criteria = {
                     {
-                        {AreaPoiId = 7301, MapId = 2025},
-                        {AreaPoiId = 7248, MapId = 2025}
+                        { AreaPoiId = 7301, MapId = 2025 },
+                        { AreaPoiId = 7248, MapId = 2025 }
                     }
                 },
                 notAccountwide = true
@@ -410,24 +410,34 @@ data.pets = {
         name = "Wildfire",
         itemID = 202412,
         creatureID = 200771,
-        quest = {{trackingID = 0, wqID = 73148}}
+        quest = { { trackingID = 0, wqID = 73148 } }
     },
     {
         name = "Vortex",
         itemID = 202413,
         creatureID = 200769,
-        quest = {{trackingID = 0, wqID = 73146}}
+        quest = { { trackingID = 0, wqID = 73146 } }
     },
     {
         name = "Tremblor",
         itemID = 202411,
         creatureID = 200770,
-        quest = {{trackingID = 0, wqID = 73147}}
+        quest = { { trackingID = 0, wqID = 73147 } }
     },
     {
         name = "Flow",
         itemID = 202407,
         creatureID = 200772,
-        quest = {{trackingID = 0, wqID = 73149}}
+        quest = { { trackingID = 0, wqID = 73149 } }
     }
+}
+
+-- Toys
+data.toys = {
+    {
+        name = "Glutinous Glitterscale Glob",
+        itemID = 205688,
+        quest = { { trackingID = 0, wqID = 75343 } }
+    },
+
 }

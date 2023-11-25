@@ -49,7 +49,6 @@ if locale == "deDE" then
 	L["tracking_wasEarnedByMe"] = "Verfolgen, wenn nicht mit aktiven Charakter errungen"
 	L["tracking_exclusive"] = "Nur mit diesem Charakter verfolgen"
 	L["tracking_other"] = "Nur mit %s verfolgen"
-
 elseif locale == "frFR" then
 	L["NO_QUESTS"] = "Aucune quête mondiale intéressante n’est disponible pour le moment !"
 	L["WQChat"] = "Quête mondiale intéressante disponible :"
@@ -554,6 +553,7 @@ function WQA:CreateQuestList()
 		self.Achievements:Register(v)
 	end
 	self:AddPets(self.data[10].pets)
+	self:AddToys(self.data[10].toys)
 
 	self:AddCustom()
 	self:Special()
