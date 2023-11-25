@@ -1866,7 +1866,9 @@ function WQA:CreateQTip()
 		self.tooltip = tooltip
 
 		tooltip:SetScript("OnHide", function()
-			WQA.PopUp:Hide()
+			if WQA.PopUp then
+				WQA.PopUp:Hide()
+			end
 		end)
 
 		if self.db.profile.options.popupShowExpansion or self.db.profile.options.popupShowZone then
