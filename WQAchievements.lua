@@ -1865,6 +1865,10 @@ function WQA:CreateQTip()
 		local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
 		self.tooltip = tooltip
 
+		tooltip:SetScript("OnHide", function()
+			WQA.PopUp:Hide()
+		end)
+
 		if self.db.profile.options.popupShowExpansion or self.db.profile.options.popupShowZone then
 			tooltip:AddColumn()
 		end
@@ -2236,10 +2240,13 @@ function WQA:AnnouncePopUp(quests, silent)
 		PopUp:SetScript(
 			"OnHide",
 			function()
-				LibQTip:Release(WQA.tooltip)
-				WQA.tooltip.quests = nil
-				WQA.tooltip.missions = nil
-				WQA.tooltip = nil
+				if WQA.tooltip ~= nil then
+					LibQTip:Release(WQA.tooltip)
+					WQA.tooltip.quests = nil
+					WQA.tooltip.missions = nil
+					WQA.tooltip = nil
+				end
+
 				PopUp.shown = false
 			end
 		)
