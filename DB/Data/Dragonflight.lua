@@ -401,7 +401,14 @@ data.achievements = {
             75834,
             75835
         }
-    }
+    },
+    {
+        name = "Friends In Feather",
+        id = 19293,
+        criteriaType = "QUEST_SINGLE",
+        criteria = 78370
+    },
+
 }
 
 -- Pets
