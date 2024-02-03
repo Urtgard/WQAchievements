@@ -32,7 +32,10 @@
         "GarrisonFollowerOptions",
         "GameTooltip_ShowCompareItem",
         "GameTooltip_HideShoppingTooltips",
-        "BONUS_OBJECTIVE_TIME_LEFT"
+        "BONUS_OBJECTIVE_TIME_LEFT",
+        "UIParent",
+        "SecondsToTime",
+        "math"
     ],
     "Lua.diagnostics.disable": [
         "undefined-field"

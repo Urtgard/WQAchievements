@@ -408,7 +408,16 @@ data.achievements = {
         criteriaType = "QUEST_SINGLE",
         criteria = 78370
     },
-
+    {
+        name = "Goggle Wobble",
+        id = 19791,
+        criteriaType = "QUESTS",
+        criteria = {
+            78820,
+            78616,
+            78931
+        }
+    }
 }
 
 -- Pets
@@ -445,6 +454,5 @@ data.toys = {
         name = "Glutinous Glitterscale Glob",
         itemID = 205688,
         quest = { { trackingID = 0, wqID = 75343 } }
-    },
-
+    }
 }
