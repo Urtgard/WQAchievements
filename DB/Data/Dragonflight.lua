@@ -414,8 +414,8 @@ data.achievements = {
         criteriaType = "QUESTS",
         criteria = {
             78820,
-            78616,
-            78931
+            78931,
+            78616
         }
     }
 }
