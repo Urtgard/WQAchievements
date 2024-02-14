@@ -425,6 +425,15 @@ data.achievements = {
         criteria = {
             { 78645, 78661, 78663 }
         }
+    },
+    {
+        name = "Clued In",
+        id = 19787,
+        criteriaType = "QUESTS",
+        criteria = {
+            { 77424, 76587, 76734, 76739, 77362 }
+        }
+    },
     }
 }
 
