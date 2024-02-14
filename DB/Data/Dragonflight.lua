@@ -434,6 +434,19 @@ data.achievements = {
             { 77424, 76587, 76734, 76739, 77362 }
         }
     },
+    {
+        name = "Just One More Thing",
+        id = 19792,
+        criteriaType = "QUESTS",
+        criteria = {
+
+            77424, -- Lost Atheneum
+            76587, -- The Riverbed
+            76734, -- Igira's Watch
+            76739, -- Gaze of Neltharion
+            76911, -- Concord Observatory
+            77362  -- Winglord's Perch
+        }
     }
 }
 
