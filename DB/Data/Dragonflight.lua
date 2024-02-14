@@ -417,6 +417,14 @@ data.achievements = {
             78931,
             78616
         }
+    },
+    {
+        name = "When a Rock is Just a Rock",
+        id = 19786,
+        criteriaType = "QUESTS",
+        criteria = {
+            { 78645, 78661, 78663 }
+        }
     }
 }
 
