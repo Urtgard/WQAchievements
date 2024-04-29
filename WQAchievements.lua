@@ -1732,7 +1732,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 				local transmog
 				if AllTheThings then
 					local searchForLinkResult = AllTheThings.SearchForLink(itemLink)
-					if (searchForLinkResult) then
+					if (searchForLinkResult and searchForLinkResult[1]) then
 						local state = searchForLinkResult[1].collected
 						if not state then
 							transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
