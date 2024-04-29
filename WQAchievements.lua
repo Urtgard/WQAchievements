@@ -525,35 +525,28 @@ function WQA:CreateQuestList()
 	self.questFlagList = {}
 	self.Criterias.AreaPoi.list = {}
 
-	-- Legion
-	for _, v in pairs(self.data[7].achievements) do
-		self.Achievements:Register(v)
-	end
-	self:AddMounts(self.data[7].mounts)
-	self:AddPets(self.data[7].pets)
-	self:AddToys(self.data[7].toys)
+	for expansionID = 7, 10 do
+		local data = self.data[expansionID]
 
-	-- Battle for Azeroth
-	for _, v in pairs(self.data[8].achievements) do
-		self.Achievements:Register(v)
-	end
-	self:AddMounts(self.data[8].mounts)
-	self:AddPets(self.data[8].pets)
-	self:AddToys(self.data[8].toys)
+		if (data.achievements) then
+			for _, v in pairs(data.achievements) do
+				self.Achievements:Register(v)
+			end
+		end
 
-	-- Shadowlands
-	for _, v in pairs(self.data[9].achievements) do
-		self.Achievements:Register(v)
-	end
-	self:AddPets(self.data[9].pets)
-	self:AddToys(self.data[9].toys)
+		if (data.mounts) then
+			self:AddMounts(data.mounts)
+		end
 
-	-- Dragonflight
-	for _, v in pairs(self.data[10].achievements) do
-		self.Achievements:Register(v)
+		if (data.pets) then
+			self:AddPets(data.pets)
+		end
+
+		if (data.toys) then
+			self:AddToys(data.toys)
+		end
 	end
-	self:AddPets(self.data[10].pets)
-	self:AddToys(self.data[10].toys)
+
 
 	self:AddCustom()
 	self:Special()
