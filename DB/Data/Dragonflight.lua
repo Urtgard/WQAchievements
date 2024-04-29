@@ -475,6 +475,12 @@ data.pets = {
         itemID = 202407,
         creatureID = 200772,
         quest = { { trackingID = 0, wqID = 73149 } }
+    },
+    {
+        name = "Time-Lost Vorquin Foal",
+        itemID = 193855,
+        creatureID = 191298,
+        quest = { { trackingID = 0, wqID = 74378 } }
     }
 }
 
@@ -484,5 +490,20 @@ data.toys = {
         name = "Glutinous Glitterscale Glob",
         itemID = 205688,
         quest = { { trackingID = 0, wqID = 75343 } }
+    },
+    {
+        name = "Chasing Storm",
+        itemID = 202020,
+        quest = { { trackingID = 0, wqID = 74378 } }
+    }
+}
+
+-- Mounts
+data.mounts = {
+    {
+        name = "Skyskin Hornstrider",
+        itemID = 192800,
+        spellID = 352926,
+        quest = { { trackingID = 0, wqID = 74378 } }
     }
 }
