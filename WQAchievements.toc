@@ -25,5 +25,9 @@ Criterias\AreaPoi.lua
 
 Achievements.lua
 
+Locales.lua
+Utilities.lua
+Tooltip.lua
+
 WQAchievements.lua
 Options.lua
