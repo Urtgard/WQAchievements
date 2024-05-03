@@ -447,7 +447,19 @@ data.achievements = {
             76911, -- Concord Observatory
             77362  -- Winglord's Perch
         }
-    }
+    },
+    {
+        name = "Taking From Nature",
+        id = 16553,
+        criteriaType = "AREA_POI",
+        criteria = {
+            { AreaPoiId = 7086, MapId = 2022 },
+            { AreaPoiId = 7266, MapId = 2024 },
+            { AreaPoiId = 7270, MapId = 2023 },
+            { AreaPoiId = 7271, MapId = 2024 },
+            { AreaPoiId = 7272, MapId = 2024 }
+        }
+    },
 }
 
 -- Pets
