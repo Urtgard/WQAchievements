@@ -1709,16 +1709,14 @@ end
 
 function WQA:SortQuestList(list)
 	if self.db.profile.options.sortByName == true then
-		list = WQA:InsertionSort(list, SortByName)
+		list = self:InsertionSort(list, SortByName)
 	end
 
 	if self.db.profile.options.sortByZoneName == true then
-		list = WQA:InsertionSort(list, function(a, b)
-			return WQA:SortByZoneName(a, b)
-		end)
+		list = self:InsertionSort(list, function(a, b) return self:SortByZoneName(a, b) end)
 	end
 
-	-- list = WQA:InsertionSort(list, WQA.SortByExpansion)
+	list = self:InsertionSort(list, function(a, b) return self:SortByExpansion(a, b) end)
 	return list
 end
 
