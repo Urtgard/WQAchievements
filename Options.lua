@@ -34,7 +34,8 @@ local CurrencyIDList = {
 	[10] = {
 		2003, -- Dragon Isles Supplies
 		2123, -- Bloody Tokens
-		2657 -- Mysterious Fragment
+		2657, -- Mysterious Fragment
+		2245, -- Flightstones
 	}
 }
 
