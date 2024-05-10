@@ -1299,11 +1299,16 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 					end
 				end
 			end
+
 			itemLevel = GetDetailedItemLevelInfo(itemLink)
-			local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
-			if itemLevel - itemLevelEquipped >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
-				local item = { itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped }
-				self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
+			if not itemLevel then
+				retry = true
+			else
+				local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
+				if itemLevel - itemLevelEquipped >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+					local item = { itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped }
+					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
+				end
 			end
 		end
 
