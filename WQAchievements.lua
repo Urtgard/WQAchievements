@@ -178,26 +178,30 @@ function WQA:OnEnable()
 		function(...)
 			local _, name, id = ...
 			if name == "PLAYER_ENTERING_WORLD" then
-				for i = 1, #self.ZoneIDList do
-					for _, mapID in pairs(self.ZoneIDList[i]) do
-						if self.db.profile.options.zone[mapID] == true then
-							local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
-							if quests then
-								for i = 1, #quests do
-									local questID = quests[i].questId
-									local numQuestRewards = GetNumQuestLogRewards(questID)
-									if numQuestRewards > 0 then
-										local itemName, itemTexture, quantity, quality, isUsable, itemID =
-											GetQuestLogRewardInfo(1, questID)
+				self:ScheduleTimer(
+					function()
+						for i = 1, #self.ZoneIDList do
+							for _, mapID in pairs(self.ZoneIDList[i]) do
+								if self.db.profile.options.zone[mapID] == true then
+									local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+									if quests then
+										for j = 1, #quests do
+											local questID = quests[j].questId
+											local numQuestRewards = GetNumQuestLogRewards(questID)
+											if numQuestRewards > 0 then
+												GetQuestLogRewardInfo(1, questID)
+											end
+										end
 									end
 								end
 							end
 						end
-					end
-				end
+					end,
+					self.db.profile.options.delay
+				)
 
 				self.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-				self:ScheduleTimer("Show", self.db.profile.options.delay, nil, true)
+				self:ScheduleTimer("Show", self.db.profile.options.delay + 1, nil, true)
 				self:ScheduleTimer(
 					function()
 						self:Show("new", true)
