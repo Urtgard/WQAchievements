@@ -1554,9 +1554,11 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 end
 
 function WQA:CheckCurrencies(questID, isEmissary)
-	local numQuestCurrencies = GetNumQuestLogRewardCurrencies(questID)
-	for i = 1, numQuestCurrencies do
-		local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
+	local uniqueCurrencyIDs = { }
+	local currencyRewards = C_QuestLog.GetQuestRewardCurrencies(questID)
+	for index, currencyReward in ipairs(currencyRewards) do
+	local rarity = C_CurrencyInfo.GetCurrencyInfo(currencyReward.currencyID).quality;
+		local firstInstance = not uniqueCurrencyIDs[currencyReward.currencyID];
 		if self.db.profile.options.reward.currency[currencyID] then
 			local currency = { currencyID = currencyID, amount = numItems }
 			self:AddRewardToQuest(questID, "CURRENCY", currency, isEmissary)
