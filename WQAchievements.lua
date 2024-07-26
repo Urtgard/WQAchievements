@@ -1554,11 +1554,14 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 end
 
 function WQA:CheckCurrencies(questID, isEmissary)
-	local numQuestCurrencies = GetNumQuestLogRewardCurrencies(questID)
-	for i = 1, numQuestCurrencies do
-		local name, texture, numItems, currencyID = GetQuestLogRewardCurrencyInfo(i, questID)
+	local questRewardCurrencies = C_QuestLog.GetQuestRewardCurrencies(questID)
+
+	for _, currencyInfo in ipairs(questRewardCurrencies) do
+		local currencyID = currencyInfo.currencyID
+		local amount = currencyInfo.totalRewardAmount
+
 		if self.db.profile.options.reward.currency[currencyID] then
-			local currency = { currencyID = currencyID, amount = numItems }
+			local currency = { currencyID = currencyID, amount = amount }
 			self:AddRewardToQuest(questID, "CURRENCY", currency, isEmissary)
 		end
 
@@ -1566,7 +1569,12 @@ function WQA:CheckCurrencies(questID, isEmissary)
 		local factionID = ReputationCurrencyList[currencyID] or nil
 		if factionID then
 			if self.db.profile.options.reward.reputation[factionID] == true then
-				local reputation = { name = name, currencyID = currencyID, amount = numItems, factionID = factionID }
+				local reputation = {
+					name = currencyInfo.name,
+					currencyID = currencyID,
+					amount = amount,
+					factionID = factionID
+				}
 				self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
 			end
 		end
