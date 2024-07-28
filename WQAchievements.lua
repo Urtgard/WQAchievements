@@ -80,7 +80,8 @@ function WQA:OnInitialize()
 						itemLevelUpgradeMin = 1,
 						PercentUpgradeMin = 1,
 						unknownSource = false,
-						azeriteTraits = ""
+						azeriteTraits = "",
+						conduit = false
 					},
 					general = {
 						gold = false,
