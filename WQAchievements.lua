@@ -230,7 +230,7 @@ function WQA:OnEnable()
 		end
 	)
 
-	LoadAddOn("Blizzard_GarrisonUI")
+	C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
 end
 
 WQA:RegisterChatCommand("wqa", "slash")
