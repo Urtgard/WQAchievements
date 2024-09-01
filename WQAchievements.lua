@@ -80,7 +80,8 @@ function WQA:OnInitialize()
 						itemLevelUpgradeMin = 1,
 						PercentUpgradeMin = 1,
 						unknownSource = false,
-						azeriteTraits = ""
+						azeriteTraits = "",
+						conduit = false
 					},
 					general = {
 						gold = false,
@@ -229,7 +230,7 @@ function WQA:OnEnable()
 		end
 	)
 
-	LoadAddOn("Blizzard_GarrisonUI")
+	C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
 end
 
 WQA:RegisterChatCommand("wqa", "slash")
@@ -1554,13 +1555,14 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 end
 
 function WQA:CheckCurrencies(questID, isEmissary)
-	local uniqueCurrencyIDs = { }
-	local currencyRewards = C_QuestLog.GetQuestRewardCurrencies(questID)
-	for index, currencyReward in ipairs(currencyRewards) do
-	local rarity = C_CurrencyInfo.GetCurrencyInfo(currencyReward.currencyID).quality;
-		local firstInstance = not uniqueCurrencyIDs[currencyReward.currencyID];
+	local questRewardCurrencies = C_QuestLog.GetQuestRewardCurrencies(questID)
+
+	for _, currencyInfo in ipairs(questRewardCurrencies) do
+		local currencyID = currencyInfo.currencyID
+		local amount = currencyInfo.totalRewardAmount
+
 		if self.db.profile.options.reward.currency[currencyID] then
-			local currency = { currencyID = currencyID, amount = numItems }
+			local currency = { currencyID = currencyID, amount = amount }
 			self:AddRewardToQuest(questID, "CURRENCY", currency, isEmissary)
 		end
 
@@ -1568,7 +1570,12 @@ function WQA:CheckCurrencies(questID, isEmissary)
 		local factionID = ReputationCurrencyList[currencyID] or nil
 		if factionID then
 			if self.db.profile.options.reward.reputation[factionID] == true then
-				local reputation = { name = name, currencyID = currencyID, amount = numItems, factionID = factionID }
+				local reputation = {
+					name = currencyInfo.name,
+					currencyID = currencyID,
+					amount = amount,
+					factionID = factionID
+				}
 				self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
 			end
 		end
