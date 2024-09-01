@@ -1008,16 +1008,18 @@ function WQA:UpdateOptions()
 					UnitFactionGroup("player")
 				} do
 					if FactionIDList[i][factionGroup] then
-						for k, v in pairs(FactionIDList[i][factionGroup]) do
-							args.reputation.args[GetFactionInfoByID(v)] = {
+						for _, factionID in pairs(FactionIDList[i][factionGroup]) do
+							local factionName = C_Reputation.GetFactionDataByID(factionID).name
+
+							args.reputation.args[factionName] = {
 								type = "toggle",
-								name = GetFactionInfoByID(v),
+								name = factionName,
 								set = function(info, val)
-									WQA.db.profile.options.reward.reputation[v] = val
+									WQA.db.profile.options.reward.reputation[factionID] = val
 								end,
 								descStyle = "inline",
 								get = function()
-									return WQA.db.profile.options.reward.reputation[v]
+									return WQA.db.profile.options.reward.reputation[factionID]
 								end,
 								order = newOrder()
 							}
@@ -1213,16 +1215,18 @@ function WQA:UpdateOptions()
 			}
 			for _, factionGroup in pairs { "Neutral", UnitFactionGroup("player") } do
 				if FactionIDList[i][factionGroup] then
-					for k, v in pairs(FactionIDList[i][factionGroup]) do
-						args.reputation.args[GetFactionInfoByID(v)] = {
+					for _, factionID in pairs(FactionIDList[i][factionGroup]) do
+						local factionName = C_Reputation.GetFactionDataByID(factionID).name
+
+						args.reputation.args[factionName] = {
 							type = "toggle",
-							name = GetFactionInfoByID(v),
+							name = factionName,
 							set = function(info, val)
-								WQA.db.profile.options.missionTable.reward.reputation[v] = val
+								WQA.db.profile.options.missionTable.reward.reputation[factionID] = val
 							end,
 							descStyle = "inline",
 							get = function()
-								return WQA.db.profile.options.missionTable.reward.reputation[v]
+								return WQA.db.profile.options.missionTable.reward.reputation[factionID]
 							end,
 							order = newOrder()
 						}

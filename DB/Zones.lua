@@ -54,5 +54,14 @@ WQA.ZoneIDList = {
         2151, -- The Forbidden Reach
         2133, -- Zaralek Cavern
         2200  -- Emerald Dream
+    },
+    [11] = {
+        2213, -- City of Threads
+        2214, -- Ringing Deeps
+        2215, -- Hallowfall
+        2216, -- City of Threads - Lower
+        2248, -- Isle of Dorn
+        2255, -- Azj-Kahet
+        2256  -- Azj-Kahet - Lower
     }
 }
