@@ -21,7 +21,7 @@ data.achievements = {
     {
         name = "I Only Need One Trip",
         id = 40623,
-        criteriaType = "QUEST_SINGLE",
+        criteriaType = "QUESTS",
         criteria = {
             { 82580 }
         }
@@ -37,7 +37,7 @@ data.achievements = {
 	{
         name = "Hanging Tight",
         id = 40507,
-        criteriaType = "QUEST_SINGLE",
+        criteriaType = "QUESTS",
         criteria = {
             { 83101 }
         }
