@@ -17,6 +17,7 @@ DB\Data\Legion.lua
 DB\Data\BattleForAzeroth.lua
 DB\Data\Shadowlands.lua
 DB\Data\Dragonflight.lua
+DB\Data\WarWithin.lua
 
 DB\Expansions.lua
 DB\Zones.lua
