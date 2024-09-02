@@ -72,7 +72,22 @@ data.achievements = {
         criteriaType = "QUESTS",
         criteria = {
             { 80395 },
-            { 13608 },
+            { 80394 },
+			{ 80208 },
+			{ 80323 },
+			{ 80412 },
+			{ 81622 },
+            { 80409 },
+            { 80457 }
+        }
+    },
+	{
+        name = "Unbound Battle",
+        id = 40087,
+        criteriaType = "QUEST_SINGLE",
+        criteria = {
+            { 80395 },
+            { 80394 },
 			{ 80208 },
 			{ 80323 },
 			{ 80412 },
