@@ -67,6 +67,14 @@ data.achievements = {
         }
     },
 	{
+        name = "Never Enough",
+        id = 40082,
+        criteriaType = "QUESTS",
+        criteria = {
+            { 82120 }			
+        }
+    },
+	{
         name = "A Champion's Tour: The War Within",
         id = 40088,
         criteriaType = "QUESTS",
