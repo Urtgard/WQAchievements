@@ -59,11 +59,11 @@ data.achievements = {
         }
     },
 	{
-        name = "Children's Entertainer",
-        id = 40150,
+        name = "Mine Poppin'",
+        id = 40843,
         criteriaType = "QUESTS",
         criteria = {
-            { 82288 }			
+            { 82468 }			
         }
     },
 	{
