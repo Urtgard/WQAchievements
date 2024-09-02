@@ -84,7 +84,7 @@ data.achievements = {
 	{
         name = "Unbound Battle",
         id = 40087,
-        criteriaType = "QUEST_SINGLE",
+        criteriaType = "QUESTS",
         criteria = {
             { 80395 },
             { 80394 },
