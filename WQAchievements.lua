@@ -257,7 +257,7 @@ function WQA:CreateQuestList()
 	self.questFlagList = {}
 	self.Criterias.AreaPoi.list = {}
 
-	for expansionID = 7, 10 do
+	for expansionID = 7, 11 do
 		local data = self.data[expansionID]
 
 		if (data.achievements) then

@@ -36,6 +36,11 @@ local CurrencyIDList = {
 		2123, -- Bloody Tokens
 		2657, -- Mysterious Fragment
 		2245, -- Flightstones
+	},
+	[11] = {
+		3008, -- Valorstones
+		3056, -- Kej
+		2815, -- Resonance Crystals
 	}
 }
 
@@ -921,7 +926,7 @@ function WQA:UpdateOptions()
 		end
 	end
 
-	for i = 6, 10 do
+	for i = 6, 11 do
 		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),
 			name = self.ExpansionList[i],

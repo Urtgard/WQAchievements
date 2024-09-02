@@ -62,6 +62,7 @@ WQA.ZoneIDList = {
         2216, -- City of Threads - Lower
         2248, -- Isle of Dorn
         2255, -- Azj-Kahet
-        2256  -- Azj-Kahet - Lower
+        2256, -- Azj-Kahet - Lower
+		2339  -- Dornogal
     }
 }

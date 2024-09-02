@@ -95,5 +95,5 @@ data.achievements = {
             82295,
             82297
         }
-    },   
+    }   
 }
