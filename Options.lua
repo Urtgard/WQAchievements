@@ -157,6 +157,39 @@ local FactionIDList = {
 			2157, -- The Honorbound
 			2373 -- The Unshackled
 		}
+	},
+	[9] = {
+		Neutral = {
+			2413, -- Court of Harvesters
+			2470, -- Death's Advance
+			2407, -- The Ascended
+			2478, -- The Enlightened
+			2410, -- The Undying Army
+			2465, -- The Wild Hunt
+			2432 -- Ve'nari
+		}
+	
+	},
+	[10] = {
+		Neutral = {
+			2615, -- Azerothian Archives
+			2507, -- Dragonscale Expedition
+			2574, -- Dream Wardens
+			2511, -- Iskaara Tuskarr
+			2564, -- Loamm Niffen
+			2503, -- Maruuk Centaur
+			2510 -- Valdrakken Accord
+		}
+	
+	},
+	[11] = {
+		Neutral = {
+			2594, -- The Assembly of the Deeps
+			2570, -- Hallowfall Arathi
+			2600, -- The Severed Threads
+			2590 -- Council of Dornogal
+		}
+	
 	}
 }
 
