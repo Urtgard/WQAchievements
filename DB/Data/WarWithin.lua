@@ -51,14 +51,6 @@ data.achievements = {
         }
     },
 	{
-        name = "Panhandled",
-        id = 40731,
-        criteriaType = "QUESTS",
-        criteria = {
-            { 83101 }
-        }
-    },
-	{
         name = "Children's Entertainer",
         id = 40150,
         criteriaType = "QUESTS",
