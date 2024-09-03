@@ -962,7 +962,27 @@ local ReputationCurrencyList = {
 	[1600] = 2157, -- The Honorbound
 	[1742] = 2391, -- Rustbolt Resistance
 	[1739] = 2400, -- Waveblade Ankoan
-	[1738] = 2373 -- The Unshackled
+	[1757] = 2417, -- Uldum Accord
+	[1758] = 2415, -- Rajani
+	[1738] = 2373, -- The Unshackled
+	[1807] = 2413, -- Court of Harvesters
+	[1907] = 2470, -- Death's Advance
+	[1804] = 2407, -- The Ascended
+	[1982] = 2478, -- The Enlightened
+	[1805] = 2410, -- The Undying Army
+	[1806] = 2465, -- The Wild Hunt
+	[1880] = 2432, -- Ve'nari
+	[2819] = 2615, -- Azerothian Archives
+	[2031] = 2507, -- Dragonscale Expedition
+	[2652] = 2574, -- Dream Wardens
+	[2109] = 2511, -- Iskaara Tuskarr
+	[2420] = 2564, -- Loamm Niffen
+	[2108] = 2503, -- Maruuk Centaur
+	[2106] = 2510, -- Valdrakken Accord
+	[2902] = 2594, -- The Assembly of the Deeps
+	[2899] = 2570, -- Hallowfall Arathi
+	[2903] = 2600, -- The Severed Threads
+	[2897] = 2590 -- Council of Dornogal
 }
 
 function WQA:Reward()

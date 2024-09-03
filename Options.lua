@@ -141,7 +141,9 @@ local FactionIDList = {
 		Neutral = {
 			2164, -- Champions of Azeroth
 			2163, -- Tortollan Seekers
-			2391 -- Rustbolt Resistance
+			2391, -- Rustbolt Resistance
+			2417, -- Uldum Accord
+			2415 -- Rajani
 		},
 		Alliance = {
 			2160, -- Proudmoore Admiralty
