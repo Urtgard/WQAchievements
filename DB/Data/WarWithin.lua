@@ -7,6 +7,14 @@ local data = {
 WQA.data[11] = data
 
 -- Achievements
+local trainer = {
+	82293,
+	82292,
+	82294,
+	82295
+	
+}
+
 data.achievements = {
 	{
         name = "Worm Theory",
@@ -109,14 +117,14 @@ data.achievements = {
         id = 40153,
         criteriaType = "QUESTS",
         criteria = {
-            82293,
-            82292,
-            82300,
-            82294,
-            82298,
-            82291,
-            82295,
-            82297
+            { 82293 },
+            { 82292 },
+            { 82300 },
+            { 82294 },
+            { 82298 },
+            { 82291 },
+            { 82295 },
+            { 82297 }
         }
     }   
 }
