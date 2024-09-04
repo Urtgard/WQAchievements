@@ -31,6 +31,21 @@ function WQA:CreateQTip()
     end
 end
 
+---@param questID number
+local function GetIconTexture(questID)
+    local texture = select(2, GetQuestLogRewardInfo(1, questID))
+    if texture then
+        return texture
+    end
+
+    local currencyInfo = C_QuestLog.GetQuestRewardCurrencyInfo(questID, 1, false)
+    if currencyInfo then
+        return currencyInfo.texture
+    end
+
+    return [[Interface\GossipFrame\auctioneerGossipIcon]]
+end
+
 function WQA:UpdateQTip(tasks)
     local tooltip = self.tooltip
     if next(tasks) == nil then
@@ -200,17 +215,12 @@ function WQA:UpdateQTip(tasks)
                                         zoneID = self:GetQuestZoneID(id)
                                         local x, y = C_TaskQuest.GetQuestLocation(id, zoneID)
                                         widget.questX, widget.questY = x or 0, y or 0
-                                        widget.IconTexture =
-                                            select(2, GetQuestLogRewardInfo(1, id)) or
-                                            select(2, GetQuestLogRewardCurrencyInfo(1, id)) or
-                                            [[Interface\GossipFrame\auctioneerGossipIcon]]
+                                        widget.IconTexture = GetIconTexture(id)
                                         local function f(widget)
                                             if not widget.IconTexture then
                                                 WQA:ScheduleTimer(
                                                     function()
-                                                        widget.IconTexture =
-                                                            select(2, GetQuestLogRewardInfo(1, id)) or
-                                                            select(2, GetQuestLogRewardCurrencyInfo(1, id))
+                                                        widget.IconTexture = GetIconTexture(id)
                                                         f(widget)
                                                     end,
                                                     1.5
