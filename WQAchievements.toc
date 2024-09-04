@@ -1,7 +1,7 @@
 ## Interface: 110002
 ## Title: WQAchievements
 ## Author: Urtgard
-## Version: @project-version@
+## Version: v11.0.2-2
 ## SavedVariables: WQADB
 ## X-Curse-Project-ID: 272039
 ## X-WoWI-ID: 24566
@@ -17,6 +17,7 @@ DB\Data\Legion.lua
 DB\Data\BattleForAzeroth.lua
 DB\Data\Shadowlands.lua
 DB\Data\Dragonflight.lua
+DB\Data\WarWithin.lua
 
 DB\Expansions.lua
 DB\Zones.lua

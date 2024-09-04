@@ -36,6 +36,11 @@ local CurrencyIDList = {
 		2123, -- Bloody Tokens
 		2657, -- Mysterious Fragment
 		2245, -- Flightstones
+	},
+	[11] = {
+		3008, -- Valorstones
+		3056, -- Kej
+		2815, -- Resonance Crystals
 	}
 }
 
@@ -136,7 +141,9 @@ local FactionIDList = {
 		Neutral = {
 			2164, -- Champions of Azeroth
 			2163, -- Tortollan Seekers
-			2391 -- Rustbolt Resistance
+			2391, -- Rustbolt Resistance
+			2417, -- Uldum Accord
+			2415 -- Rajani
 		},
 		Alliance = {
 			2160, -- Proudmoore Admiralty
@@ -152,6 +159,39 @@ local FactionIDList = {
 			2157, -- The Honorbound
 			2373 -- The Unshackled
 		}
+	},
+	[9] = {
+		Neutral = {
+			2413, -- Court of Harvesters
+			2470, -- Death's Advance
+			2407, -- The Ascended
+			2478, -- The Enlightened
+			2410, -- The Undying Army
+			2465, -- The Wild Hunt
+			2432 -- Ve'nari
+		}
+	
+	},
+	[10] = {
+		Neutral = {
+			2615, -- Azerothian Archives
+			2507, -- Dragonscale Expedition
+			2574, -- Dream Wardens
+			2511, -- Iskaara Tuskarr
+			2564, -- Loamm Niffen
+			2503, -- Maruuk Centaur
+			2510 -- Valdrakken Accord
+		}
+	
+	},
+	[11] = {
+		Neutral = {
+			2594, -- The Assembly of the Deeps
+			2570, -- Hallowfall Arathi
+			2600, -- The Severed Threads
+			2590 -- Council of Dornogal
+		}
+	
 	}
 }
 
@@ -921,7 +961,7 @@ function WQA:UpdateOptions()
 		end
 	end
 
-	for i = 6, 10 do
+	for i = 6, 11 do
 		self.options.args.reward.args[self.ExpansionList[i]] = {
 			order = newOrder(),
 			name = self.ExpansionList[i],
