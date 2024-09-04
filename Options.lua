@@ -170,7 +170,6 @@ local FactionIDList = {
 			2465, -- The Wild Hunt
 			2432 -- Ve'nari
 		}
-	
 	},
 	[10] = {
 		Neutral = {
@@ -182,7 +181,6 @@ local FactionIDList = {
 			2503, -- Maruuk Centaur
 			2510 -- Valdrakken Accord
 		}
-	
 	},
 	[11] = {
 		Neutral = {
@@ -191,7 +189,7 @@ local FactionIDList = {
 			2600, -- The Severed Threads
 			2590 -- Council of Dornogal
 		}
-	
+
 	}
 }
 

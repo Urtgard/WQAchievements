@@ -41,7 +41,7 @@ WQA.ZoneIDList = {
         1565, -- Ardenweald
         1543, -- The Maw
         1961, -- Korthia
-        1970  --	Zereth Mortis
+        1970  -- Zereth Mortis
     },
     [10] = {
         2022, -- The Waking Shores
@@ -63,6 +63,6 @@ WQA.ZoneIDList = {
         2248, -- Isle of Dorn
         2255, -- Azj-Kahet
         2256, -- Azj-Kahet - Lower
-		2339  -- Dornogal
+        2339  -- Dornogal
     }
 }
