@@ -109,14 +109,14 @@ data.achievements = {
         id = 40153,
         criteriaType = "QUESTS",
         criteria = {
-            { 82293 },
-            { 82292 },
-            { 82300 },
-            { 82294 },
-            { 82298 },
-            { 82291 },
-            { 82295 },
-            { 82297 }
+            { 82291 }, -- Awakened Custodian
+            { 82300 }, -- Haywire Servobot
+            { 82298 }, -- Guttergunk
+            { 82292 }, -- Collector Dyna
+            { 82297 }, -- Zadeu
+            { 82293 }, -- Friendhaver Grem
+            { 82294 }, -- Kyrie
+            { 82295 }  -- Ziriak
         }
     }
 }
