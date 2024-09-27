@@ -277,6 +277,10 @@ function WQA:CreateQuestList()
 		if (data.toys) then
 			self:AddToys(data.toys)
 		end
+
+		if (data.miscellaneous) then
+			self:AddMiscellaneous(data.miscellaneous)
+		end
 	end
 
 
@@ -434,85 +438,6 @@ function WQA:AddRewardToQuest(questID, rewardType, reward, emissary)
 	local l = self.questList[questID]
 
 	self:AddReward(l, rewardType, reward, emissary)
-end
-
-function WQA:AddReward(list, rewardType, reward, emissary)
-	local l = list
-	if emissary == true then
-		l.isEmissary = true
-	end
-	if not l.reward then
-		l.reward = {}
-	end
-	l = l.reward
-	if rewardType == "ACHIEVEMENT" then
-		if not l.achievement then
-			l.achievement = {}
-		end
-
-		for _, achievement in ipairs(l.achievement) do
-			if achievement.id == reward then
-				return
-			end
-		end
-
-		l.achievement[#l.achievement + 1] = { id = reward }
-	elseif rewardType == "CHANCE" then
-		if not l.chance then
-			l.chance = {}
-		end
-
-		for _, v in pairs(l.chance) do
-			if v.id == reward then
-				return
-			end
-		end
-
-		l.chance[#l.chance + 1] = { id = reward }
-	elseif rewardType == "CUSTOM" then
-		if not l.custom then
-			l.custom = true
-		end
-	elseif rewardType == "ITEM" then
-		if not l.item then
-			l.item = {}
-		end
-		for k, v in pairs(reward) do
-			l.item[k] = v
-		end
-	elseif rewardType == "REPUTATION" then
-		if not l.reputation then
-			l.reputation = {}
-		end
-		for k, v in pairs(reward) do
-			l.reputation[k] = v
-		end
-	elseif rewardType == "RECIPE" then
-		l.recipe = reward
-	elseif rewardType == "CUSTOM_ITEM" then
-		l.customItem = reward
-	elseif rewardType == "CURRENCY" then
-		if not l.currency then
-			l.currency = {}
-		end
-		for k, v in pairs(reward) do
-			l.currency[k] = v
-		end
-	elseif rewardType == "PROFESSION_SKILLUP" then
-		l.professionSkillup = reward
-	elseif rewardType == "GOLD" then
-		l.gold = reward
-	elseif rewardType == "AZERITE_TRAIT" then
-		if not l.azeriteTraits then
-			l.azeriteTraits = {}
-		end
-		for k, v in pairs(l.azeriteTraits) do
-			if v.spellID == reward then
-				return
-			end
-		end
-		l.azeriteTraits[#l.azeriteTraits + 1] = { spellID = reward }
-	end
 end
 
 function WQA:AddEmissaryReward(questID, rewardType, reward)
@@ -1683,6 +1608,8 @@ function WQA:GetRewardLinkByID(questId, key, value, i)
 			return nil
 		end
 		link = GetSpellLink(v[i].spellID)
+	elseif k == WQA.Rewards.RewardType.Miscellaneous then
+		link = table.concat(v, ", ")
 	end
 	return link
 end

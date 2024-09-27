@@ -1,12 +1,16 @@
+---@class WQAchievements
 local WQA = WQAchievements
 
-WQA.Criterias.AreaPoi = {}
+---@alias AreaPoiCriteria
+---| { AreaPoiId: integer, MapId: integer}
 
-local criteria = WQA.Criterias.AreaPoi
-
+local criteria = {}
 criteria.list = {}
 criteria.watched = {}
 
+---@param poi AreaPoiCriteria
+---@param rewardType RewardType
+---@param emissary boolean?
 function criteria:AddReward(poi, rewardType, reward, emissary)
     local poiId = poi.AreaPoiId
     local mapId = poi.MapId
@@ -86,3 +90,5 @@ function criteria:Check()
         retry = retry
     }
 end
+
+WQA.Criterias.AreaPoi = criteria

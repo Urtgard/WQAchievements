@@ -22,7 +22,13 @@ DB\Data\WarWithin.lua
 DB\Expansions.lua
 DB\Zones.lua
 
+Criterias\CriteriaType.lua
 Criterias\AreaPoi.lua
+
+Rewards\RewardType.lua
+Rewards\Reward.lua
+
+Items\Miscellaneous.lua
 
 Achievements.lua
 

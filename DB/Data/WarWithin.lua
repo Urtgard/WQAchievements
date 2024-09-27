@@ -120,3 +120,14 @@ data.achievements = {
         }
     }
 }
+
+-- Miscellaneous
+data.miscellaneous = {
+    {
+        name = "Special Assignment",
+        criteriaType = "AREA_POI",
+        criteria = {
+            { AreaPoiId = 7828, MapId = 2215 } -- Special Assignment: Rise of the Colossals
+        }
+    },
+}
