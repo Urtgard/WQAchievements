@@ -127,7 +127,8 @@ data.miscellaneous = {
         name = "Special Assignment",
         criteriaType = "AREA_POI",
         criteria = {
-            { AreaPoiId = 7828, MapId = 2215 } -- Special Assignment: Rise of the Colossals
+            { AreaPoiId = 7828, MapId = 2215 }, -- Special Assignment: Rise of the Colossals
+            { AreaPoiId = 7826, MapId = 2214 }  -- Special Assignment: When the Deeps Stir
         }
     },
 }
