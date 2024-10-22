@@ -187,7 +187,7 @@ function WQA:OnEnable()
 									local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
 									if quests then
 										for j = 1, #quests do
-											local questID = quests[j].questId
+											local questID = quests[j].questID
 											local numQuestRewards = GetNumQuestLogRewards(questID)
 											if numQuestRewards > 0 then
 												GetQuestLogRewardInfo(1, questID)
@@ -932,7 +932,7 @@ function WQA:Reward()
 				local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
 				if quests then
 					for i = 1, #quests do
-						local questID = quests[i].questId
+						local questID = quests[i].questID
 						local questTagInfo = GetQuestTagInfo(questID)
 						local worldQuestType = 0
 						if questTagInfo then
@@ -1570,7 +1570,7 @@ function WQA:GetRewardLinkByMissionID(missionID, key, value, i)
 	return self:GetRewardLinkByID(missionID, key, value, i)
 end
 
-function WQA:GetRewardLinkByID(questId, key, value, i)
+function WQA:GetRewardLinkByID(questID, key, value, i)
 	local k, v = key, value
 	local link = nil
 	if k == "achievement" then
