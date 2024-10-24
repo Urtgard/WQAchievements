@@ -184,7 +184,7 @@ function WQA:OnEnable()
 						for i = 1, #self.ZoneIDList do
 							for _, mapID in pairs(self.ZoneIDList[i]) do
 								if self.db.profile.options.zone[mapID] == true then
-									local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+									local quests = C_TaskQuest.GetQuestsOnMap(mapID)
 									if quests then
 										for j = 1, #quests do
 											local questID = quests[j].questID
@@ -929,7 +929,7 @@ function WQA:Reward()
 	for i in pairs(self.ZoneIDList) do
 		for _, mapID in pairs(self.ZoneIDList[i]) do
 			if self.db.profile.options.zone[mapID] == true then
-				local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+				local quests = C_TaskQuest.GetQuestsOnMap(mapID)
 				if quests then
 					for i = 1, #quests do
 						local questID = quests[i].questID
