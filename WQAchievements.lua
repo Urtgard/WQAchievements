@@ -279,7 +279,7 @@ function WQA:CreateQuestList()
 		end
 
 		if (data.miscellaneous) then
-			self:AddMiscellaneous(data.miscellaneous)
+			--  self:AddMiscellaneous(data.miscellaneous)
 		end
 	end
 
