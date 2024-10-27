@@ -526,8 +526,8 @@ function WQA:UpdateOptions()
 								end,
 								disabled = function()
 									local mapId = self.data.custom.mapID
-									local questId = self.data.custom.wqID
-									return (questId == nil or questId == "") or
+									local questID = self.data.custom.wqID
+									return (questID == nil or questID == "") or
 										(self.data.custom.questType == "QUEST_PIN" and (mapId == nil or mapId == ""))
 								end
 							},

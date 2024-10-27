@@ -132,13 +132,13 @@ function WQA.Achievements:Register_MISSION_TABLE(achievement, index, criteriaQue
 
     if achievement.criteria and achievement.criteria[index] then
         if type(achievement.criteria[index]) == "table" then
-            for _, questId in pairs(achievement.criteria[index]) do
-                WQA:AddRewardToMission(questId, "ACHIEVEMENT", id)
+            for _, questID in pairs(achievement.criteria[index]) do
+                WQA:AddRewardToMission(questID, "ACHIEVEMENT", id)
             end
         else
-            local questId = achievement.criteria[index]
-            if questId then
-                WQA:AddRewardToMission(questId, "ACHIEVEMENT", id)
+            local questID = achievement.criteria[index]
+            if questID then
+                WQA:AddRewardToMission(questID, "ACHIEVEMENT", id)
             end
         end
     else
