@@ -804,15 +804,6 @@ local EquipLocToSlot2 = {
 	INVTYPE_WEAPON = 17
 }
 
-ItemTooltipScan = CreateFrame("GameTooltip", "WQTItemTooltipScan", UIParent, "InternalEmbeddedItemTooltipTemplate")
-ItemTooltipScan.texts = {
-	_G["WQTItemTooltipScanTooltipTextLeft1"],
-	_G["WQTItemTooltipScanTooltipTextLeft2"],
-	_G["WQTItemTooltipScanTooltipTextLeft3"],
-	_G["WQTItemTooltipScanTooltipTextLeft4"]
-}
-ItemTooltipScan.patern = ITEM_LEVEL:gsub("%%d", "(%%d+)") --from LibItemUpgradeInfo-1.0
-
 local ReputationItemList = {
 	-- Army of the Light Insignia
 	[152957] = 2165,
