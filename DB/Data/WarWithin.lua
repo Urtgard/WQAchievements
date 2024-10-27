@@ -127,8 +127,16 @@ data.miscellaneous = {
         name = "Special Assignment",
         criteriaType = "AREA_POI",
         criteria = {
-            { AreaPoiId = 7828, MapId = 2215 }, -- Special Assignment: Rise of the Colossals
-            { AreaPoiId = 7826, MapId = 2214 }  -- Special Assignment: When the Deeps Stir
+            { AreaPoiID = 7823, MapId = 2248 }, -- Special Assignment: Cinderbee Surge
+            { AreaPoiID = 7824, MapId = 2248 }, -- Special Assignment: Titanic Resurgence
+            { AreaPoiID = 7825, MapId = 2214 }, -- Special Assignment: Shadows Below
+            { AreaPoiID = 7826, MapId = 2214 }, -- Special Assignment: When the Deeps Stir
+            { AreaPoiID = 7827, MapId = 2215 }, -- Special Assignment: Lynx Rescue
+            { AreaPoiID = 7828, MapId = 2215 }, -- Special Assignment: Rise of the Colossals
+            { AreaPoiID = 7829, MapId = 2255 }, -- Special Assignment: Bombs from Behind
+            { AreaPoiID = 7830, MapId = 2255 }, -- Special Assignment: A Pound of Cure
+            { AreaPoiID = 7886, MapId = 2248 }, -- Special Assignment: Titanic Resurgence
+            { AreaPoiID = 7887, MapId = 2248 }  -- Special Assignment: Titanic Resurgence
         }
     },
 }
