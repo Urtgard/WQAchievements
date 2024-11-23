@@ -29,6 +29,7 @@ local CurrencyIDList = {
 		1166                           -- Timewarped Badge
 	},
 	[9] = {
+		1819, -- Medallion of Service (Kyrian covenant)
 		1889 -- Adventure Campaign Progress
 	},
 	[10] = {
