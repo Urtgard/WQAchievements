@@ -23,8 +23,8 @@ function WQA:CreateQTip()
             tooltip:AddColumn()
         end
 
-        tooltip:AddHeader("World Quest")
-        tooltip:SetCell(1, tooltip:GetColumnCount(), "Reward")
+        tooltip:AddHeader(_G.WORLD_QUEST_BANNER)
+        tooltip:SetCell(1, tooltip:GetColumnCount(), _G.REWARDS)
         tooltip:SetFrameStrata("MEDIUM")
         tooltip:SetFrameLevel(100)
         tooltip:AddSeparator()

@@ -215,23 +215,23 @@ function WQA:UpdateOptions()
 				order = newOrder(),
 				type = "group",
 				childGroups = "tree",
-				name = "General",
+				name = L["General"],
 				args = {}
 			},
 			reward = {
 				order = newOrder(),
 				type = "group",
-				name = "Rewards",
+				name = L["Rewards"],
 				args = {
 					general = {
 						order = newOrder(),
-						name = "General",
+						name = L["General"],
 						type = "group",
 						-- inline = true,
 						args = {
 							gold = {
 								type = "toggle",
-								name = "Gold",
+								name = L["Gold"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.general.gold = val
 								end,
@@ -242,7 +242,7 @@ function WQA:UpdateOptions()
 								order = newOrder()
 							},
 							goldMin = {
-								name = "minimum Gold",
+								name = L["minimum Gold"],
 								type = "input",
 								order = newOrder(),
 								set = function(info, val)
@@ -256,13 +256,13 @@ function WQA:UpdateOptions()
 					},
 					gear = {
 						order = newOrder(),
-						name = "Gear",
+						name = L["Gear"],
 						type = "group",
 						-- inline = true,
 						args = {
 							itemLevelUpgrade = {
 								type = "toggle",
-								name = "ItemLevel Upgrade",
+								name = L["ItemLevel Upgrade"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.itemLevelUpgrade = val
 								end,
@@ -274,7 +274,7 @@ function WQA:UpdateOptions()
 							},
 							AzeriteArmorCache = {
 								type = "toggle",
-								name = "Azerite Armor Cache",
+								name = L["Azerite Armor Cache"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.AzeriteArmorCache = val
 								end,
@@ -285,7 +285,7 @@ function WQA:UpdateOptions()
 								order = newOrder()
 							},
 							itemLevelUpgradeMin = {
-								name = "minimum ItemLevel Upgrade",
+								name = L["minimum ItemLevel Upgrade"],
 								type = "input",
 								order = newOrder(),
 								set = function(info, val)
@@ -297,7 +297,7 @@ function WQA:UpdateOptions()
 							},
 							armorCache = {
 								type = "toggle",
-								name = "Armor Cache",
+								name = L["Armor Cache"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.armorCache = val
 								end,
@@ -309,7 +309,7 @@ function WQA:UpdateOptions()
 							},
 							weaponCache = {
 								type = "toggle",
-								name = "Weapon Cache",
+								name = L["Weapon Cache"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.weaponCache = val
 								end,
@@ -321,7 +321,7 @@ function WQA:UpdateOptions()
 							},
 							jewelryCache = {
 								type = "toggle",
-								name = "Jewelry Cache",
+								name = L["Jewelry Cache"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.jewelryCache = val
 								end,
@@ -339,7 +339,7 @@ function WQA:UpdateOptions()
 							},
 							PawnUpgrade = {
 								type = "toggle",
-								name = "% Upgrade (Pawn)",
+								name = L["% Upgrade (Pawn)"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.PawnUpgrade = val
 								end,
@@ -351,7 +351,7 @@ function WQA:UpdateOptions()
 							},
 							StatWeightScore = {
 								type = "toggle",
-								name = "% Upgrade (Stat Weight Score)",
+								name = L["% Upgrade (Stat Weight Score)"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.StatWeightScore = val
 								end,
@@ -362,7 +362,7 @@ function WQA:UpdateOptions()
 								order = newOrder()
 							},
 							PercentUpgradeMin = {
-								name = "minimum % Upgrade",
+								name = L["minimum % Upgrade"],
 								type = "input",
 								order = newOrder(),
 								set = function(info, val)
@@ -380,7 +380,7 @@ function WQA:UpdateOptions()
 							},
 							unknownAppearance = {
 								type = "toggle",
-								name = "Unknown appearance",
+								name = L["Unknown appearance"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.unknownAppearance = val
 								end,
@@ -392,7 +392,7 @@ function WQA:UpdateOptions()
 							},
 							unknownSource = {
 								type = "toggle",
-								name = "Unknown source",
+								name = L["Unknown source"],
 								set = function(info, val)
 									WQA.db.profile.options.reward.gear.unknownSource = val
 								end,
@@ -403,8 +403,8 @@ function WQA:UpdateOptions()
 								order = newOrder()
 							},
 							azeriteTraits = {
-								name = "Azerite Traits",
-								desc = "Comma separated spellIDs",
+								name = L["Azerite Traits"],
+								desc = L["Comma separated spellIDs"],
 								type = "input",
 								order = newOrder(),
 								set = function(info, val)
@@ -415,8 +415,8 @@ function WQA:UpdateOptions()
 								end
 							},
 							conduit = {
-								name = "Conduit",
-								desc = "Track conduit",
+								name = L["Conduit"],
+								desc = L["Track conduit"],
 								type = "toggle",
 								order = newOrder(),
 								set = function(info, val)
@@ -434,22 +434,22 @@ function WQA:UpdateOptions()
 				order = newOrder(),
 				type = "group",
 				childGroups = "tree",
-				name = "Custom",
+				name = L["Custom"],
 				args = {
 					quest = {
 						order = newOrder(),
-						name = "World Quest",
+						name = L["World Quest"],
 						type = "group",
 						inline = true,
 						args = {
 							-- Add WQ
 							header1 = {
 								type = "header",
-								name = "Add a Quest you want to track",
+								name = L["Add a Quest you want to track"],
 								order = newOrder()
 							},
 							addWQ = {
-								name = "QuestID",
+								name = L["QuestID"],
 								-- desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
 								type = "input",
 								order = newOrder(),
@@ -462,16 +462,16 @@ function WQA:UpdateOptions()
 								end
 							},
 							questType = {
-								name = "Quest type",
+								name = L["Quest type"],
 								order = newOrder(),
 								desc =
-								"IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+								L["IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest."],
 								type = "select",
 								values = {
-									WORLD_QUEST = "World Quest",
-									QUEST_PIN = "Quest Pin",
-									QUEST_FLAG = "IsQuestFlaggedCompleted",
-									IsActive = "IsActive"
+									WORLD_QUEST = L["World Quest"],
+									QUEST_PIN = L["Quest Pin"],
+									QUEST_FLAG = L["IsQuestFlaggedCompleted"],
+									IsActive = L["IsActive"]
 								},
 								set = function(info, val)
 									WQA.data.custom.questType = val
@@ -481,9 +481,9 @@ function WQA:UpdateOptions()
 								end
 							},
 							mapID = {
-								name = "mapID",
+								name = L["mapID"],
 								desc =
-								"Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
+								L["Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help."],
 								type = "input",
 								width = .5,
 								order = newOrder(),
@@ -496,7 +496,7 @@ function WQA:UpdateOptions()
 							},
 							--[[
 							rewardID = {
-							name = "Reward (optional)",
+							name = L["Reward (optional)"],
 							desc = "Enter an achievementID or itemID",
 							type = "input",
 							width = .6,
@@ -507,7 +507,7 @@ function WQA:UpdateOptions()
 							get = function() return tostring(WQA.data.custom.rewardID )  end
 							},
 							rewardType = {
-							name = "Reward type",
+							name = L["Reward type"],
 							order = newOrder(),
 							type = "select",
 							values = {item = "Item", achievement = "Achievement", none = "none"},
@@ -520,7 +520,7 @@ function WQA:UpdateOptions()
 							button = {
 								order = newOrder(),
 								type = "execute",
-								name = "Add",
+								name = L["Add"],
 								width = .3,
 								func = function()
 									WQA:CreateCustomQuest()
@@ -535,25 +535,25 @@ function WQA:UpdateOptions()
 							-- Configure
 							header2 = {
 								type = "header",
-								name = "Configure custom World Quests",
+								name = L["Configure custom World Quests"],
 								order = newOrder()
 							}
 						}
 					},
 					reward = {
 						order = newOrder(),
-						name = "Reward",
+						name = L["Reward"],
 						type = "group",
 						inline = true,
 						args = {
 							-- Add item
 							header1 = {
 								type = "header",
-								name = "Add a World Quest Reward you want to track",
+								name = L["Add a World Quest Reward you want to track"],
 								order = newOrder()
 							},
 							itemID = {
-								name = "itemID",
+								name = L["itemID"],
 								-- desc = "To add a worldquest, enter a unique name for the worldquest, and click Okay",
 								type = "input",
 								order = newOrder(),
@@ -568,7 +568,7 @@ function WQA:UpdateOptions()
 							button = {
 								order = newOrder(),
 								type = "execute",
-								name = "Add",
+								name = L["Add"],
 								width = .3,
 								func = function()
 									WQA:CreateCustomReward()
@@ -577,25 +577,25 @@ function WQA:UpdateOptions()
 							-- Configure
 							header2 = {
 								type = "header",
-								name = "Configure custom World Quest Rewards",
+								name = L["Configure custom World Quest Rewards"],
 								order = newOrder()
 							}
 						}
 					},
 					mission = {
 						order = newOrder(),
-						name = "Mission",
+						name = L["Mission"],
 						type = "group",
 						inline = true,
 						args = {
 							-- Add WQ
 							header1 = {
 								type = "header",
-								name = "Add a Mission you want to track",
+								name = L["Add a Mission you want to track"],
 								order = newOrder()
 							},
 							missionID = {
-								name = "MissionID",
+								name = L["MissionID"],
 								type = "input",
 								order = newOrder(),
 								width = .6,
@@ -607,8 +607,8 @@ function WQA:UpdateOptions()
 								end
 							},
 							rewardID = {
-								name = "Reward (optional)",
-								desc = "Enter an achievementID or itemID",
+								name = L["Reward (optional)"],
+								desc = L["Enter an achievementID or itemID"],
 								type = "input",
 								width = .6,
 								order = newOrder(),
@@ -620,13 +620,13 @@ function WQA:UpdateOptions()
 								end
 							},
 							rewardType = {
-								name = "Reward type",
+								name = L["Reward type"],
 								order = newOrder(),
 								type = "select",
 								values = {
-									item = "Item",
-									achievement = "Achievement",
-									none = "none"
+									item = L["Item"],
+									achievement = L["Achievement"],
+									none = L["none"]
 								},
 								width = .6,
 								set = function(info, val)
@@ -639,7 +639,7 @@ function WQA:UpdateOptions()
 							button = {
 								order = newOrder(),
 								type = "execute",
-								name = "Add",
+								name = L["Add"],
 								width = .3,
 								func = function()
 									WQA:CreateCustomMission()
@@ -648,25 +648,25 @@ function WQA:UpdateOptions()
 							-- Configure
 							header2 = {
 								type = "header",
-								name = "Configure custom Missions",
+								name = L["Configure custom Missions"],
 								order = newOrder()
 							}
 						}
 					},
 					missionReward = {
 						order = newOrder(),
-						name = "Reward",
+						name = L["Reward"],
 						type = "group",
 						inline = true,
 						args = {
 							-- Add item
 							header1 = {
 								type = "header",
-								name = "Add a Mission Reward you want to track",
+								name = L["Add a Mission Reward you want to track"],
 								order = newOrder()
 							},
 							itemID = {
-								name = "itemID",
+								name = L["itemID"],
 								type = "input",
 								order = newOrder(),
 								width = .6,
@@ -680,7 +680,7 @@ function WQA:UpdateOptions()
 							button = {
 								order = newOrder(),
 								type = "execute",
-								name = "Add",
+								name = L["Add"],
 								width = .3,
 								func = function()
 									WQA:CreateCustomMissionReward()
@@ -689,7 +689,7 @@ function WQA:UpdateOptions()
 							-- Configure
 							header2 = {
 								type = "header",
-								name = "Configure custom Mission Rewards",
+								name = L["Configure custom Mission Rewards"],
 								order = newOrder()
 							}
 						}
@@ -699,17 +699,17 @@ function WQA:UpdateOptions()
 			options = {
 				order = newOrder(),
 				type = "group",
-				name = "Options",
+				name = L["Options"],
 				args = {
 					desc1 = {
 						type = "description",
 						fontSize = "medium",
-						name = "Select where WQA is allowed to post",
+						name = L["Select where WQA is allowed to post"],
 						order = newOrder()
 					},
 					chat = {
 						type = "toggle",
-						name = "Chat",
+						name = L["Chat"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.chat = val
@@ -722,7 +722,7 @@ function WQA:UpdateOptions()
 					},
 					PopUp = {
 						type = "toggle",
-						name = "PopUp",
+						name = L["PopUp"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.PopUp = val
@@ -735,7 +735,7 @@ function WQA:UpdateOptions()
 					},
 					popupRememberPosition = {
 						type = "toggle",
-						name = "Remember PopUp position",
+						name = L["Remember PopUp position"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.popupRememberPosition = val
@@ -748,7 +748,7 @@ function WQA:UpdateOptions()
 					},
 					sortByName = {
 						type = "toggle",
-						name = "Sort quests by name",
+						name = L["Sort quests by name"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.sortByName = val
@@ -761,7 +761,7 @@ function WQA:UpdateOptions()
 					},
 					sortByZoneName = {
 						type = "toggle",
-						name = "Sort quests by zone name",
+						name = L["Sort quests by zone name"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.sortByZoneName = val
@@ -774,7 +774,7 @@ function WQA:UpdateOptions()
 					},
 					chatShowExpansion = {
 						type = "toggle",
-						name = "Show expansion in chat",
+						name = L["Show expansion in chat"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.chatShowExpansion = val
@@ -787,7 +787,7 @@ function WQA:UpdateOptions()
 					},
 					chatShowZone = {
 						type = "toggle",
-						name = "Show zone in chat",
+						name = L["Show zone in chat"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.chatShowZone = val
@@ -800,7 +800,7 @@ function WQA:UpdateOptions()
 					},
 					chatShowTime = {
 						type = "toggle",
-						name = "Show time left in chat",
+						name = L["Show time left in chat"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.chatShowTime = val
@@ -813,7 +813,7 @@ function WQA:UpdateOptions()
 					},
 					popupShowExpansion = {
 						type = "toggle",
-						name = "Show expansion in popup",
+						name = L["Show expansion in popup"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.popupShowExpansion = val
@@ -826,7 +826,7 @@ function WQA:UpdateOptions()
 					},
 					popupShowZone = {
 						type = "toggle",
-						name = "Show zone in popup",
+						name = L["Show zone in popup"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.popupShowZone = val
@@ -839,7 +839,7 @@ function WQA:UpdateOptions()
 					},
 					popupShowTime = {
 						type = "toggle",
-						name = "Show time left in popup",
+						name = L["Show time left in popup"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.popupShowTime = val
@@ -851,7 +851,7 @@ function WQA:UpdateOptions()
 						order = newOrder()
 					},
 					delay = {
-						name = "Delay on login in s",
+						name = L["Delay on login in s"],
 						type = "input",
 						order = newOrder(),
 						width = "double",
@@ -863,7 +863,7 @@ function WQA:UpdateOptions()
 						end
 					},
 					delayCombat = {
-						name = "Delay output while in combat",
+						name = L["Delay output while in combat"],
 						type = "toggle",
 						order = newOrder(),
 						width = "double",
@@ -876,7 +876,7 @@ function WQA:UpdateOptions()
 					},
 					WorldQuestTracker = {
 						type = "toggle",
-						name = "Use World Quest Tracker",
+						name = L["Use World Quest Tracker"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.WorldQuestTracker = val
@@ -889,8 +889,8 @@ function WQA:UpdateOptions()
 					},
 					esc = {
 						type = "toggle",
-						name = "Close PopUp with ESC",
-						desc = "Requires a reload",
+						name = L["Close PopUp with ESC"],
+						desc = L["Requires a reload"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.esc = val
@@ -903,7 +903,7 @@ function WQA:UpdateOptions()
 					},
 					LibDBIcon = {
 						type = "toggle",
-						name = "Show Minimap Icon",
+						name = L["Show Minimap Icon"],
 						width = "double",
 						set = function(info, val)
 							WQA.db.profile.options.LibDBIcon.hide = not val
@@ -925,7 +925,7 @@ function WQA:UpdateOptions()
 	local args = self.options.args.reward.args.general.args
 	args.header1 = {
 		type = "header",
-		name = "World Quest Type",
+		name = L["World Quest Type"],
 		order = newOrder()
 	}
 	for k, v in pairs(worldQuestType) do
@@ -972,7 +972,7 @@ function WQA:UpdateOptions()
 		if i > 6 then
 			self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i] .. "WorldQuests"] = {
 				order = newOrder(),
-				name = "World Quests",
+				name = L["World Quests"],
 				type = "group",
 				args = {}
 			}
@@ -983,7 +983,7 @@ function WQA:UpdateOptions()
 			if WQA.ZoneIDList[i] then
 				args.zone = {
 					order = newOrder(),
-					name = "Zones",
+					name = L["Zones"],
 					type = "group",
 					args = {},
 					inline = false
@@ -1009,7 +1009,7 @@ function WQA:UpdateOptions()
 			if CurrencyIDList[i] then
 				args.currency = {
 					order = newOrder(),
-					name = "Currencies",
+					name = L["Currencies"],
 					type = "group",
 					args = {}
 				}
@@ -1038,7 +1038,7 @@ function WQA:UpdateOptions()
 			if FactionIDList[i] then
 				args.reputation = {
 					order = newOrder(),
-					name = "Reputation",
+					name = L["Reputation"],
 					type = "group",
 					args = {}
 				}
@@ -1071,7 +1071,7 @@ function WQA:UpdateOptions()
 			if self.EmissaryQuestIDList[i] then
 				args.emissary = {
 					order = newOrder(),
-					name = "Emissary Quests",
+					name = L["Emissary Quests"],
 					type = "group",
 					args = {}
 				}
@@ -1100,7 +1100,7 @@ function WQA:UpdateOptions()
 			if i > 6 then
 				args.profession = {
 					order = newOrder(),
-					name = "Professions",
+					name = L["Professions"],
 					type = "group",
 					args = {}
 				}
@@ -1108,7 +1108,7 @@ function WQA:UpdateOptions()
 				-- Recipes
 				args.profession.args["Recipes"] = {
 					type = "toggle",
-					name = "Recipes",
+					name = L["Recipes"],
 					set = function(info, val)
 						WQA.db.profile.options.reward.recipe[i] = val
 					end,
@@ -1130,8 +1130,8 @@ function WQA:UpdateOptions()
 					}
 					args.profession.args[tradeskillLineID .. "Skillup"] = {
 						type = "toggle",
-						name = "Skillup",
-						desc = "Track every World Quest until skill level is maxed out",
+						name = L["Skillup"],
+						desc = L["Track every World Quest until skill level is maxed out"],
 						set = function(info, val)
 							WQA.db.profile.options.reward[i].profession[tradeskillLineID].skillup = val
 						end,
@@ -1142,8 +1142,8 @@ function WQA:UpdateOptions()
 					}
 					args.profession.args[tradeskillLineID .. "MaxLevel"] = {
 						type = "toggle",
-						name = "Skill level is maxed out*",
-						desc = "Setting is per character",
+						name = L["Skill level is maxed out*"],
+						desc = L["Setting is per character"],
 						set = function(info, val)
 							WQA.db.char[i].profession[tradeskillLineID].isMaxLevel = val
 						end,
@@ -1180,7 +1180,7 @@ function WQA:UpdateOptions()
 		-- Mission Table
 		self.options.args.reward.args[self.ExpansionList[i]].args[self.ExpansionList[i] .. "MissionTable"] = {
 			order = newOrder(),
-			name = (i ~= 6 and "Mission Table" or "Mission Table & Shipyard"),
+			name = (i ~= 6 and L["Mission Table"] or L["Mission Table & Shipyard"]),
 			type = "group",
 			args = {}
 		}
@@ -1191,7 +1191,7 @@ function WQA:UpdateOptions()
 		if CurrencyIDList[i] then
 			args.currency = {
 				order = newOrder(),
-				name = "Currencies",
+				name = L["Currencies"],
 				type = "group",
 				args = {}
 			}
@@ -1199,7 +1199,7 @@ function WQA:UpdateOptions()
 				args.currency.args = {
 					gold = {
 						type = "toggle",
-						name = "Gold",
+						name = L["Gold"],
 						set = function(info, val)
 							WQA.db.profile.options.missionTable.reward.gold = val
 						end,
@@ -1210,7 +1210,7 @@ function WQA:UpdateOptions()
 						order = newOrder()
 					},
 					goldMin = {
-						name = "minimum Gold",
+						name = L["minimum Gold"],
 						type = "input",
 						order = newOrder(),
 						set = function(info, val)
@@ -1248,7 +1248,7 @@ function WQA:UpdateOptions()
 		if FactionIDList[i] then
 			args.reputation = {
 				order = newOrder(),
-				name = "Reputation",
+				name = L["Reputation"],
 				type = "group",
 				args = {}
 			}
@@ -1428,16 +1428,16 @@ function WQA:UpdateCustomQuests()
 		}
 
 		args[id .. "questType"] = {
-			name = "Quest type",
+			name = L["Quest type"],
 			order = newOrder(),
 			desc =
-			"IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest.",
+			L["IsActive:\nUse this as a last resort. Works for some daily quests.\n\nIsQuestFlaggedCompleted:\nUse this for quests, that are always active.\n\nQuest Pin:\nUse this, if the daily is marked with a quest pin on the world map.\n\nWorld Quest:\nUse this, if you want to track a world quest."],
 			type = "select",
 			values = {
-				WORLD_QUEST = "World Quest",
-				QUEST_PIN = "Quest Pin",
-				QUEST_FLAG = "IsQuestFlaggedCompleted",
-				IsActive = "IsActive"
+				WORLD_QUEST = L["World Quest"],
+				QUEST_PIN = L["Quest Pin"],
+				QUEST_FLAG = L["IsQuestFlaggedCompleted"],
+				IsActive = L["IsActive"]
 			},
 			width = .8,
 			set = function(info, val)
@@ -1448,8 +1448,8 @@ function WQA:UpdateCustomQuests()
 			end
 		}
 		args[id .. "mapID"] = {
-			name = "mapID",
-			desc = "Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help.",
+			name = L["mapID"],
+			desc = L["Quest pin tracking needs a mapID.\nSee https://wow.gamepedia.com/UiMapID for help."],
 			type = "input",
 			width = .4,
 			order = newOrder(),
@@ -1463,7 +1463,7 @@ function WQA:UpdateCustomQuests()
 
 		--[[
 		args[id.."Reward"] = {
-		name = "Reward (optional)",
+		name = L["Reward (optional)"],
 		desc = "Enter an achievementID or itemID",
 		type = "input",
 		width = .6,
@@ -1476,7 +1476,7 @@ function WQA:UpdateCustomQuests()
 		end
 		}
 		args[id.."RewardType"] = {
-		name = "Reward type",
+		name = L["Reward type"],
 		order = newOrder(),
 		type = "select",
 		values = {item = "Item", achievement = "Achievement", none = "none"},
@@ -1489,7 +1489,7 @@ function WQA:UpdateCustomQuests()
 		args[id .. "Delete"] = {
 			order = newOrder(),
 			type = "execute",
-			name = "Delete",
+			name = L["Delete"],
 			width = .5,
 			func = function()
 				args[tostring(id)] = nil
@@ -1547,7 +1547,7 @@ function WQA:UpdateCustomRewards()
 		args[id .. "Delete"] = {
 			order = newOrder(),
 			type = "execute",
-			name = "Delete",
+			name = L["Delete"],
 			width = .5,
 			func = function()
 				args[tostring(id)] = nil
@@ -1602,8 +1602,8 @@ function WQA:UpdateCustomMissions()
 			width = 1.2
 		}
 		args[id .. "Reward"] = {
-			name = "Reward (optional)",
-			desc = "Enter an achievementID or itemID",
+			name = L["Reward (optional)"],
+			desc = L["Enter an achievementID or itemID"],
 			type = "input",
 			width = .6,
 			order = newOrder(),
@@ -1615,7 +1615,7 @@ function WQA:UpdateCustomMissions()
 			end
 		}
 		args[id .. "RewardType"] = {
-			name = "Reward type",
+			name = L["Reward type"],
 			order = newOrder(),
 			type = "select",
 			values = { item = "Item", achievement = "Achievement", none = "none" },
@@ -1630,7 +1630,7 @@ function WQA:UpdateCustomMissions()
 		args[id .. "Delete"] = {
 			order = newOrder(),
 			type = "execute",
-			name = "Delete",
+			name = L["Delete"],
 			width = .5,
 			func = function()
 				args[tostring(id)] = nil
@@ -1687,7 +1687,7 @@ function WQA:UpdateCustomMissionRewards()
 		args[id .. "Delete"] = {
 			order = newOrder(),
 			type = "execute",
-			name = "Delete",
+			name = L["Delete"],
 			width = .5,
 			func = function()
 				args[tostring(id)] = nil

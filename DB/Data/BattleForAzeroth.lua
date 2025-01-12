@@ -2,7 +2,7 @@ local WQA = WQAchievements
 
 -- Battle for Azeroth
 local data = {
-    name = "Battle for Azeroth"
+    name = _G.EXPANSION_NAME7
 }
 WQA.data[8] = data
 

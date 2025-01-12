@@ -2,7 +2,7 @@ local WQA = WQAchievements
 
 -- War Within
 local data = {
-    name = "War Within"
+    name = _G.EXPANSION_NAME10
 }
 WQA.data[11] = data
 

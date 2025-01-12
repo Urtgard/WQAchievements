@@ -2,7 +2,7 @@ local WQA = WQAchievements
 
 -- Dragonflight
 local data = {
-    name = "Dragonflight"
+    name = _G.EXPANSION_NAME9
 }
 WQA.data[10] = data
 

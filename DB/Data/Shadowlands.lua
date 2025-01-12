@@ -2,7 +2,7 @@ local WQA = WQAchievements
 
 -- Shadowlands
 local data = {
-    name = "Shadowlands"
+    name = _G.EXPANSION_NAME8
 }
 WQA.data[9] = data
 

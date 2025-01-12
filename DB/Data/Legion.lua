@@ -2,7 +2,7 @@ local WQA = WQAchievements
 
 --	Legion
 local data = {
-    name = "Legion"
+    name = _G.EXPANSION_NAME6
 }
 WQA.data[7] = data
 
