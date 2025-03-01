@@ -7,6 +7,7 @@
 ## X-WoWI-ID: 24566
 ## X-Wago-ID: BKpqEXGE
 ## OptionalDeps: CanIMogIt, AllTheThings
+## IconTexture: Interface/Addons/WQAchievements/WQAchievementsIcon.tga
 
 embeds.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
