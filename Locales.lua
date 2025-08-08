@@ -14,6 +14,7 @@ local L = WQA.L
 	L["Add a World Quest Reward you want to track"] = "Add a World Quest Reward you want to track"
 	L["Add"] = "Add"
 	L["Armor Cache"] = "Armor Cache"
+	L["AutoShow"] = "Automatically show WQA on login"
 	L["Azerite Armor Cache"] = "Azerite Armor Cache"
 	L["Azerite Traits"] = "Azerite Traits"
 	L["Chat"] = "Chat"

@@ -178,7 +178,7 @@ function WQA:OnEnable()
 		"OnEvent",
 		function(...)
 			local _, name, id = ...
-			if name == "PLAYER_ENTERING_WORLD" then
+			if name == "PLAYER_ENTERING_WORLD" and self.db.profile.options.AutoShow then
 				self:ScheduleTimer(
 					function()
 						for i = 1, #self.ZoneIDList do

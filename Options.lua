@@ -701,6 +701,19 @@ function WQA:UpdateOptions()
 				type = "group",
 				name = L["Options"],
 				args = {
+					AutoShow = {
+						type = "toggle",
+						name = L["AutoShow"],
+						width = "double",
+						set = function(info, val)
+							WQA.db.profile.options.AutoShow = val
+						end,
+						descStyle = "inline",
+						get = function()
+							return WQA.db.profile.options.AutoShow
+						end,
+						order = newOrder()
+					},
 					desc1 = {
 						type = "description",
 						fontSize = "medium",
