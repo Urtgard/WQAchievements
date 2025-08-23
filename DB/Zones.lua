@@ -64,7 +64,8 @@ WQA.ZoneIDList = {
         2255, -- Azj-Kahet
         2256, -- Azj-Kahet - Lower
         2339, -- Dornogal
-		2369, -- Siren Isle
-		2346 -- Undermine
+        2369, -- Siren Isle
+        2346, -- Undermine
+        2371, -- K'aresh
     }
 }
