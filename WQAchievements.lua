@@ -968,7 +968,9 @@ function WQA:Reward()
 								end
 							end
 
-							if HaveQuestData(questID) and not HaveQuestRewardData(questID) then
+							-- For quest ID 83366, the Blizzard API returns inaccurate or misleading results.
+							-- See issue #184.
+							if questID ~= 83366 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
 								C_TaskQuest.RequestPreloadRewardData(questID)
 								retry = true
 							end
