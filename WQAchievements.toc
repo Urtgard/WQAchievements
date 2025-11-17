@@ -1,7 +1,7 @@
 ## Interface: 110205
 ## Title: WQAchievements
 ## Author: Urtgard
-## Version: @project-version@
+## Version: v11.2.5-1
 ## SavedVariables: WQADB
 ## X-Curse-Project-ID: 272039
 ## X-WoWI-ID: 24566
@@ -37,5 +37,6 @@ Locales.lua
 Utilities.lua
 Tooltip.lua
 
+QuestData.lua 
 WQAchievements.lua
 Options.lua
