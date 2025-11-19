@@ -192,6 +192,18 @@ function WQA:OnEnable()
     local currentIndex = 1
 
 local function StartScan()
+    -- Check every time — fresh data
+    if UnitAffectingCombat("player") then
+        print("|cffff0000[WQA] Scan skipped - in combat|r")
+        return
+    end
+    local inInstance, instanceType = IsInInstance()
+    if inInstance and (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or instanceType == "pvp" or instanceType == "arena") then
+        print("|cffff0000[WQA] Scan skipped - in instance ("..(instanceType or "unknown")..")|r")
+        return
+    end
+
+    print("|cff00ff00[WQA] Starting scan...|r")
     addon.start = GetTime()
     currentIndex = 1
     if addon.AllWorldQuestIDs then  -- Static ID scan
@@ -291,46 +303,98 @@ local function ScanUpdate(self, elapsed)
 end
 
     -- Fixed OnEvent: Proper sig, addon refs, adapted original handlers (dropped log/info to avoid early triggers)
-    local function OnEvent(frame, event, questID)
-        if event == "PLAYER_ENTERING_WORLD" then
-            addon:ScheduleTimer(StartScan, addon.db.profile.options.delay)
-            addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-            addon:ScheduleTimer("Show", addon.db.profile.options.delay + 1, nil, true)
-            addon:ScheduleTimer(
-                function()
-                    addon:Show("new", true)
-                    addon:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
-                end,
-                (32 - (date("%M") % 30)) * 60
-            )
-        elseif event == "GARRISON_MISSION_LIST_UPDATE" then
-            addon:CheckMissions()
-        elseif event == "QUEST_TURNED_IN" then
-            addon.db.global.completed[questID] = true
-        elseif event == "PLAYER_REGEN_ENABLED" then
-            addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
-            addon:Show("new", true)
+local function OnEvent(frame, event, questID)
+    if event == "PLAYER_ENTERING_WORLD" then
+        -- Cancel any old timer
+        if addon.timer then
+            addon:CancelTimer(addon.timer)
         end
-    end
-    self.event:SetScript("OnEvent", OnEvent)
 
-    C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
+        -- Fresh instance/combat check every time
+        local function ShouldScan()
+            if UnitAffectingCombat("player") then
+                return false
+            end
+            local inInstance, instanceType = IsInInstance()
+            if
+                inInstance and
+                    (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
+                        instanceType == "pvp" or
+                        instanceType == "arena")
+             then
+                return false
+            end
+            return true
+        end
+
+        if ShouldScan() then
+            addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
+        else
+            print("|cffff0000[WQA] Scan skipped on login - in instance or combat|r")
+        end
+
+        addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
+
+        -- Only show popup if we actually scanned
+        if ShouldScan() then
+            addon:ScheduleTimer("Show", addon.db.profile.options.delay + 1 or 6, nil, true)
+        end
+
+        -- The 30-minute "new" check is fine — it will show nothing if no new quests
+        addon:ScheduleTimer(
+            function()
+                addon:Show("new", true)
+                addon:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
+            end,
+            (32 - (date("%M") % 30)) * 60
+        )
+    elseif event == "GARRISON_MISSION_LIST_UPDATE" then
+        addon:CheckMissions()
+    elseif event == "QUEST_TURNED_IN" then
+        addon.db.global.completed[questID] = true
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        addon:Show("new", true)
+    end
+end
+self.event:SetScript("OnEvent", OnEvent)
+C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
 end
 
 WQA:RegisterChatCommand("wqa", "slash")
-
 function WQA:slash(input)
-	local arg1 = string.lower(input)
+    local arg1 = string.lower(input or "")
 
-	if arg1 == "" then
-		--self:CheckWQ()
-		self:Show()
-	elseif arg1 == "new" then
-		self:Show("new")
-	elseif arg1 == "popup" then
-		self:Show("popup")
-	end
+    local function ShouldScan()
+        if UnitAffectingCombat("player") then
+            return false
+        end
+        local inInstance, instanceType = IsInInstance()
+        if
+            inInstance and
+                (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
+                    instanceType == "pvp" or
+                    instanceType == "arena")
+         then
+            return false
+        end
+        return true
+    end
+
+    if not ShouldScan() then
+        print("|cffff0000[WQA] Scan skipped - in instance or combat|r")
+        return
+    end
+
+    if arg1 == "" then
+        self:Show()
+    elseif arg1 == "new" then
+        self:Show("new")
+    elseif arg1 == "popup" then
+        self:Show("popup")
+    end
 end
+
 
 function WQA:CreateQuestList()
 	self:Debug("CreateQuestList")
@@ -1893,27 +1957,32 @@ function WQA:GetRewardTextByID(questID, key, value, i, type)
         if not text then
             text = "Custom"
         end
+
     elseif k == "item" then
         text = self:GetRewardForID(questID, k, type)
+
     elseif k == "reputation" then
         if v.itemLink then
             text = self:GetRewardLinkByID(questID, k, v, i)
         else
             text = v.amount .. " " .. self:GetRewardLinkByID(questID, k, v, i)
         end
+
     elseif k == "currency" then
         text = v.amount .. " " .. GetCurrencyLink(v.currencyID, v.amount)
+
     elseif k == "professionSkillup" then
         text = v
+
     elseif k == "gold" then
         text = GOLD_AMOUNT_TEXTURE_STRING:format(v, 0, 0)
+
     else
         text = self:GetRewardLinkByID(questID, k, v, i)
     end
 
     return text
 end
-
 
 function WQA:GetRewardLinkByMissionID(missionID, key, value, i)
 	return self:GetRewardLinkByID(missionID, key, value, i)
