@@ -157,6 +157,84 @@ _G["WQA"] = nil  -- Cleanup global to avoid conflicts
 	icon:Register("WQAchievements", dataobj, self.db.profile.options.LibDBIcon)
 end
 
+local function ShouldScan()
+    if UnitAffectingCombat("player") then
+        return false
+    end
+
+    local inInstance, instanceType = IsInInstance()
+    if
+        inInstance and
+            (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or instanceType == "pvp" or
+                instanceType == "arena")
+     then
+        return false
+    end
+    return true
+end
+
+local function AnythingTracked()
+    local enabled = false
+
+    -- 1. Check if any option is enabled
+    if WQA.db.profile.options.emissary and next(WQA.db.profile.options.emissary) then
+        enabled = true
+    end
+    if
+        WQA.db.profile.options.missionTable and WQA.db.profile.options.missionTable.reward and
+            (WQA.db.profile.options.missionTable.reward.gold or
+                next(WQA.db.profile.options.missionTable.reward.currency or {}) or
+                next(WQA.db.profile.options.missionTable.reward.item or {}))
+     then
+        enabled = true
+    end
+    if WQA.db.profile.options.reward then
+        local r = WQA.db.profile.options.reward
+        if r.gear and next(r.gear) then
+            enabled = true
+        end
+        if r.general and (r.general.gold or next(r.general.worldQuestType or {})) then
+            enabled = true
+        end
+        if r.reputation and next(r.reputation) then
+            enabled = true
+        end
+        if r.currency and next(r.currency) then
+            enabled = true
+        end
+        if r.craftingreagent and next(r.craftingreagent) then
+            enabled = true
+        end
+        if r.recipe and next(r.recipe) then
+            enabled = true
+        end
+        if r.profession then
+            for _, prof in pairs(r.profession) do
+                if prof.skillup then
+                    enabled = true
+                end
+            end
+        end
+    end
+
+    if not enabled then
+        print("|cffff0000[WQA] Nothing tracked in options - scan skipped|r")
+        return false
+    end
+
+    -- 2. Even if options are on, check if there's actual data to scan
+    if WQA.questList and next(WQA.questList) then
+        return true
+    end
+    if WQA.missionList and next(WQA.missionList) then
+        return true
+    end
+
+    print("|cffff0000[WQA] No active quests/missions - scan skipped|r")
+    return false
+end
+
+
 function WQA:OnEnable()
     local name, server = UnitFullName("player")
     self.playerName = name .. "-" .. server
@@ -192,6 +270,10 @@ function WQA:OnEnable()
     local currentIndex = 1
 
 local function StartScan()
+	if not AnythingTracked() then
+        print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+        return
+    end
     -- Check every time — fresh data
     if UnitAffectingCombat("player") then
         print("|cffff0000[WQA] Scan skipped - in combat|r")
@@ -326,6 +408,12 @@ local function OnEvent(frame, event, questID)
             end
             return true
         end
+		
+		if AnythingTracked() then
+            addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
+        else
+            print("|cffff0000[WQA] Nothing tracked - login scan skipped|r")
+        end
 
         if ShouldScan() then
             addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
@@ -364,25 +452,13 @@ end
 WQA:RegisterChatCommand("wqa", "slash")
 function WQA:slash(input)
     local arg1 = string.lower(input or "")
-
-    local function ShouldScan()
-        if UnitAffectingCombat("player") then
-            return false
-        end
-        local inInstance, instanceType = IsInInstance()
-        if
-            inInstance and
-                (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
-                    instanceType == "pvp" or
-                    instanceType == "arena")
-         then
-            return false
-        end
-        return true
-    end
-
     if not ShouldScan() then
         print("|cffff0000[WQA] Scan skipped - in instance or combat|r")
+        return
+    end
+
+    if not AnythingTracked() then
+        print("|cffff0000[WQA] Nothing tracked - no scan|r")
         return
     end
 
@@ -394,6 +470,7 @@ function WQA:slash(input)
         self:Show("popup")
     end
 end
+
 
 
 function WQA:CreateQuestList()
