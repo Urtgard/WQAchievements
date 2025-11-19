@@ -1864,29 +1864,56 @@ function WQA:Debug(...)
 end
 
 function WQA:GetRewardTextByID(questID, key, value, i, type)
-	local k, v = key, value
-	local text
-	if k == "custom" then
-		text = "Custom"
-	elseif k == "item" then
-		text = self:GetRewardForID(questID, k, type)
-	elseif k == "reputation" then
-		if v.itemLink then
-			text = self:GetRewardLinkByID(questID, k, v, i)
-		else
-			text = v.amount .. " " .. self:GetRewardLinkByID(questID, k, v, i)
-		end
-	elseif k == "currency" then
-		text = v.amount .. " " .. GetCurrencyLink(v.currencyID, v.amount)
-	elseif k == "professionSkillup" then
-		text = v
-	elseif k == "gold" then
-		text = GOLD_AMOUNT_TEXTURE_STRING:format(v, 0, 0)
-	else
-		text = self:GetRewardLinkByID(questID, k, v, i)
-	end
-	return text
+    local k, v = key, value
+    local text
+
+    if k == "custom" then
+        if HaveQuestRewardData(questID) then
+            -- First: Try item reward (normal cache)
+            local itemLink = GetQuestLogItemLink("reward", 1, questID)
+            if itemLink and itemLink ~= "" then
+                text = itemLink
+            else
+                -- Second: Try currency reward (Azerite, Gold, etc.)
+                local currencyInfo = C_QuestLog.GetQuestRewardCurrencyInfo(questID, 1, false)
+                if currencyInfo and currencyInfo.currencyID then
+                    local amount = currencyInfo.quantity or currencyInfo.totalRewardAmount or 0
+                    if currencyInfo.currencyID == 0 then
+                        -- Gold reward
+                        text = GOLD_AMOUNT_TEXTURE_STRING:format(amount * 10000, 0, 0)
+                    else
+                        -- Currency like Azerite
+                        text = amount .. " " .. GetCurrencyLink(currencyInfo.currencyID, amount)
+                    end
+                end
+            end
+        end
+
+        -- Fallback if data not loaded
+        if not text then
+            text = "Custom"
+        end
+    elseif k == "item" then
+        text = self:GetRewardForID(questID, k, type)
+    elseif k == "reputation" then
+        if v.itemLink then
+            text = self:GetRewardLinkByID(questID, k, v, i)
+        else
+            text = v.amount .. " " .. self:GetRewardLinkByID(questID, k, v, i)
+        end
+    elseif k == "currency" then
+        text = v.amount .. " " .. GetCurrencyLink(v.currencyID, v.amount)
+    elseif k == "professionSkillup" then
+        text = v
+    elseif k == "gold" then
+        text = GOLD_AMOUNT_TEXTURE_STRING:format(v, 0, 0)
+    else
+        text = self:GetRewardLinkByID(questID, k, v, i)
+    end
+
+    return text
 end
+
 
 function WQA:GetRewardLinkByMissionID(missionID, key, value, i)
 	return self:GetRewardLinkByID(missionID, key, value, i)

@@ -7,4 +7,5 @@ WQA.ExpansionList = {
     [9] = _G.EXPANSION_NAME8,    -- "Shadowlands"
     [10] = _G.EXPANSION_NAME9,   -- "Dragonflight"
     [11] = _G.EXPANSION_NAME10,  -- "War Within"
+	[12] = _G.EXPANSION_NAME11,  -- "Midnight"
 }

@@ -60,9 +60,10 @@ function WQA:UpdateQTip(tasks)
         for _, task in ipairs(tasks) do
             local id = task.id
             if
-                (task.type == "WORLD_QUEST" and not tooltip.quests[id]) or (task.type == "MISSION" and not tooltip.missions[id]) or
-                (task.type == "AREA_POI" and not tooltip.pois[id])
-            then
+                (task.type == "WORLD_QUEST" and not tooltip.quests[id]) or
+                    (task.type == "MISSION" and not tooltip.missions[id]) or
+                    (task.type == "AREA_POI" and not tooltip.pois[id])
+             then
                 local j = 1
 
                 if self.db.profile.options.popupShowExpansion then
@@ -116,8 +117,10 @@ function WQA:UpdateQTip(tasks)
                         elseif task.type == "MISSION" then
                             GameTooltip:SetText(C_Garrison.GetMissionName(id))
                             GameTooltip:AddLine(
-                                string.format(GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS,
-                                    C_Garrison.GetMissionMaxFollowers(id)),
+                                string.format(
+                                    GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS,
+                                    C_Garrison.GetMissionMaxFollowers(id)
+                                ),
                                 1,
                                 1,
                                 1
@@ -126,16 +129,16 @@ function WQA:UpdateQTip(tasks)
                                 id,
                                 WQA.missionList[task.id].followerType,
                                 false,
-                                C_Garrison.GetFollowerAbilityCountersForMechanicTypes(WQA.missionList[task.id]
-                                    .followerType)
+                                C_Garrison.GetFollowerAbilityCountersForMechanicTypes(
+                                    WQA.missionList[task.id].followerType
+                                )
                             )
                             GameTooltip:AddLine(GARRISON_MISSION_AVAILABILITY)
                             GameTooltip:AddLine(WQA.missionList[task.id].offerTimeRemaining, 1, 1, 1)
                             if not C_Garrison.IsPlayerInGarrison(WQA.missionList[task.id].followerType) then
                                 GameTooltip:AddLine(" ")
                                 GameTooltip:AddLine(
-                                    GarrisonFollowerOptions[WQA.missionList[task.id].followerType].strings
-                                    .RETURN_TO_START,
+                                    GarrisonFollowerOptions[WQA.missionList[task.id].followerType].strings.RETURN_TO_START,
                                     nil,
                                     nil,
                                     nil,
@@ -194,8 +197,8 @@ function WQA:UpdateQTip(tasks)
                         if ChatEdit_TryInsertChatLink(link) ~= true then
                             if
                                 task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and
-                                not (self.questPinList[id] or self.questFlagList[id])
-                            then
+                                    not (self.questPinList[id] or self.questFlagList[id])
+                             then
                                 if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
                                     if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
                                         WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
@@ -278,17 +281,37 @@ function WQA:UpdateQTip(tasks)
                                         GameTooltip:ClearLines()
                                         ContainerFrameItemButton_CalculateItemTooltipAnchors(self, GameTooltip)
 
-                                        if WQA:GetRewardLinkByID(id, k, v, n) then
-                                            GameTooltip:SetHyperlink(WQA:GetRewardLinkByID(id, k, v, n))
+                                        local link = WQA:GetRewardLinkByID(id, k, v, n)
+                                        if link and link ~= "" then
+                                            GameTooltip:SetHyperlink(link)
                                         else
-                                            GameTooltip:SetText(WQA:GetRewardTextByID(id, k, v, n, task.type))
+                                            -- Fallback for currency/gold (our custom string) — still show tooltip via text
+                                            local text = WQA:GetRewardTextByID(id, k, v, n, task.type)
+                                            if text then
+                                                -- Extract item/currency ID if possible and try to show proper tooltip
+                                                local itemID = text:match("item:(%d+)")
+                                                local currencyID = text:match("currency:(%d+)")
+                                                if itemID then
+                                                    GameTooltip:SetItemByID(tonumber(itemID))
+                                                elseif currencyID then
+                                                    GameTooltip:SetCurrencyByID(tonumber(currencyID))
+                                                else
+                                                    GameTooltip:SetText(text, 1, 1, 1, 1, true)
+                                                end
+                                            end
                                         end
-                                        GameTooltip:Show()
-                                        if (IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems")) and k == "item" then
+
+                                        -- Compare items on shift-click (for gear)
+                                        if
+                                            (IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems")) and
+                                                k == "item"
+                                         then
                                             GameTooltip_ShowCompareItem()
                                         else
                                             GameTooltip_HideShoppingTooltips(GameTooltip)
                                         end
+
+                                        GameTooltip:Show()
                                     end
                                 )
                                 tooltip:SetCellScript(
@@ -318,10 +341,11 @@ function WQA:UpdateQTip(tasks)
                                         local moreTooltipText = ""
                                         while self:GetRewardTextByID(id, k, v, m, task.type) do
                                             if m == 4 then
-                                                moreTooltipText = moreTooltipText ..
-                                                    self:GetRewardTextByID(id, k, v, m, task.type)
+                                                moreTooltipText =
+                                                    moreTooltipText .. self:GetRewardTextByID(id, k, v, m, task.type)
                                             else
-                                                moreTooltipText = moreTooltipText ..
+                                                moreTooltipText =
+                                                    moreTooltipText ..
                                                     "\n" .. self:GetRewardTextByID(id, k, v, m, task.type)
                                             end
                                             m = m + 1

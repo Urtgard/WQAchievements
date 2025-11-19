@@ -67,5 +67,9 @@ WQA.ZoneIDList = {
         2369, -- Siren Isle
         2346, -- Undermine
         2371, -- K'aresh
-    }
+		2472, -- Tazavesh
+    },
+	[12] = {
+	
+	}
 }
