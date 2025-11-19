@@ -174,63 +174,60 @@ local function ShouldScan()
 end
 
 local function AnythingTracked()
-    local enabled = false
+    -- Emissary
+    if WQA.db.profile.options.emissary then
+        for _, v in pairs(WQA.db.profile.options.emissary) do
+            if v == true then
+                return true
+            end
+        end
+    end
 
-    -- 1. Check if any option is enabled
-    if WQA.db.profile.options.emissary and next(WQA.db.profile.options.emissary) then
-        enabled = true
+    -- Mission table
+    if WQA.db.profile.options.missionTable and WQA.db.profile.options.missionTable.reward then
+        local r = WQA.db.profile.options.missionTable.reward
+        if r.gold or (r.currency and next(r.currency)) or (r.item and next(r.item)) then
+            return true
+        end
     end
-    if
-        WQA.db.profile.options.missionTable and WQA.db.profile.options.missionTable.reward and
-            (WQA.db.profile.options.missionTable.reward.gold or
-                next(WQA.db.profile.options.missionTable.reward.currency or {}) or
-                next(WQA.db.profile.options.missionTable.reward.item or {}))
-     then
-        enabled = true
-    end
+
+    -- General rewards
     if WQA.db.profile.options.reward then
         local r = WQA.db.profile.options.reward
+        -- Gear
         if r.gear and next(r.gear) then
-            enabled = true
+            return true
         end
-        if r.general and (r.general.gold or next(r.general.worldQuestType or {})) then
-            enabled = true
+        -- General (gold, worldQuestType)
+        if r.general and (r.general.gold or (r.general.worldQuestType and next(r.general.worldQuestType))) then
+            return true
         end
+        -- Reputation
         if r.reputation and next(r.reputation) then
-            enabled = true
+            return true
         end
+        -- Currency
         if r.currency and next(r.currency) then
-            enabled = true
+            return true
         end
+        -- Crafting reagents
         if r.craftingreagent and next(r.craftingreagent) then
-            enabled = true
+            return true
         end
+        -- Recipe
         if r.recipe and next(r.recipe) then
-            enabled = true
+            return true
         end
+        -- Profession skillup
         if r.profession then
             for _, prof in pairs(r.profession) do
                 if prof.skillup then
-                    enabled = true
+                    return true
                 end
             end
         end
     end
 
-    if not enabled then
-        print("|cffff0000[WQA] Nothing tracked in options - scan skipped|r")
-        return false
-    end
-
-    -- 2. Even if options are on, check if there's actual data to scan
-    if WQA.questList and next(WQA.questList) then
-        return true
-    end
-    if WQA.missionList and next(WQA.missionList) then
-        return true
-    end
-
-    print("|cffff0000[WQA] No active quests/missions - scan skipped|r")
     return false
 end
 
@@ -258,6 +255,7 @@ function WQA:OnEnable()
 
     -- Event frame + throttling setup
     self.event = CreateFrame("Frame")
+	self.event:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
     self.event:RegisterEvent("GARRISON_MISSION_LIST_UPDATE")
     self.event:RegisterEvent("QUEST_TURNED_IN")
@@ -386,49 +384,42 @@ end
 
     -- Fixed OnEvent: Proper sig, addon refs, adapted original handlers (dropped log/info to avoid early triggers)
 local function OnEvent(frame, event, questID)
-    if event == "PLAYER_ENTERING_WORLD" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
         -- Cancel any old timer
-        if addon.timer then
-            addon:CancelTimer(addon.timer)
-        end
+        if addon.timer then addon:CancelTimer(addon.timer) end
 
-        -- Fresh instance/combat check every time
         local function ShouldScan()
-            if UnitAffectingCombat("player") then
-                return false
-            end
+            if UnitAffectingCombat("player") then return false end
             local inInstance, instanceType = IsInInstance()
-            if
-                inInstance and
-                    (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
-                        instanceType == "pvp" or
-                        instanceType == "arena")
-             then
+            if inInstance and (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or instanceType == "pvp" or instanceType == "arena") then
                 return false
             end
             return true
         end
-		
-		if AnythingTracked() then
+
+        local doScan = AnythingTracked() and ShouldScan()
+
+        if doScan then
             addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
+            print("|cff00ff00[WQA] Fresh scan scheduled|r")
         else
-            print("|cffff0000[WQA] Nothing tracked - login scan skipped|r")
+            if not AnythingTracked() then
+                print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+            else
+                print("|cffff0000[WQA] In instance/combat - scan skipped|r")
+            end
         end
 
-        if ShouldScan() then
-            addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
-        else
-            print("|cffff0000[WQA] Scan skipped on login - in instance or combat|r")
+        -- ONLY show popup if we actually scanned
+        if doScan then
+            addon:ScheduleTimer("Show", (addon.db.profile.options.delay or 5) + 1, nil, true)
         end
 
-        addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-
-        -- Only show popup if we actually scanned
-        if ShouldScan() then
-            addon:ScheduleTimer("Show", addon.db.profile.options.delay + 1 or 6, nil, true)
+        if event == "PLAYER_ENTERING_WORLD" then
+            addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
         end
 
-        -- The 30-minute "new" check is fine — it will show nothing if no new quests
+        -- 30-minute reminder (always runs — harmless if nothing new)
         addon:ScheduleTimer(
             function()
                 addon:Show("new", true)
@@ -436,15 +427,19 @@ local function OnEvent(frame, event, questID)
             end,
             (32 - (date("%M") % 30)) * 60
         )
+
     elseif event == "GARRISON_MISSION_LIST_UPDATE" then
         addon:CheckMissions()
+
     elseif event == "QUEST_TURNED_IN" then
         addon.db.global.completed[questID] = true
+
     elseif event == "PLAYER_REGEN_ENABLED" then
         addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
         addon:Show("new", true)
     end
 end
+
 self.event:SetScript("OnEvent", OnEvent)
 C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
 end
@@ -470,8 +465,6 @@ function WQA:slash(input)
         self:Show("popup")
     end
 end
-
-
 
 function WQA:CreateQuestList()
 	self:Debug("CreateQuestList")
