@@ -196,7 +196,7 @@ function WQA:UpdateQTip(tasks)
                     function()
                         if ChatEdit_TryInsertChatLink(link) ~= true then
                             if
-                                task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and
+                                task.type == "WORLD_QUEST" and
                                     not (self.questPinList[id] or self.questFlagList[id])
                              then
                                 if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
