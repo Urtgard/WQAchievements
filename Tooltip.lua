@@ -4,17 +4,19 @@ local WQA = WQAchievements
 local L = WQA.L
 local LibQTip = LibStub("LibQTip-1.0")
 
-
 function WQA:CreateQTip()
     if not LibQTip:IsAcquired("WQAchievements") and not self.tooltip then
         local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
         self.tooltip = tooltip
 
-        tooltip:SetScript("OnHide", function()
-            if WQA.PopUp then
-                WQA.PopUp:Hide()
+        tooltip:SetScript(
+            "OnHide",
+            function()
+                if WQA.PopUp then
+                    WQA.PopUp:Hide()
+                end
             end
-        end)
+        )
 
         if self.db.profile.options.popupShowExpansion or self.db.profile.options.popupShowZone then
             tooltip:AddColumn()
@@ -195,10 +197,7 @@ function WQA:UpdateQTip(tasks)
                     "OnMouseDown",
                     function()
                         if ChatEdit_TryInsertChatLink(link) ~= true then
-                            if
-                                task.type == "WORLD_QUEST" and
-                                    not (self.questPinList[id] or self.questFlagList[id])
-                             then
+                            if task.type == "WORLD_QUEST" and not (self.questPinList[id] or self.questFlagList[id]) then
                                 if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
                                     if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
                                         WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
@@ -387,24 +386,13 @@ end
 function WQA:AnnouncePopUp(quests, silent)
     if not self.PopUp then
         local PopUp = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
-        if self.db.profile.options.esc then
-            tinsert(UISpecialFrames, "WQAchievementsPopUp")
-        end
-        self.PopUp = PopUp
         PopUp:SetMovable(true)
         PopUp:EnableMouse(true)
         PopUp:RegisterForDrag("LeftButton")
-        PopUp:SetScript(
-            "OnDragStart",
-            function(self)
-                self.moving = true
-                self:StartMoving()
-            end
-        )
+        PopUp:SetScript("OnDragStart", PopUp.StartMoving)
         PopUp:SetScript(
             "OnDragStop",
             function(self)
-                self.moving = nil
                 self:StopMovingOrSizing()
                 if WQA.db.profile.options.popupRememberPosition then
                     WQA.db.profile.options.popupX = self:GetLeft()
@@ -412,48 +400,79 @@ function WQA:AnnouncePopUp(quests, silent)
                 end
             end
         )
-        PopUp:SetWidth(300)
-        PopUp:SetHeight(100)
-        PopUp:SetPoint("CENTER") --, self.db.profile.options.popupX, self.db.profile.options.popupY)
-        --PopUp:SetPoint("TOPLEFT", self.db.profile.options.popupX, self.db.profile.options.popupY)
-        PopUp:Hide()
 
-        PopUp:SetScript(
-            "OnHide",
-            function()
-                if WQA.tooltip ~= nil then
-                    LibQTip:Release(WQA.tooltip)
-                    WQA.tooltip.quests = nil
-                    WQA.tooltip.missions = nil
-                    WQA.tooltip = nil
-                end
+        -- ESC closes window
+        if WQA.db.profile.options.esc then
+            tinsert(UISpecialFrames, PopUp:GetName())
+        end
 
-                PopUp.shown = false
-            end
-        )
+        local scroll = CreateFrame("ScrollFrame", nil, PopUp, "UIPanelScrollFrameTemplate")
+        scroll:SetPoint("TOPLEFT", 9, -30)
+        scroll:SetPoint("BOTTOMRIGHT", -14, 13)
+        scroll:SetClipsChildren(true)
+
+        -- Content frame — tooltip is placed inside here
+        local content = CreateFrame("Frame", nil, scroll)
+        content:SetSize(500, 20)
+        scroll:SetScrollChild(content)
+
+        PopUp.close = CreateFrame("Button", nil, PopUp, "UIPanelCloseButton")
+        PopUp.close:SetPoint("TOPRIGHT", -4, -4)
+
+        -- Assign
+        self.PopUp = PopUp
+        self.PopUp.content = content
+        self.PopUp.scroll = scroll
     end
-    if next(quests) == nil and silent == true then
+
+    -- no quests and silent → don't show popup
+    if not next(quests) and silent then
         return
     end
+
     local PopUp = self.PopUp
     PopUp:Show()
     PopUp.shown = true
-    self:CreateQTip()
-    self.tooltip:SetAutoHideDelay()
-    self.tooltip:ClearAllPoints()
-    self.tooltip:SetPoint("TOP", PopUp, "TOP", 2, -27)
-    self:UpdateQTip(quests)
-    PopUp:SetWidth(self.tooltip:GetWidth() + 8.5)
-    PopUp:SetHeight(self.tooltip:GetHeight() + 32)
-    PopUp:SetScale(self.tooltip:GetScale())
-    if (PopUp:GetEffectiveScale() ~= self.tooltip:GetEffectiveScale()) then
-        PopUp:SetScale(PopUp:GetScale() * self.tooltip:GetEffectiveScale() / PopUp:GetEffectiveScale())
-    end
-    PopUp:SetFrameLevel(self.tooltip:GetFrameLevel())
 
-    if self.db.profile.options.popupRememberPosition then
+    self:CreateQTip()
+    self.tooltip:ClearAllPoints()
+    self.tooltip:SetParent(PopUp.content)
+    self.tooltip:SetPoint("TOPLEFT")
+    self.tooltip:SetPoint("TOPRIGHT")
+
+    -- fill tooltip with quest data
+    self:UpdateQTip(quests)
+
+    local tooltipHeight = self.tooltip:GetHeight()
+    PopUp.content:SetHeight(tooltipHeight + 20)
+
+    local scrollbar = PopUp.scroll.ScrollBar or PopUp.scroll.scrollBar
+    if scrollbar then
+        scrollbar:ClearAllPoints()
+        scrollbar:SetPoint("TOPLEFT", PopUp.scroll, "TOPRIGHT", -12, -18)
+        scrollbar:SetPoint("BOTTOMLEFT", PopUp.scroll, "BOTTOMRIGHT", -12, 18)
+    end
+
+    local width = WQA.db.profile.options.popupWidth or 600
+    local maxHeight = WQA.db.profile.options.popupMaxHeight or 700
+    local scale = WQA.db.profile.options.popupScale or 1.0
+
+    PopUp:SetWidth(width * scale)
+    PopUp:SetHeight(math.min(tooltipHeight + 100, maxHeight) * scale)
+    PopUp:SetScale(scale)
+
+    -- Apply content width relative to frame width
+    PopUp.content:SetWidth(width - 50)
+
+    if WQA.db.profile.options.popupRememberPosition then
         PopUp:ClearAllPoints()
-        PopUp:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", self.db.profile.options.popupX, self.db.profile.options.popupY)
+        PopUp:SetPoint(
+            "TOPLEFT",
+            UIParent,
+            "BOTTOMLEFT",
+            WQA.db.profile.options.popupX or (UIParent:GetWidth() / 2 - PopUp:GetWidth() / 2),
+            WQA.db.profile.options.popupY or (UIParent:GetHeight() / 2 + PopUp:GetHeight() / 2)
+        )
     end
 end
 

@@ -30,11 +30,19 @@ function WQA:RefreshTracking()
     end
 
     -- 2 minute rescan — only one scan no matter how many boxes you click
-    self.refreshTimer = self:ScheduleTimer(function()
-        self.refreshTimer = nil
-        self:CreateQuestList()
-        self:Show()
-    end, 120)
+    self.refreshTimer =
+        self:ScheduleTimer(
+        function()
+            self.refreshTimer = nil
+            self:CreateQuestList()
+            self:Show()
+        end,
+        120
+    )
+    if WQA.PopUp and WQA.PopUp:IsShown() then
+        WQA:AnnouncePopUp(WQA.activeTasks or {}, false)
+    -- UpdateHScroll will be called inside AnnouncePopUp
+    end
 end
 
 WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none", questType = "WORLD_QUEST"}
@@ -304,11 +312,235 @@ local function AnythingTracked()
     return false
 end
 
+-- function WQA:OnEnable()
+-- local name, server = UnitFullName("player")
+-- self.playerName = name .. "-" .. server
+
+-- local addon = self -- Key fix: Capture addon object for closures
+
+-- ------------------
+-- -- Options
+-- ------------------
+-- LibStub("AceConfig-3.0"):RegisterOptionsTable(
+-- "WQAchievements",
+-- function()
+-- return self:GetOptions()
+-- end
+-- )
+-- self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
+-- local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+-- LibStub("AceConfig-3.0"):RegisterOptionsTable("WQAProfiles", profiles)
+-- self.optionsFrame.Profiles =
+-- LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAProfiles", "Profiles", "WQAchievements")
+
+-- -- Event frame + throttling setup
+-- self.event = CreateFrame("Frame")
+-- self.event:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+-- self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
+-- self.event:RegisterEvent("GARRISON_MISSION_LIST_UPDATE")
+-- self.event:RegisterEvent("QUEST_TURNED_IN")
+-- self.event:RegisterEvent("PLAYER_REGEN_ENABLED") -- Keep for OOC reloads
+
+-- -- Throttling locals (closures capture them + addon)
+-- local scanFrame = CreateFrame("Frame")
+-- local batchSize = 10 -- Tune: 5-20 based on FPS testing
+-- local mapIDsToScan = {}
+-- local currentIndex = 1
+
+-- local function StartScan()
+-- if not AnythingTracked() then
+-- print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+-- return
+-- end
+-- -- Check every time — fresh data
+-- if UnitAffectingCombat("player") then
+-- print("|cffff0000[WQA] Scan skipped - in combat|r")
+-- return
+-- end
+-- local inInstance, instanceType = IsInInstance()
+-- if
+-- inInstance and
+-- (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
+-- instanceType == "pvp" or
+-- instanceType == "arena")
+-- then
+-- print("|cffff0000[WQA] Scan skipped - in instance (" .. (instanceType or "unknown") .. ")|r")
+-- return
+-- end
+
+-- print("|cff00ff00[WQA] Starting scan...|r")
+-- addon.start = GetTime()
+-- currentIndex = 1
+-- if addon.AllWorldQuestIDs then -- Static ID scan
+-- local questIDsToScan = {}
+-- for exp, ids in pairs(addon.AllWorldQuestIDs) do
+-- for _, questID in ipairs(ids) do
+-- table.insert(questIDsToScan, questID)
+-- end
+-- end
+-- if #questIDsToScan > 0 then
+-- scanFrame:SetScript("OnUpdate", ScanUpdate)
+-- else
+-- -- No IDs: Trigger post-logic
+-- local now = GetTime()
+-- addon:CancelTimer(addon.timer)
+-- if now - addon.start > 1 then
+-- addon:Reward()
+-- else
+-- addon:ScheduleTimer("Reward", 1)
+-- end
+-- end
+-- else -- Fallback to old map scan
+-- mapIDsToScan = {}
+-- for i = 1, #addon.ZoneIDList do
+-- for _, mapID in pairs(addon.ZoneIDList[i]) do
+-- if addon.db.profile.options.zone[mapID] == true then
+-- table.insert(mapIDsToScan, mapID)
+-- end
+-- end
+-- end
+-- if #mapIDsToScan > 0 then
+-- scanFrame:SetScript(
+-- "OnUpdate",
+-- function(self, elapsed)
+-- local processed = 0
+-- while processed < batchSize and currentIndex <= #mapIDsToScan do
+-- local mapID = mapIDsToScan[currentIndex]
+-- local quests = C_TaskQuest.GetQuestsOnMap(mapID)
+-- if quests then
+-- for j = 1, #quests do
+-- local questID = quests[j].questID
+-- local numQuestRewards = GetNumQuestLogRewards(questID)
+-- if numQuestRewards > 0 then
+-- GetQuestLogRewardInfo(1, questID)
+-- end
+-- end
+-- end
+-- currentIndex = currentIndex + 1
+-- processed = processed + 1
+-- end
+-- if currentIndex > #mapIDsToScan then
+-- self:SetScript("OnUpdate", nil)
+-- local now = GetTime()
+-- addon:CancelTimer(addon.timer)
+-- if now - addon.start > 1 then
+-- addon:Reward()
+-- else
+-- addon:ScheduleTimer("Reward", 1)
+-- end
+-- end
+-- end
+-- )
+-- else
+-- -- No maps: Trigger Reward
+-- local now = GetTime()
+-- addon:CancelTimer(addon.timer)
+-- if now - addon.start > 1 then
+-- addon:Reward()
+-- else
+-- addon:ScheduleTimer("Reward", 1)
+-- end
+-- end
+-- end
+-- end
+
+-- local function ScanUpdate(self, elapsed)
+-- local processed = 0
+-- while processed < batchSize and currentIndex <= #questIDsToScan do
+-- local questID = questIDsToScan[currentIndex]
+-- if C_TaskQuest.IsActive(questID) then -- Only process active
+-- local numQuestRewards = GetNumQuestLogRewards(questID)
+-- if numQuestRewards > 0 then
+-- GetQuestLogRewardInfo(1, questID)
+-- end
+-- end
+-- currentIndex = currentIndex + 1
+-- processed = processed + 1
+-- end
+-- if currentIndex > #questIDsToScan then
+-- self:SetScript("OnUpdate", nil)
+-- -- Complete: Trigger Reward()
+-- local now = GetTime()
+-- addon:CancelTimer(addon.timer)
+-- if now - addon.start > 1 then
+-- addon:Reward()
+-- else
+-- addon:ScheduleTimer("Reward", 1)
+-- end
+-- end
+-- end
+
+-- -- Fixed OnEvent: Proper sig, addon refs, adapted original handlers (dropped log/info to avoid early triggers)
+-- local function OnEvent(frame, event, questID)
+-- if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+-- -- Cancel any old timer
+-- if addon.timer then
+-- addon:CancelTimer(addon.timer)
+-- end
+
+-- local function ShouldScan()
+-- if UnitAffectingCombat("player") then
+-- return false
+-- end
+-- local inInstance, instanceType = IsInInstance()
+-- if
+-- inInstance and
+-- (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
+-- instanceType == "pvp" or
+-- instanceType == "arena")
+-- then
+-- return false
+-- end
+-- return true
+-- end
+
+-- local doScan = AnythingTracked() and ShouldScan()
+
+-- if doScan then
+-- addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
+-- print("|cff00ff00[WQA] Fresh scan scheduled|r")
+-- else
+-- if not AnythingTracked() then
+-- print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+-- else
+-- print("|cffff0000[WQA] In instance/combat - scan skipped|r")
+-- end
+-- end
+
+-- -- ONLY show popup if we actually scanned
+-- if doScan then
+-- addon:ScheduleTimer("Show", (addon.db.profile.options.delay or 5) + 1, nil, true)
+-- end
+
+-- if event == "PLAYER_ENTERING_WORLD" then
+-- addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
+-- end
+
+-- -- 30-minute reminder (always runs — harmless if nothing new)
+-- addon:ScheduleTimer(
+-- function()
+-- addon:Show("new", true)
+-- addon:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
+-- end,
+-- (32 - (date("%M") % 30)) * 60
+-- )
+-- elseif event == "GARRISON_MISSION_LIST_UPDATE" then
+-- addon:CheckMissions()
+-- elseif event == "QUEST_TURNED_IN" then
+-- addon.db.global.completed[questID] = true
+-- elseif event == "PLAYER_REGEN_ENABLED" then
+-- addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
+-- addon:Show("new", true)
+-- end
+-- end
+
+-- self.event:SetScript("OnEvent", OnEvent)
+-- C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
+-- end
+
 function WQA:OnEnable()
     local name, server = UnitFullName("player")
     self.playerName = name .. "-" .. server
-
-    local addon = self -- Key fix: Capture addon object for closures
 
     ------------------
     -- Options
@@ -325,26 +557,25 @@ function WQA:OnEnable()
     self.optionsFrame.Profiles =
         LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAProfiles", "Profiles", "WQAchievements")
 
-    -- Event frame + throttling setup
+    -- Event frame
     self.event = CreateFrame("Frame")
     self.event:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
     self.event:RegisterEvent("GARRISON_MISSION_LIST_UPDATE")
     self.event:RegisterEvent("QUEST_TURNED_IN")
-    self.event:RegisterEvent("PLAYER_REGEN_ENABLED") -- Keep for OOC reloads
+    self.event:RegisterEvent("PLAYER_REGEN_ENABLED")
 
-    -- Throttling locals (closures capture them + addon)
+    -- Throttling
     local scanFrame = CreateFrame("Frame")
-    local batchSize = 10 -- Tune: 5-20 based on FPS testing
-    local mapIDsToScan = {}
+    local batchSize = 10
     local currentIndex = 1
+    local questIDsToScan = {}
 
     local function StartScan()
         if not AnythingTracked() then
             print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
             return
         end
-        -- Check every time — fresh data
         if UnitAffectingCombat("player") then
             print("|cffff0000[WQA] Scan skipped - in combat|r")
             return
@@ -361,135 +592,75 @@ function WQA:OnEnable()
         end
 
         print("|cff00ff00[WQA] Starting scan...|r")
-        addon.start = GetTime()
+        self.start = GetTime()
         currentIndex = 1
-        if addon.AllWorldQuestIDs then -- Static ID scan
-            local questIDsToScan = {}
-            for exp, ids in pairs(addon.AllWorldQuestIDs) do
+        questIDsToScan = {}
+
+        if self.AllWorldQuestIDs then
+            for _, ids in pairs(self.AllWorldQuestIDs) do
                 for _, questID in ipairs(ids) do
                     table.insert(questIDsToScan, questID)
                 end
             end
-            if #questIDsToScan > 0 then
-                scanFrame:SetScript("OnUpdate", ScanUpdate)
-            else
-                -- No IDs: Trigger post-logic
-                local now = GetTime()
-                addon:CancelTimer(addon.timer)
-                if now - addon.start > 1 then
-                    addon:Reward()
-                else
-                    addon:ScheduleTimer("Reward", 1)
-                end
-            end
-        else -- Fallback to old map scan
-            mapIDsToScan = {}
-            for i = 1, #addon.ZoneIDList do
-                for _, mapID in pairs(addon.ZoneIDList[i]) do
-                    if addon.db.profile.options.zone[mapID] == true then
-                        table.insert(mapIDsToScan, mapID)
-                    end
-                end
-            end
-            if #mapIDsToScan > 0 then
-                scanFrame:SetScript(
-                    "OnUpdate",
-                    function(self, elapsed)
-                        local processed = 0
-                        while processed < batchSize and currentIndex <= #mapIDsToScan do
-                            local mapID = mapIDsToScan[currentIndex]
-                            local quests = C_TaskQuest.GetQuestsOnMap(mapID)
-                            if quests then
-                                for j = 1, #quests do
-                                    local questID = quests[j].questID
-                                    local numQuestRewards = GetNumQuestLogRewards(questID)
-                                    if numQuestRewards > 0 then
-                                        GetQuestLogRewardInfo(1, questID)
-                                    end
-                                end
-                            end
-                            currentIndex = currentIndex + 1
-                            processed = processed + 1
-                        end
-                        if currentIndex > #mapIDsToScan then
-                            self:SetScript("OnUpdate", nil)
-                            local now = GetTime()
-                            addon:CancelTimer(addon.timer)
-                            if now - addon.start > 1 then
-                                addon:Reward()
-                            else
-                                addon:ScheduleTimer("Reward", 1)
-                            end
-                        end
-                    end
-                )
-            else
-                -- No maps: Trigger Reward
-                local now = GetTime()
-                addon:CancelTimer(addon.timer)
-                if now - addon.start > 1 then
-                    addon:Reward()
-                else
-                    addon:ScheduleTimer("Reward", 1)
-                end
-            end
         end
-    end
 
-    local function ScanUpdate(self, elapsed)
-        local processed = 0
-        while processed < batchSize and currentIndex <= #questIDsToScan do
-            local questID = questIDsToScan[currentIndex]
-            if C_TaskQuest.IsActive(questID) then -- Only process active
-                local numQuestRewards = GetNumQuestLogRewards(questID)
-                if numQuestRewards > 0 then
-                    GetQuestLogRewardInfo(1, questID)
+        if #questIDsToScan > 0 then
+            scanFrame:SetScript(
+                "OnUpdate",
+                function(self, elapsed)
+                    local processed = 0
+                    while processed < batchSize and currentIndex <= #questIDsToScan do
+                        local questID = questIDsToScan[currentIndex]
+                        if C_TaskQuest.IsActive(questID) then
+                            local numQuestRewards = GetNumQuestLogRewards(questID)
+                            if numQuestRewards > 0 then
+                                GetQuestLogRewardInfo(1, questID)
+                            end
+                        end
+                        currentIndex = currentIndex + 1
+                        processed = processed + 1
+                    end
+                    if currentIndex > #questIDsToScan then
+                        self:SetScript("OnUpdate", nil)
+                        local now = GetTime()
+                        WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+                        if now - WQA.start > 1 then
+                            WQA:Reward()
+                        else
+                            WQA:ScheduleTimer("Reward", 1)
+                        end
+                    end
                 end
-            end
-            currentIndex = currentIndex + 1
-            processed = processed + 1
-        end
-        if currentIndex > #questIDsToScan then
-            self:SetScript("OnUpdate", nil)
-            -- Complete: Trigger Reward()
+            )
+        else
             local now = GetTime()
-            addon:CancelTimer(addon.timer)
-            if now - addon.start > 1 then
-                addon:Reward()
+            WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+            if now - WQA.start > 1 then
+                WQA:Reward()
             else
-                addon:ScheduleTimer("Reward", 1)
+                WQA:ScheduleTimer("Reward", 1)
             end
         end
     end
 
-    -- Fixed OnEvent: Proper sig, addon refs, adapted original handlers (dropped log/info to avoid early triggers)
     local function OnEvent(frame, event, questID)
         if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
-            -- Cancel any old timer
-            if addon.timer then
-                addon:CancelTimer(addon.timer)
+            if WQA.timer then
+                WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
             end
-
-            local function ShouldScan()
-                if UnitAffectingCombat("player") then
-                    return false
-                end
-                local inInstance, instanceType = IsInInstance()
-                if
-                    inInstance and
-                        (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
-                            instanceType == "pvp" or
-                            instanceType == "arena")
-                 then
-                    return false
-                end
-                return true
+            local doScan = AnythingTracked() and not UnitAffectingCombat("player")
+            local inInstance, instanceType = IsInInstance()
+            if
+                inInstance and
+                    (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
+                        instanceType == "pvp" or
+                        instanceType == "arena")
+             then
+                doScan = false
             end
-
-            local doScan = AnythingTracked() and ShouldScan()
 
             if doScan then
-                addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
+                WQA.timer = WQA:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
                 print("|cff00ff00[WQA] Fresh scan scheduled|r")
             else
                 if not AnythingTracked() then
@@ -499,30 +670,28 @@ function WQA:OnEnable()
                 end
             end
 
-            -- ONLY show popup if we actually scanned
             if doScan then
-                addon:ScheduleTimer("Show", (addon.db.profile.options.delay or 5) + 1, nil, true)
+                WQA:ScheduleTimer("Show", (WQA.db.profile.options.delay or 5) + 1, nil, true)
             end
 
             if event == "PLAYER_ENTERING_WORLD" then
-                addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
+                WQA.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
             end
 
-            -- 30-minute reminder (always runs — harmless if nothing new)
-            addon:ScheduleTimer(
+            WQA:ScheduleTimer(
                 function()
-                    addon:Show("new", true)
-                    addon:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
+                    WQA:Show("new", true)
+                    WQA:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
                 end,
                 (32 - (date("%M") % 30)) * 60
             )
         elseif event == "GARRISON_MISSION_LIST_UPDATE" then
-            addon:CheckMissions()
+            WQA:CheckMissions()
         elseif event == "QUEST_TURNED_IN" then
-            addon.db.global.completed[questID] = true
+            WQA.db.global.completed[questID] = true
         elseif event == "PLAYER_REGEN_ENABLED" then
-            addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
-            addon:Show("new", true)
+            WQA.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
+            WQA:Show("new", true)
         end
     end
 
@@ -2334,7 +2503,9 @@ function WQA:EmissaryIsActive(questID)
                 break
             end
         end
-        if isEmissaryQuest then break end
+        if isEmissaryQuest then
+            break
+        end
     end
 
     -- Legion (old bounty system)
@@ -2349,7 +2520,9 @@ function WQA:EmissaryIsActive(questID)
                     end
                 end
             end
-            if isEmissaryQuest then break end
+            if isEmissaryQuest then
+                break
+            end
         end
     end
 
@@ -2516,7 +2689,7 @@ function WQA:CheckMissions()
                     for _, reward in ipairs(mission.rewards) do
                         if reward.currencyID and reward.currencyID > 0 then
                             if WQA.db.profile.options.missionTable.reward.currency[reward.currencyID] then
-                                local currency = { currencyID = reward.currencyID, amount = reward.quantity }
+                                local currency = {currencyID = reward.currencyID, amount = reward.quantity}
                                 self:AddRewardToMission(missionID, "CURRENCY", currency)
                                 addMission = true
                             end
@@ -2531,7 +2704,7 @@ function WQA:CheckMissions()
                             -- Reputation token
                             local factionID = ReputationItemList[itemID]
                             if factionID and WQA.db.profile.options.missionTable.reward.reputation[factionID] then
-                                local reputation = { itemLink = itemLink or ("Item " .. itemID), factionID = factionID }
+                                local reputation = {itemLink = itemLink or ("Item " .. itemID), factionID = factionID}
                                 self:AddRewardToMission(missionID, "REPUTATION", reputation)
                                 addMission = true
                             end
@@ -2539,10 +2712,10 @@ function WQA:CheckMissions()
                             -- CUSTOM MISSION REWARD
                             if WQA.db.global.custom.missionReward and WQA.db.profile.custom.missionReward[itemID] then
                                 local displayName = itemLink or ("Item " .. itemID)
-                                local item = { itemLink = displayName }
+                                local item = {itemLink = displayName}
                                 self:AddRewardToMission(missionID, "ITEM", item)
                                 addMission = true
-                                retry = true  -- force retry if name not cached
+                                retry = true -- force retry if name not cached
                             end
 
                             if not itemLink then
@@ -2564,7 +2737,7 @@ function WQA:CheckMissions()
         end
     end
 
-    return activeMissions  -- always return the table (even if retry)
+    return activeMissions -- always return the table (even if retry)
 end
 
 function WQA:isQuestPinActive(questID)
