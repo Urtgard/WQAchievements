@@ -67,19 +67,18 @@ function WQA:GetOptions()
 end
 
 function WQA:GetEffectiveTracking(category, id, expansionKey)
-    -- Safety first – if something ridiculous is passed as expansionKey (like a function from pairs()), force it to nil
+    -- Safety first
     if type(expansionKey) ~= "string" and type(expansionKey) ~= "number" then
         expansionKey = nil
     end
 
     local masterKey
 
-    -- REWARDS TAB: we expect expansionKey to be a NUMBER (6-11)
+    -- Rewards tab: expect expansionKey to be a NUMBER (6-11)
     if category == "rewardCurrency" or category == "rewardItem" or category == "rewardEmissary" then
-        local expNum = tonumber(expansionKey) or 7 -- default to Legion if unknown
+        local expNum = tonumber(expansionKey) or 7 -- default to Legion
         masterKey = category .. expNum
     else
-        -- GENERAL TAB: expansionKey is a string like "Dragonflight" or the expansion number
         local key = expansionKey
         if type(key) == "number" then
             key = tostring(key)
@@ -109,9 +108,33 @@ function WQA:GetEffectiveTracking(category, id, expansionKey)
     end
 
     -- Individual override
-    local individual = self.db.profile[category][id]
-    if individual and individual ~= "default" then
-        return individual
+    local individual
+    if category == "rewardCurrency" then
+        individual = self.db.profile.options.reward.currency[id]
+        if individual == true then
+            return "always"
+        elseif individual == false then
+            return "disabled"
+        end
+    elseif category == "rewardEmissary" then
+        individual = self.db.profile.options.emissary[id]
+        if individual == true then
+            return "always"
+        elseif individual == false then
+            return "disabled"
+        end
+    elseif category == "rewardItem" then
+        individual = self.db.profile.options.reward.craftingreagent[id]
+        if individual == true then
+            return "always"
+        elseif individual == false then
+            return "disabled"
+        end
+    else
+        individual = self.db.profile[category][id]
+        if individual and individual ~= "default" then
+            return individual
+        end
     end
 
     -- Global default
@@ -311,232 +334,6 @@ local function AnythingTracked()
 
     return false
 end
-
--- function WQA:OnEnable()
--- local name, server = UnitFullName("player")
--- self.playerName = name .. "-" .. server
-
--- local addon = self -- Key fix: Capture addon object for closures
-
--- ------------------
--- -- Options
--- ------------------
--- LibStub("AceConfig-3.0"):RegisterOptionsTable(
--- "WQAchievements",
--- function()
--- return self:GetOptions()
--- end
--- )
--- self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
--- local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
--- LibStub("AceConfig-3.0"):RegisterOptionsTable("WQAProfiles", profiles)
--- self.optionsFrame.Profiles =
--- LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAProfiles", "Profiles", "WQAchievements")
-
--- -- Event frame + throttling setup
--- self.event = CreateFrame("Frame")
--- self.event:RegisterEvent("ZONE_CHANGED_NEW_AREA")
--- self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
--- self.event:RegisterEvent("GARRISON_MISSION_LIST_UPDATE")
--- self.event:RegisterEvent("QUEST_TURNED_IN")
--- self.event:RegisterEvent("PLAYER_REGEN_ENABLED") -- Keep for OOC reloads
-
--- -- Throttling locals (closures capture them + addon)
--- local scanFrame = CreateFrame("Frame")
--- local batchSize = 10 -- Tune: 5-20 based on FPS testing
--- local mapIDsToScan = {}
--- local currentIndex = 1
-
--- local function StartScan()
--- if not AnythingTracked() then
--- print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
--- return
--- end
--- -- Check every time — fresh data
--- if UnitAffectingCombat("player") then
--- print("|cffff0000[WQA] Scan skipped - in combat|r")
--- return
--- end
--- local inInstance, instanceType = IsInInstance()
--- if
--- inInstance and
--- (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
--- instanceType == "pvp" or
--- instanceType == "arena")
--- then
--- print("|cffff0000[WQA] Scan skipped - in instance (" .. (instanceType or "unknown") .. ")|r")
--- return
--- end
-
--- print("|cff00ff00[WQA] Starting scan...|r")
--- addon.start = GetTime()
--- currentIndex = 1
--- if addon.AllWorldQuestIDs then -- Static ID scan
--- local questIDsToScan = {}
--- for exp, ids in pairs(addon.AllWorldQuestIDs) do
--- for _, questID in ipairs(ids) do
--- table.insert(questIDsToScan, questID)
--- end
--- end
--- if #questIDsToScan > 0 then
--- scanFrame:SetScript("OnUpdate", ScanUpdate)
--- else
--- -- No IDs: Trigger post-logic
--- local now = GetTime()
--- addon:CancelTimer(addon.timer)
--- if now - addon.start > 1 then
--- addon:Reward()
--- else
--- addon:ScheduleTimer("Reward", 1)
--- end
--- end
--- else -- Fallback to old map scan
--- mapIDsToScan = {}
--- for i = 1, #addon.ZoneIDList do
--- for _, mapID in pairs(addon.ZoneIDList[i]) do
--- if addon.db.profile.options.zone[mapID] == true then
--- table.insert(mapIDsToScan, mapID)
--- end
--- end
--- end
--- if #mapIDsToScan > 0 then
--- scanFrame:SetScript(
--- "OnUpdate",
--- function(self, elapsed)
--- local processed = 0
--- while processed < batchSize and currentIndex <= #mapIDsToScan do
--- local mapID = mapIDsToScan[currentIndex]
--- local quests = C_TaskQuest.GetQuestsOnMap(mapID)
--- if quests then
--- for j = 1, #quests do
--- local questID = quests[j].questID
--- local numQuestRewards = GetNumQuestLogRewards(questID)
--- if numQuestRewards > 0 then
--- GetQuestLogRewardInfo(1, questID)
--- end
--- end
--- end
--- currentIndex = currentIndex + 1
--- processed = processed + 1
--- end
--- if currentIndex > #mapIDsToScan then
--- self:SetScript("OnUpdate", nil)
--- local now = GetTime()
--- addon:CancelTimer(addon.timer)
--- if now - addon.start > 1 then
--- addon:Reward()
--- else
--- addon:ScheduleTimer("Reward", 1)
--- end
--- end
--- end
--- )
--- else
--- -- No maps: Trigger Reward
--- local now = GetTime()
--- addon:CancelTimer(addon.timer)
--- if now - addon.start > 1 then
--- addon:Reward()
--- else
--- addon:ScheduleTimer("Reward", 1)
--- end
--- end
--- end
--- end
-
--- local function ScanUpdate(self, elapsed)
--- local processed = 0
--- while processed < batchSize and currentIndex <= #questIDsToScan do
--- local questID = questIDsToScan[currentIndex]
--- if C_TaskQuest.IsActive(questID) then -- Only process active
--- local numQuestRewards = GetNumQuestLogRewards(questID)
--- if numQuestRewards > 0 then
--- GetQuestLogRewardInfo(1, questID)
--- end
--- end
--- currentIndex = currentIndex + 1
--- processed = processed + 1
--- end
--- if currentIndex > #questIDsToScan then
--- self:SetScript("OnUpdate", nil)
--- -- Complete: Trigger Reward()
--- local now = GetTime()
--- addon:CancelTimer(addon.timer)
--- if now - addon.start > 1 then
--- addon:Reward()
--- else
--- addon:ScheduleTimer("Reward", 1)
--- end
--- end
--- end
-
--- -- Fixed OnEvent: Proper sig, addon refs, adapted original handlers (dropped log/info to avoid early triggers)
--- local function OnEvent(frame, event, questID)
--- if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
--- -- Cancel any old timer
--- if addon.timer then
--- addon:CancelTimer(addon.timer)
--- end
-
--- local function ShouldScan()
--- if UnitAffectingCombat("player") then
--- return false
--- end
--- local inInstance, instanceType = IsInInstance()
--- if
--- inInstance and
--- (instanceType == "party" or instanceType == "raid" or instanceType == "scenario" or
--- instanceType == "pvp" or
--- instanceType == "arena")
--- then
--- return false
--- end
--- return true
--- end
-
--- local doScan = AnythingTracked() and ShouldScan()
-
--- if doScan then
--- addon.timer = addon:ScheduleTimer(StartScan, addon.db.profile.options.delay or 5)
--- print("|cff00ff00[WQA] Fresh scan scheduled|r")
--- else
--- if not AnythingTracked() then
--- print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
--- else
--- print("|cffff0000[WQA] In instance/combat - scan skipped|r")
--- end
--- end
-
--- -- ONLY show popup if we actually scanned
--- if doScan then
--- addon:ScheduleTimer("Show", (addon.db.profile.options.delay or 5) + 1, nil, true)
--- end
-
--- if event == "PLAYER_ENTERING_WORLD" then
--- addon.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
--- end
-
--- -- 30-minute reminder (always runs — harmless if nothing new)
--- addon:ScheduleTimer(
--- function()
--- addon:Show("new", true)
--- addon:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
--- end,
--- (32 - (date("%M") % 30)) * 60
--- )
--- elseif event == "GARRISON_MISSION_LIST_UPDATE" then
--- addon:CheckMissions()
--- elseif event == "QUEST_TURNED_IN" then
--- addon.db.global.completed[questID] = true
--- elseif event == "PLAYER_REGEN_ENABLED" then
--- addon.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
--- addon:Show("new", true)
--- end
--- end
-
--- self.event:SetScript("OnEvent", OnEvent)
--- C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
--- end
 
 function WQA:OnEnable()
     local name, server = UnitFullName("player")
@@ -2235,26 +2032,27 @@ function WQA:CheckCurrencies(questID, isEmissary)
         local currencyID = currencyInfo.currencyID
         local amount = currencyInfo.totalRewardAmount
 
-        if WQA:GetEffectiveTracking("rewardCurrency", currencyID, exp) == "always" then
+        -- Check individual tracking directly, ignoring expansion
+        local track = self.db.profile.options.reward.currency[currencyID]
+        if track == true then
             local currency = {currencyID = currencyID, amount = amount}
             self:AddRewardToQuest(questID, "CURRENCY", currency, isEmissary)
         end
 
         -- Reputation Currency
-        local factionID = ReputationCurrencyList[currencyID] or nil
-        if factionID then
-            if self.db.profile.options.reward.reputation[factionID] == true then
-                local reputation = {
-                    name = currencyInfo.name,
-                    currencyID = currencyID,
-                    amount = amount,
-                    factionID = factionID
-                }
-                self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
-            end
+        local factionID = ReputationCurrencyList[currencyID]
+        if factionID and self.db.profile.options.reward.reputation[factionID] == true then
+            local reputation = {
+                name = currencyInfo.name,
+                currencyID = currencyID,
+                amount = amount,
+                factionID = factionID
+            }
+            self:AddRewardToQuest(questID, "REPUTATION", reputation, isEmissary)
         end
     end
 
+    -- Gold
     local gold = math.floor(GetQuestLogRewardMoney(questID) / 10000) or 0
     if gold > 0 then
         if self.db.profile.options.reward.general.gold and gold >= self.db.profile.options.reward.general.goldMin then
@@ -2670,9 +2468,9 @@ function WQA:CheckMissions()
                 for _, mission in ipairs(missions) do
                     local missionID = mission.missionID
                     local addMission = false
+                    local expTable = self.db.profile.options.missionTable.reward["exp" .. exp] or {}
 
-                    -- Gold (per expansion)
-                    local expTable = WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
+                    -- Gold
                     if expTable.gold then
                         for _, reward in ipairs(mission.rewards) do
                             if reward.currencyID == 0 then
@@ -2687,39 +2485,43 @@ function WQA:CheckMissions()
 
                     -- Currencies
                     for _, reward in ipairs(mission.rewards) do
-                        if reward.currencyID and reward.currencyID > 0 then
-                            if WQA.db.profile.options.missionTable.reward.currency[reward.currencyID] then
-                                local currency = {currencyID = reward.currencyID, amount = reward.quantity}
-                                self:AddRewardToMission(missionID, "CURRENCY", currency)
+                        if
+                            reward.currencyID and reward.currencyID > 0 and expTable.currency and
+                                expTable.currency[reward.currencyID]
+                         then
+                            local currency = {currencyID = reward.currencyID, amount = reward.quantity}
+                            self:AddRewardToMission(missionID, "CURRENCY", currency)
+                            addMission = true
+                        end
+                    end
+
+                    -- Reputation
+                    for _, reward in ipairs(mission.rewards) do
+                        if reward.itemID then
+                            local factionID = ReputationItemList[reward.itemID]
+                            if factionID and expTable.reputation and expTable.reputation[factionID] then
+                                local _, itemLink = GetItemInfo(reward.itemID)
+                                local reputation = {
+                                    itemLink = itemLink or ("Item " .. reward.itemID),
+                                    factionID = factionID
+                                }
+                                self:AddRewardToMission(missionID, "REPUTATION", reputation)
                                 addMission = true
                             end
                         end
                     end
 
-                    -- Items (reputation tokens + custom rewards)
-                    for _, reward in ipairs(mission.rewards) do
-                        if reward.itemID then
-                            local itemID = reward.itemID
-                            local _, itemLink = GetItemInfo(itemID)
-                            -- Reputation token
-                            local factionID = ReputationItemList[itemID]
-                            if factionID and WQA.db.profile.options.missionTable.reward.reputation[factionID] then
-                                local reputation = {itemLink = itemLink or ("Item " .. itemID), factionID = factionID}
-                                self:AddRewardToMission(missionID, "REPUTATION", reputation)
-                                addMission = true
-                            end
-
-                            -- CUSTOM MISSION REWARD
-                            if WQA.db.global.custom.missionReward and WQA.db.profile.custom.missionReward[itemID] then
-                                local displayName = itemLink or ("Item " .. itemID)
-                                local item = {itemLink = displayName}
+                    -- Mission Items
+                    if expTable.items then
+                        for _, reward in ipairs(mission.rewards) do
+                            if reward.itemID then
+                                local _, itemLink = GetItemInfo(reward.itemID)
+                                local item = {itemLink = itemLink or ("Item " .. reward.itemID)}
                                 self:AddRewardToMission(missionID, "ITEM", item)
                                 addMission = true
-                                retry = true -- force retry if name not cached
-                            end
-
-                            if not itemLink then
-                                retry = true
+                                if not itemLink then
+                                    retry = true -- retry later if item name not cached
+                                end
                             end
                         end
                     end
@@ -2737,7 +2539,35 @@ function WQA:CheckMissions()
         end
     end
 
-    return activeMissions -- always return the table (even if retry)
+    return activeMissions
+end
+
+function WQA:GetEffectiveMissionTracking(category, id, expKey)
+    local expTable = self.db.profile.options.missionTable.reward[expKey] or {}
+
+    if category == "rewardGold" then
+        return expTable.gold and "always" or "disabled"
+    elseif category == "rewardCurrency" then
+        if expTable.currency and expTable.currency[id] then
+            return "always"
+        else
+            return "disabled"
+        end
+    elseif category == "rewardReputation" then
+        if expTable.reputation and expTable.reputation[id] then
+            return "always"
+        else
+            return "disabled"
+        end
+    elseif category == "rewardItem" then
+        if expTable.item and expTable.item[id] then
+            return "always"
+        else
+            return "disabled"
+        end
+    end
+
+    return "disabled"
 end
 
 function WQA:isQuestPinActive(questID)

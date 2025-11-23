@@ -652,9 +652,16 @@ function WQA:CreateRewardOptions()
         childGroups = "tree",
         args = {}
     }
+
+    -- Ensure the currency DB table exists
+    WQA.db.profile.options.reward.currency = WQA.db.profile.options.reward.currency or {}
+
     for exp = 6, 11 do
-        if WQA.CurrencyIDList[exp] then
+        local currencyList = WQA.CurrencyIDList[exp]
+        if currencyList then
             local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+
+            -- Expansion group
             args.currencies.args["exp" .. exp] = {
                 type = "group",
                 name = expName,
@@ -663,14 +670,14 @@ function WQA:CreateRewardOptions()
             }
             local groupArgs = args.currencies.args["exp" .. exp].args
 
-            -- MASTER TOGGLE FOR CURRENCIES
+            -- Master toggle for all currencies in this expansion
             groupArgs["master_currency_" .. exp] = {
                 type = "toggle",
                 name = "|cffffd700Always Track ALL Currencies from " .. expName .. "|r",
                 width = "full",
                 order = 0,
                 get = function()
-                    for _, entry in ipairs(WQA.CurrencyIDList[exp]) do
+                    for _, entry in ipairs(currencyList) do
                         local id = type(entry) == "table" and entry.id or entry
                         if not WQA.db.profile.options.reward.currency[id] then
                             return false
@@ -679,7 +686,7 @@ function WQA:CreateRewardOptions()
                     return true
                 end,
                 set = function(_, val)
-                    for _, entry in ipairs(WQA.CurrencyIDList[exp]) do
+                    for _, entry in ipairs(currencyList) do
                         local id = type(entry) == "table" and entry.id or entry
                         WQA.db.profile.options.reward.currency[id] = val
                     end
@@ -689,13 +696,33 @@ function WQA:CreateRewardOptions()
 
             groupArgs["master_header_currency" .. exp] = {type = "header", name = "", order = -199}
 
-            for _, entry in ipairs(WQA.CurrencyIDList[exp]) do
+            -- Add per-currency toggles
+            for _, entry in ipairs(currencyList) do
                 local id = type(entry) == "table" and entry.id or entry
                 local faction = type(entry) == "table" and entry.faction or nil
+
+                -- Only show faction-appropriate currencies
                 if not faction or faction == UnitFactionGroup("player") then
+                    -- Set default if nil
+                    if WQA.db.profile.options.reward.currency[id] == nil then
+                        WQA.db.profile.options.reward.currency[id] = true
+                    end
+
+                    -- Add the toggle
                     local info = C_CurrencyInfo.GetCurrencyInfo(id)
                     local name = info and info.name or ("Currency " .. id)
-                    AddRewardLine(groupArgs, id, name, "rewardCurrency", exp)
+                    groupArgs[tostring(id)] = {
+                        type = "toggle",
+                        name = name,
+                        order = newOrder(),
+                        get = function()
+                            return WQA.db.profile.options.reward.currency[id]
+                        end,
+                        set = function(_, val)
+                            WQA.db.profile.options.reward.currency[id] = val
+                            WQA:RefreshTracking()
+                        end
+                    }
                 end
             end
         end
@@ -809,135 +836,166 @@ function WQA:CreateRewardOptions()
         end
     end
 
-    -- Mission Table (Warlords to Shadowlands — gold + currencies + custom rewards)
+    -- Mission Table
     args.missionTable = {
         type = "group",
         name = L["Mission Table"] or "Mission Table",
-        order = newOrder(10),
+        order = newOrder(15),
         childGroups = "tree",
         args = {}
     }
 
-    for exp = 6, 9 do
+    for expIndex = 6, 9 do
+        local exp = expIndex -- ensures `exp` is a number
         local expName = ExpansionNames[exp] or ("Expansion " .. exp)
         args.missionTable.args["exp" .. exp] = {
             type = "group",
             name = expName,
             order = exp,
-            args = {
-                master = {
-                    type = "toggle",
-                    name = "|cffffd700Always Track ALL " .. expName .. " Missions|r",
-                    width = "full",
-                    order = 0,
-                    get = function()
-                        local expTable = WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        if not expTable.gold then
-                            return false
-                        end
-                        for _, entry in ipairs(WQA.CurrencyIDList[exp] or {}) do
-                            local id = type(entry) == "table" and entry.id or entry
-                            if not WQA.db.profile.options.missionTable.reward.currency[id] then
-                                return false
-                            end
-                        end
-                        return true
-                    end,
-                    set = function(_, val)
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp] =
-                            WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp].gold = val
-                        for _, entry in ipairs(WQA.CurrencyIDList[exp] or {}) do
-                            local id = type(entry) == "table" and entry.id or entry
-                            WQA.db.profile.options.missionTable.reward.currency[id] = val
-                        end
-                        WQA:RefreshTracking()
-                    end
-                },
-                header = {type = "header", name = "", order = -199},
-                gold = {
-                    type = "toggle",
-                    name = L["Gold"],
-                    order = newOrder(),
-                    get = function()
-                        local expTable = WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        return expTable.gold or false
-                    end,
-                    set = function(_, val)
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp] =
-                            WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp].gold = val
-                        WQA:RefreshTracking()
-                    end
-                },
-                goldMin = {
-                    name = L["minimum Gold"],
-                    type = "input",
-                    order = newOrder(),
-                    get = function()
-                        local expTable = WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        return tostring(expTable.goldMin or 0)
-                    end,
-                    set = function(_, val)
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp] =
-                            WQA.db.profile.options.missionTable.reward["exp" .. exp] or {}
-                        WQA.db.profile.options.missionTable.reward["exp" .. exp].goldMin = tonumber(val) or 0
-                        WQA:RefreshTracking()
-                    end
-                }
-            }
+            args = {}
         }
 
-        -- Currencies for this expansion
-        if WQA.CurrencyIDList[exp] then
-            local groupArgs = args.missionTable.args["exp" .. exp].args
-            groupArgs.currency = {
-                type = "group",
-                name = L["Currencies"],
-                inline = true,
-                order = newOrder(),
-                args = {}
-            }
-            for _, entry in ipairs(WQA.CurrencyIDList[exp]) do
-                local id = type(entry) == "table" and entry.id or entry
-                local info = C_CurrencyInfo.GetCurrencyInfo(id)
-                local name = info and info.name or ("Currency " .. id)
-                groupArgs.currency.args[tostring(id)] = {
-                    type = "toggle",
-                    name = name,
-                    order = newOrder(),
-                    get = function()
-                        return WQA.db.profile.options.missionTable.reward.currency[id]
-                    end,
-                    set = function(_, val)
-                        WQA.db.profile.options.missionTable.reward.currency[id] = val
-                        WQA:RefreshTracking()
-                    end
-                }
-            end
+        local groupArgs = args.missionTable.args["exp" .. exp].args
+
+        -- Initialize reward tables if missing
+        local expTable = WQA.db.profile.options.missionTable.reward["exp" .. exp]
+        if not expTable then
+            expTable = {gold = false, currency = {}, reputation = {}, items = false}
+            WQA.db.profile.options.missionTable.reward["exp" .. exp] = expTable
+        else
+            expTable.currency = expTable.currency or {}
+            expTable.reputation = expTable.reputation or {}
+            expTable.items = expTable.items or false
         end
 
-        -- Custom mission rewards (added by user)
-        if WQA.db.global.custom.missionReward then
-            local groupArgs = args.missionTable.args["exp" .. exp].args
-            groupArgs.customReward = {
-                type = "group",
-                name = L["Custom Rewards"] or "Custom Rewards",
-                inline = true,
-                order = newOrder(),
-                args = {}
-            }
-            for itemID in pairs(WQA.db.global.custom.missionReward) do
-                local _, link = GetItemInfo(itemID)
-                groupArgs.customReward.args[tostring(itemID)] = {
+        -- MASTER TOGGLE FOR ALL REWARDS (Top)
+        groupArgs["master_all_" .. exp] = {
+            type = "toggle",
+            name = "|cffffd700Always Track ALL Mission Table Rewards for " .. expName .. "|r",
+            width = "full",
+            order = 0,
+            get = function()
+                -- Gold
+                if not expTable.gold then
+                    return false
+                end
+
+                -- Currencies
+                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
+                    local id = type(v) == "table" and v.id or v
+                    if not expTable.currency[id] then
+                        return false
+                    end
+                end
+
+                -- Reputation
+                for id, tracked in pairs(expTable.reputation) do
+                    if not tracked then
+                        return false
+                    end
+                end
+
+                -- Items
+                if not expTable.items then
+                    return false
+                end
+
+                return true
+            end,
+            set = function(_, val)
+                -- Gold
+                expTable.gold = val
+
+                -- Currencies
+                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
+                    local id = type(v) == "table" and v.id or v
+                    expTable.currency[id] = val
+                end
+
+                -- Reputation
+                for id, _ in pairs(expTable.reputation) do
+                    expTable.reputation[id] = val
+                end
+
+                -- Items
+                expTable.items = val
+
+                WQA:RefreshTracking()
+            end
+        }
+
+        -- MASTER TOGGLE FOR GOLD
+        groupArgs["master_gold_" .. exp] = {
+            type = "toggle",
+            name = "|cffffd700Always Track GOLD from " .. expName .. "|r",
+            width = "full",
+            order = 0,
+            get = function()
+                return expTable.gold
+            end,
+            set = function(_, val)
+                expTable.gold = val
+                WQA:RefreshTracking()
+            end
+        }
+
+        -- MASTER TOGGLE FOR CURRENCIES
+        groupArgs["master_currency_" .. exp] = {
+            type = "toggle",
+            name = "|cffffd700Always Track Currencies from " .. expName .. "|r",
+            width = "full",
+            order = 1,
+            get = function()
+                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
+                    local id = type(v) == "table" and v.id or v
+                    if not expTable.currency[id] then
+                        return false
+                    end
+                end
+                return true
+            end,
+            set = function(_, val)
+                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
+                    local id = type(v) == "table" and v.id or v
+                    expTable.currency[id] = val
+                end
+                WQA:RefreshTracking()
+            end
+        }
+
+        -- MASTER TOGGLE FOR MISSION ITEMS
+        groupArgs["master_items_" .. exp] = {
+            type = "toggle",
+            name = "|cffffd700Always Track Mission Items from " .. expName .. "|r",
+            width = "full",
+            order = 2,
+            get = function()
+                return expTable.items
+            end,
+            set = function(_, val)
+                expTable.items = val
+                WQA:RefreshTracking()
+            end
+        }
+
+        -- INDIVIDUAL CURRENCY TOGGLES
+        for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
+            local id = type(v) == "table" and v.id or v
+            local faction = type(v) == "table" and v.faction or nil
+            if not faction or faction == UnitFactionGroup("player") then
+                if expTable.currency[id] == nil then
+                    expTable.currency[id] = true
+                end
+
+                groupArgs["currency_" .. id] = {
                     type = "toggle",
-                    name = link or ("Item " .. itemID),
-                    order = newOrder(),
+                    name = C_CurrencyInfo.GetCurrencyLink(id) or ("Currency " .. id),
+                    order = id,
                     get = function()
-                        return WQA.db.profile.custom.missionReward[itemID]
+                        return expTable.currency[id]
                     end,
                     set = function(_, val)
-                        WQA.db.profile.custom.missionReward[itemID] = val
+                        expTable.currency[id] = val
                         WQA:RefreshTracking()
                     end
                 }
