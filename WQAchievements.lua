@@ -356,7 +356,6 @@ function WQA:OnEnable()
 
     -- Event frame
     self.event = CreateFrame("Frame")
-    self.event:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
     self.event:RegisterEvent("GARRISON_MISSION_LIST_UPDATE")
     self.event:RegisterEvent("QUEST_TURNED_IN")
@@ -441,7 +440,7 @@ function WQA:OnEnable()
     end
 
     local function OnEvent(frame, event, questID)
-        if event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+        if event == "PLAYER_ENTERING_WORLD" then
             if WQA.timer then
                 WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
             end
@@ -499,16 +498,28 @@ end
 WQA:RegisterChatCommand("wqa", "slash")
 function WQA:slash(input)
     local arg1 = string.lower(input or "")
+
+    -- OPEN OPTIONS PANEL
+    if arg1 == "options" then
+        if self.optionsFrame then
+            LibStub("AceConfigDialog-3.0"):Open("WQAchievements")
+        end
+        return
+    end
+
+    -- SKIP SCAN IF IN COMBAT OR INSTANCE
     if not ShouldScan() then
         print("|cffff0000[WQA] Scan skipped - in instance or combat|r")
         return
     end
 
+    -- SKIP IF NOTHING TRACKED
     if not AnythingTracked() then
         print("|cffff0000[WQA] Nothing tracked - no scan|r")
         return
     end
 
+    -- HANDLE DEFAULT SCAN MODES
     if arg1 == "" then
         self:Show()
     elseif arg1 == "new" then
@@ -2100,6 +2111,11 @@ function WQA:GetRewardTextByID(questID, key, value, i, type)
         end
     elseif k == "item" then
         text = self:GetRewardForID(questID, k, type)
+    elseif rewardType == "racingPurse" then
+        local purseName =
+            WQA.db.profile.options.racingPurses[rewardValue] and WQA.RacingPursesList[rewardValue] or
+            ("Racing Purse " .. rewardValue)
+        return purseName
     elseif k == "reputation" then
         if v.itemLink then
             text = self:GetRewardLinkByID(questID, k, v, i)
@@ -2140,6 +2156,8 @@ function WQA:GetRewardLinkByID(questID, key, value, i)
         return nil
     elseif k == "item" then
         link = v.itemLink
+    elseif rewardType == "racingPurse" then
+        return "item:" .. rewardValue
     elseif k == "reputation" then
         if v.itemLink then
             link = v.itemLink

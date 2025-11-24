@@ -50,328 +50,276 @@ end
 
 function WQA:UpdateQTip(tasks)
     local tooltip = self.tooltip
+    if not tooltip then
+        return
+    end
+
     if next(tasks) == nil then
         tooltip:AddLine(L["NO_QUESTS"])
-    else
-        tooltip.quests = tooltip.quests or {}
-        tooltip.missions = tooltip.missions or {}
-        tooltip.pois = tooltip.pois or {}
+        tooltip:Show()
+        return
+    end
 
-        local i = tooltip:GetLineCount()
-        local expansion, zoneID
-        for _, task in ipairs(tasks) do
-            local id = task.id
-            if
-                (task.type == "WORLD_QUEST" and not tooltip.quests[id]) or
-                    (task.type == "MISSION" and not tooltip.missions[id]) or
-                    (task.type == "AREA_POI" and not tooltip.pois[id])
-             then
-                local j = 1
+    tooltip.quests = tooltip.quests or {}
+    tooltip.missions = tooltip.missions or {}
+    tooltip.pois = tooltip.pois or {}
 
-                if self.db.profile.options.popupShowExpansion then
-                    j = 2
-                    if self:GetExpansion(task) ~= expansion then
-                        expansion = self:GetExpansion(task)
-                        tooltip:AddLine(string.format("|cff33ff33%s|r", self:GetExpansionName(expansion)))
-                        i = i + 1
-                        zoneID = nil
-                    end
+    local i = tooltip:GetLineCount()
+    local expansion, zoneID
+
+    local function AddRewardLine(id, category)
+        local safeName
+        local tooltipLink = nil
+
+        if category == "rewardEmissary" then
+            safeName = C_QuestLog.GetTitleForQuestID(id) or ("Emissary " .. id)
+
+            -- Try to fetch emissary reward (often a cache item)
+            local rewardItemID = C_QuestLog.GetQuestRewardItemID(id)
+            if rewardItemID then
+                tooltipLink = "item:" .. rewardItemID
+            end
+        elseif category == "rewardCurrency" then
+            local info = C_CurrencyInfo.GetCurrencyInfo(id)
+            safeName = info and info.name or ("Currency " .. id)
+            tooltipLink = "currency:" .. id
+        elseif category == "rewardItem" then
+            safeName = C_Item.GetItemNameByID(id) or ("Item " .. id)
+            tooltipLink = "item:" .. id
+        else
+            safeName = "Unknown"
+        end
+
+        return safeName, tooltipLink
+    end
+
+    for _, task in ipairs(tasks) do
+        local id = task.id
+        if
+            (task.type == "WORLD_QUEST" and not tooltip.quests[id]) or
+                (task.type == "MISSION" and not tooltip.missions[id]) or
+                (task.type == "AREA_POI" and not tooltip.pois[id])
+         then
+            local j = 1
+
+            -- Expansion header
+            if self.db.profile.options.popupShowExpansion then
+                j = 2
+                local taskExp = self:GetExpansion(task)
+                if taskExp ~= expansion then
+                    expansion = taskExp
+                    tooltip:AddLine(string.format("|cff33ff33%s|r", self:GetExpansionName(expansion)))
+                    i = i + 1
+                    zoneID = nil
                 end
+            end
 
-                tooltip:AddLine()
-                i = i + 1
+            tooltip:AddLine()
+            i = i + 1
 
-                if self.db.profile.options.popupShowZone then
-                    j = 2
-                    if self:GetTaskZoneID(task) ~= zoneID then
-                        zoneID = self:GetTaskZoneID(task)
-                        tooltip:SetCell(i, 1, "     " .. self:GetTaskZoneName(task))
-                    end
+            -- Zone header
+            if self.db.profile.options.popupShowZone then
+                j = 2
+                local taskZone = self:GetTaskZoneID(task)
+                if taskZone ~= zoneID then
+                    zoneID = taskZone
+                    tooltip:SetCell(i, 1, "     " .. self:GetTaskZoneName(task))
                 end
+            end
 
-                if self.db.profile.options.popupShowTime then
-                    tooltip:SetCell(i, j, self:formatTime(self:GetTaskTime(task)))
-                    j = j + 1
-                end
+            -- Time remaining
+            if self.db.profile.options.popupShowTime then
+                tooltip:SetCell(i, j, self:formatTime(self:GetTaskTime(task)))
+                j = j + 1
+            end
 
-                if task.type == "WORLD_QUEST" then
-                    tooltip.quests[id] = true
-                elseif task.type == "MISSION" then
-                    tooltip.missions[id] = true
-                end
+            -- Mark as processed
+            if task.type == "WORLD_QUEST" then
+                tooltip.quests[id] = true
+            elseif task.type == "MISSION" then
+                tooltip.missions[id] = true
+            end
 
-                local link = self:GetTaskLink(task)
-                tooltip:SetCell(i, j, link)
+            local link = self:GetTaskLink(task)
+            tooltip:SetCell(i, j, link)
 
-                tooltip:SetCellScript(
-                    i,
-                    j,
-                    "OnEnter",
-                    function(self)
-                        GameTooltip_SetDefaultAnchor(GameTooltip, self)
-                        GameTooltip:ClearLines()
-                        GameTooltip:ClearAllPoints()
-                        GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-                        if task.type == "WORLD_QUEST" then
-                            if string.find(link, "|Hquest:") then
-                                GameTooltip:SetHyperlink(link)
-                            end
-                        elseif task.type == "MISSION" then
-                            GameTooltip:SetText(C_Garrison.GetMissionName(id))
-                            GameTooltip:AddLine(
-                                string.format(
-                                    GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS,
-                                    C_Garrison.GetMissionMaxFollowers(id)
-                                ),
-                                1,
-                                1,
-                                1
-                            )
-                            GarrisonMissionButton_AddThreatsToTooltip(
-                                id,
-                                WQA.missionList[task.id].followerType,
-                                false,
-                                C_Garrison.GetFollowerAbilityCountersForMechanicTypes(
-                                    WQA.missionList[task.id].followerType
-                                )
-                            )
-                            GameTooltip:AddLine(GARRISON_MISSION_AVAILABILITY)
-                            GameTooltip:AddLine(WQA.missionList[task.id].offerTimeRemaining, 1, 1, 1)
-                            if not C_Garrison.IsPlayerInGarrison(WQA.missionList[task.id].followerType) then
-                                GameTooltip:AddLine(" ")
-                                GameTooltip:AddLine(
-                                    GarrisonFollowerOptions[WQA.missionList[task.id].followerType].strings.RETURN_TO_START,
-                                    nil,
-                                    nil,
-                                    nil,
-                                    1
-                                )
-                            end
-                        elseif task.type == "AREA_POI" then
-                            local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(task.mapId, task.id)
-
-                            GameTooltip_SetTitle(GameTooltip, poiInfo.name, HIGHLIGHT_FONT_COLOR)
-
-                            if poiInfo.description then
-                                GameTooltip_AddNormalLine(GameTooltip, poiInfo.description)
-                            end
-
-                            if C_AreaPoiInfo.IsAreaPOITimed(poiInfo.areaPoiID) then
-                                local secondsLeft = C_AreaPoiInfo.GetAreaPOISecondsLeft(poiInfo.areaPoiID)
-                                if secondsLeft and secondsLeft > 0 then
-                                    local timeString = SecondsToTime(secondsLeft)
-                                    GameTooltip_AddNormalLine(GameTooltip, BONUS_OBJECTIVE_TIME_LEFT:format(timeString))
-                                end
-                            end
-
-                            if poiInfo.textureKit == "OribosGreatVault" then
-                                GameTooltip_AddBlankLineToTooltip(GameTooltip)
-                                GameTooltip_AddInstructionLine(GameTooltip, ORIBOS_GREAT_VAULT_POI_TOOLTIP_INSTRUCTIONS)
-                            end
-
-                            if poiInfo.widgetSetID then
-                                GameTooltip_AddWidgetSet(GameTooltip, poiInfo.widgetSetID, 10)
-                            end
-
-                            if poiInfo.textureKit then
-                                local backdropStyle = GAME_TOOLTIP_TEXTUREKIT_BACKDROP_STYLES[poiInfo.textureKit]
-                                if (backdropStyle) then
-                                    SharedTooltip_SetBackdropStyle(GameTooltip, backdropStyle)
-                                end
-                            end
+            tooltip:SetCellScript(
+                i,
+                j,
+                "OnEnter",
+                function(self)
+                    GameTooltip_SetDefaultAnchor(GameTooltip, self)
+                    GameTooltip:ClearLines()
+                    GameTooltip:ClearAllPoints()
+                    GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+                    if task.type == "WORLD_QUEST" and string.find(link, "|Hquest:") then
+                        GameTooltip:SetHyperlink(link)
+                    elseif task.type == "MISSION" then
+                        GameTooltip:SetText(C_Garrison.GetMissionName(id))
+                        GameTooltip:AddLine(
+                            string.format(
+                                GARRISON_MISSION_TOOLTIP_NUM_REQUIRED_FOLLOWERS,
+                                C_Garrison.GetMissionMaxFollowers(id)
+                            ),
+                            1,
+                            1,
+                            1
+                        )
+                        GarrisonMissionButton_AddThreatsToTooltip(
+                            id,
+                            WQA.missionList[task.id].followerType,
+                            false,
+                            C_Garrison.GetFollowerAbilityCountersForMechanicTypes(WQA.missionList[task.id].followerType)
+                        )
+                        GameTooltip:AddLine(GARRISON_MISSION_AVAILABILITY)
+                        GameTooltip:AddLine(WQA.missionList[task.id].offerTimeRemaining, 1, 1, 1)
+                    elseif task.type == "AREA_POI" then
+                        local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(task.mapId, task.id)
+                        GameTooltip_SetTitle(GameTooltip, poiInfo.name, HIGHLIGHT_FONT_COLOR)
+                        if poiInfo.description then
+                            GameTooltip_AddNormalLine(GameTooltip, poiInfo.description)
                         end
-                        GameTooltip:Show()
                     end
-                )
-                tooltip:SetCellScript(
-                    i,
-                    j,
-                    "OnLeave",
-                    function()
-                        GameTooltip:Hide()
+                    GameTooltip:Show()
+                end
+            )
+
+            tooltip:SetCellScript(
+                i,
+                j,
+                "OnLeave",
+                function()
+                    GameTooltip:Hide()
+                end
+            )
+            tooltip:SetCellScript(
+                i,
+                j,
+                "OnMouseDown",
+                function()
+                    HandleModifiedItemClick(link)
+                end
+            )
+
+            -- Collect reward list
+            local list = {}
+            if task.type == "WORLD_QUEST" and WQA.questList[id] and WQA.questList[id].reward then
+                list = WQA.questList[id].reward
+                -- racing purses
+                local exp = self:GetExpansion(task)
+                if WQA.RacingPursesByExp[exp] then
+                    list.racingPurse = list.racingPurse or {}
+                    for _, itemID in ipairs(WQA.RacingPursesByExp[exp]) do
+                        list.racingPurse[itemID] = 1
                     end
-                )
-                tooltip:SetCellScript(
-                    i,
-                    j,
-                    "OnMouseDown",
-                    function()
-                        if ChatEdit_TryInsertChatLink(link) ~= true then
-                            if task.type == "WORLD_QUEST" and not (self.questPinList[id] or self.questFlagList[id]) then
-                                if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
-                                    if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
-                                        WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
-                                        WQA:ScheduleTimer(
-                                            function()
-                                                WorldQuestTrackerAddon:FullTrackerUpdate()
-                                            end,
-                                            .5
-                                        )
+                end
+            elseif task.type == "MISSION" then
+                list = WQA.missionList[id] and WQA.missionList[id].reward or {}
+            elseif task.type == "AREA_POI" then
+                list = WQA.Criterias.AreaPoi.list[task.id][task.mapId].reward or {}
+            end
+
+            -- Render rewards
+            for k, v in pairs(list) do
+                for n = 1, 3 do
+                    if n == 1 or (n > 1 and (k == "achievement" or k == "chance" or k == "azeriteTraits")) then
+                        local text = self:GetRewardTextByID(id, k, v, n, task.type)
+                        if text then
+                            j = j + 1
+
+                            -- Ensure tooltip has enough columns
+                            while j > tooltip:GetColumnCount() do
+                                tooltip:AddColumn()
+                            end
+
+                            tooltip:SetCell(i, j, text)
+
+                            tooltip:SetCellScript(
+                                i,
+                                j,
+                                "OnEnter",
+                                function(self)
+                                    GameTooltip:SetOwner(self, "ANCHOR_NONE")
+                                    GameTooltip:ClearLines()
+                                    GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+
+                                    local link = WQA:GetRewardLinkByID(id, k, v, n)
+                                    if link and link ~= "" then
+                                        GameTooltip:SetHyperlink(link)
                                     else
-                                        local _, _, numObjectives = GetTaskInfo(id)
-                                        local widget = {
-                                            questID = id,
-                                            mapID = self:GetQuestZoneID(id),
-                                            numObjectives = numObjectives
-                                        }
-                                        zoneID = self:GetQuestZoneID(id)
-                                        local x, y = C_TaskQuest.GetQuestLocation(id, zoneID)
-                                        widget.questX, widget.questY = x or 0, y or 0
-                                        widget.IconTexture = GetIconTexture(id)
-                                        local function f(widget)
-                                            if not widget.IconTexture then
-                                                WQA:ScheduleTimer(
-                                                    function()
-                                                        widget.IconTexture = GetIconTexture(id)
-                                                        f(widget)
-                                                    end,
-                                                    1.5
-                                                )
-                                            else
-                                                WorldQuestTrackerAddon.AddQuestToTracker(widget)
-                                                WQA:ScheduleTimer(
-                                                    function()
-                                                        WorldQuestTrackerAddon:FullTrackerUpdate()
-                                                    end,
-                                                    .5
-                                                )
-                                            end
+                                        local text = WQA:GetRewardTextByID(id, k, v, n, task.type)
+                                        if text then
+                                            GameTooltip:SetText(text)
                                         end
-                                        f(widget)
                                     end
-                                else
-                                    if not C_QuestLog.AddWorldQuestWatch(id, 1) then
-                                        C_QuestLog.RemoveWorldQuestWatch(id)
-                                    end
+                                    GameTooltip:Show()
                                 end
-                            end
-                        end
-                    end
-                )
+                            )
 
-                local list
-                if task.type == "WORLD_QUEST" then
-                    list = WQA.questList[id].reward
-                elseif task.type == "MISSION" then
-                    list = WQA.missionList[id].reward
-                elseif task.type == "AREA_POI" then
-                    list = WQA.Criterias.AreaPoi.list[task.id][task.mapId].reward
-                end
-
-                local more = false
-                for k, v in pairs(list) do
-                    for n = 1, 3 do
-                        if n == 1 or (n > 1 and (k == "achievement" or k == "chance" or k == "azeriteTraits")) then
-                            local text = self:GetRewardTextByID(id, k, v, n, task.type)
-                            if text then
-                                j = j + 1
-
-                                if j > tooltip:GetColumnCount() then
-                                    tooltip:AddColumn()
+                            tooltip:SetCellScript(
+                                i,
+                                j,
+                                "OnLeave",
+                                function()
+                                    GameTooltip_HideResetCursor()
                                 end
-                                tooltip:SetCell(i, j, text)
+                            )
+                            tooltip:SetCellScript(
+                                i,
+                                j,
+                                "OnMouseDown",
+                                function()
+                                    HandleModifiedItemClick(WQA:GetRewardLinkByID(id, k, v, n))
+                                end
+                            )
 
-                                tooltip:SetCellScript(
-                                    i,
-                                    j,
-                                    "OnEnter",
-                                    function(self)
-                                        GameTooltip:SetOwner(self, "ANCHOR_NONE")
-                                        GameTooltip:ClearLines()
-                                        ContainerFrameItemButton_CalculateItemTooltipAnchors(self, GameTooltip)
+                            -- Handle "more" rewards for n == 3
+                            if n == 3 then
+                                local m = 4
+                                if self:GetRewardTextByID(id, k, v, m, task.type) then
+                                    j = j + 1
 
-                                        local link = WQA:GetRewardLinkByID(id, k, v, n)
-                                        if link and link ~= "" then
-                                            GameTooltip:SetHyperlink(link)
+                                    while j > tooltip:GetColumnCount() do
+                                        tooltip:AddColumn()
+                                    end
+
+                                    tooltip:SetCell(i, j, "...")
+
+                                    local moreTooltipText = ""
+                                    while self:GetRewardTextByID(id, k, v, m, task.type) do
+                                        if m == 4 then
+                                            moreTooltipText =
+                                                moreTooltipText .. self:GetRewardTextByID(id, k, v, m, task.type)
                                         else
-                                            -- Fallback for currency/gold (our custom string) — still show tooltip via text
-                                            local text = WQA:GetRewardTextByID(id, k, v, n, task.type)
-                                            if text then
-                                                -- Extract item/currency ID if possible and try to show proper tooltip
-                                                local itemID = text:match("item:(%d+)")
-                                                local currencyID = text:match("currency:(%d+)")
-                                                if itemID then
-                                                    GameTooltip:SetItemByID(tonumber(itemID))
-                                                elseif currencyID then
-                                                    GameTooltip:SetCurrencyByID(tonumber(currencyID))
-                                                else
-                                                    GameTooltip:SetText(text, 1, 1, 1, 1, true)
-                                                end
-                                            end
+                                            moreTooltipText =
+                                                moreTooltipText ..
+                                                "\n" .. self:GetRewardTextByID(id, k, v, m, task.type)
                                         end
+                                        m = m + 1
+                                    end
 
-                                        -- Compare items on shift-click (for gear)
-                                        if
-                                            (IsModifiedClick("COMPAREITEMS") or GetCVarBool("alwaysCompareItems")) and
-                                                k == "item"
-                                         then
-                                            GameTooltip_ShowCompareItem()
-                                        else
-                                            GameTooltip_HideShoppingTooltips(GameTooltip)
+                                    tooltip:SetCellScript(
+                                        i,
+                                        j,
+                                        "OnEnter",
+                                        function(self)
+                                            GameTooltip_SetDefaultAnchor(GameTooltip, self)
+                                            GameTooltip:ClearLines()
+                                            GameTooltip:ClearAllPoints()
+                                            GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+                                            GameTooltip:SetText(moreTooltipText)
+                                            GameTooltip:Show()
                                         end
+                                    )
 
-                                        GameTooltip:Show()
-                                    end
-                                )
-                                tooltip:SetCellScript(
-                                    i,
-                                    j,
-                                    "OnLeave",
-                                    function()
-                                        GameTooltip_HideResetCursor()
-                                    end
-                                )
-                                tooltip:SetCellScript(
-                                    i,
-                                    j,
-                                    "OnMouseDown",
-                                    function()
-                                        HandleModifiedItemClick(WQA:GetRewardLinkByID(id, k, v, n))
-                                    end
-                                )
-                                if n == 3 then
-                                    local m = 4
-                                    if self:GetRewardTextByID(id, k, v, m, task.type) then
-                                        j = j + 1
-                                        if j > tooltip:GetColumnCount() then
-                                            tooltip:AddColumn()
+                                    tooltip:SetCellScript(
+                                        i,
+                                        j,
+                                        "OnLeave",
+                                        function()
+                                            GameTooltip:Hide()
                                         end
-                                        tooltip:SetCell(i, j, "...")
-                                        local moreTooltipText = ""
-                                        while self:GetRewardTextByID(id, k, v, m, task.type) do
-                                            if m == 4 then
-                                                moreTooltipText =
-                                                    moreTooltipText .. self:GetRewardTextByID(id, k, v, m, task.type)
-                                            else
-                                                moreTooltipText =
-                                                    moreTooltipText ..
-                                                    "\n" .. self:GetRewardTextByID(id, k, v, m, task.type)
-                                            end
-                                            m = m + 1
-                                        end
-
-                                        tooltip:SetCellScript(
-                                            i,
-                                            j,
-                                            "OnEnter",
-                                            function(self)
-                                                GameTooltip_SetDefaultAnchor(GameTooltip, self)
-                                                GameTooltip:ClearLines()
-                                                GameTooltip:ClearAllPoints()
-                                                GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
-                                                GameTooltip:SetText(moreTooltipText)
-                                                GameTooltip:Show()
-                                            end
-                                        )
-                                        tooltip:SetCellScript(
-                                            i,
-                                            j,
-                                            "OnLeave",
-                                            function()
-                                                GameTooltip:Hide()
-                                            end
-                                        )
-                                    end
+                                    )
                                 end
                             end
                         end
@@ -381,6 +329,16 @@ function WQA:UpdateQTip(tasks)
         end
     end
     tooltip:Show()
+    tooltip:SetScript(
+        "OnHide",
+        function()
+            WQA.lastTooltipData = {
+                quests = tooltip.quests,
+                missions = tooltip.missions,
+                pois = tooltip.pois
+            }
+        end
+    )
 end
 
 function WQA:AnnouncePopUp(quests, silent)
@@ -401,31 +359,30 @@ function WQA:AnnouncePopUp(quests, silent)
             end
         )
 
-        -- ESC closes window
         if WQA.db.profile.options.esc then
             tinsert(UISpecialFrames, PopUp:GetName())
         end
 
+        -- Scroll frame
         local scroll = CreateFrame("ScrollFrame", nil, PopUp, "UIPanelScrollFrameTemplate")
         scroll:SetPoint("TOPLEFT", 9, -30)
         scroll:SetPoint("BOTTOMRIGHT", -14, 13)
         scroll:SetClipsChildren(true)
 
-        -- Content frame — tooltip is placed inside here
+        -- Content frame inside scroll frame
         local content = CreateFrame("Frame", nil, scroll)
-        content:SetSize(500, 20)
+        content:SetSize(500, 20) -- initial height, width will be set dynamically
         scroll:SetScrollChild(content)
 
+        -- Close button
         PopUp.close = CreateFrame("Button", nil, PopUp, "UIPanelCloseButton")
         PopUp.close:SetPoint("TOPRIGHT", -4, -4)
 
-        -- Assign
         self.PopUp = PopUp
         self.PopUp.content = content
         self.PopUp.scroll = scroll
     end
 
-    -- no quests and silent → don't show popup
     if not next(quests) and silent then
         return
     end
@@ -434,36 +391,47 @@ function WQA:AnnouncePopUp(quests, silent)
     PopUp:Show()
     PopUp.shown = true
 
+    -- Create tooltip
     self:CreateQTip()
+
+    -- Reset tooltip parent to content frame
     self.tooltip:ClearAllPoints()
     self.tooltip:SetParent(PopUp.content)
-    self.tooltip:SetPoint("TOPLEFT")
-    self.tooltip:SetPoint("TOPRIGHT")
+    self.tooltip:SetPoint("TOPLEFT", PopUp.content, "TOPLEFT")
+    self.tooltip:SetPoint("TOPRIGHT", PopUp.content, "TOPRIGHT")
 
-    -- fill tooltip with quest data
+    -- Fill tooltip
     self:UpdateQTip(quests)
 
-    local tooltipHeight = self.tooltip:GetHeight()
-    PopUp.content:SetHeight(tooltipHeight + 20)
-
-    local scrollbar = PopUp.scroll.ScrollBar or PopUp.scroll.scrollBar
-    if scrollbar then
-        scrollbar:ClearAllPoints()
-        scrollbar:SetPoint("TOPLEFT", PopUp.scroll, "TOPRIGHT", -12, -18)
-        scrollbar:SetPoint("BOTTOMLEFT", PopUp.scroll, "BOTTOMRIGHT", -12, 18)
-    end
-
+    -- Get scaled dimensions
+    local scale = WQA.db.profile.options.popupScale or 1.0
     local width = WQA.db.profile.options.popupWidth or 600
     local maxHeight = WQA.db.profile.options.popupMaxHeight or 700
-    local scale = WQA.db.profile.options.popupScale or 1.0
 
-    PopUp:SetWidth(width * scale)
+    -- Set PopUp size
+    local scaledWidth = width * scale
+    local tooltipHeight = self.tooltip:GetHeight()
+    PopUp:SetWidth(scaledWidth)
     PopUp:SetHeight(math.min(tooltipHeight + 100, maxHeight) * scale)
     PopUp:SetScale(scale)
 
-    -- Apply content width relative to frame width
-    PopUp.content:SetWidth(width - 50)
+    -- Adjust content width to match scroll area flush with scrollbar
+    local leftInset, rightInset = 9, 14
+    local scrollbarWidth = PopUp.scroll.ScrollBar and PopUp.scroll.ScrollBar:GetWidth() or 16
+    PopUp.content:SetWidth(scaledWidth - leftInset - rightInset - scrollbarWidth)
 
+    -- Adjust content height to fit tooltip
+    PopUp.content:SetHeight(tooltipHeight + 20)
+
+    -- Fix scrollbar position
+    local scrollbar = PopUp.scroll.ScrollBar or PopUp.scroll.scrollBar
+    if scrollbar then
+        scrollbar:ClearAllPoints()
+        scrollbar:SetPoint("TOPLEFT", PopUp.scroll, "TOPRIGHT", -scrollbarWidth, -18)
+        scrollbar:SetPoint("BOTTOMLEFT", PopUp.scroll, "BOTTOMRIGHT", -scrollbarWidth, 18)
+    end
+
+    -- Remember position
     if WQA.db.profile.options.popupRememberPosition then
         PopUp:ClearAllPoints()
         PopUp:SetPoint(

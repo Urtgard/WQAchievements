@@ -184,6 +184,19 @@ WQA.EmissaryQuestIDList = {
     }
 }
 
+WQA.RacingPursesByExp = {
+    [10] = {204359, 205226, 210549}, -- Dragonflight
+    [11] = {227450, 199192} -- The War Within
+}
+
+WQA.RacingPursesList = {
+    [227450] = "Sky Racer's Purse",
+    [199192] = "Dragon Racer's Purse",
+    [204359] = "Reach Racer's Purse",
+    [205226] = "Cavern Racer's Purse",
+    [210549] = "Dream Racer's Purse"
+}
+
 -- Shared order counter
 local order = 0
 local function newOrder(inc)
@@ -562,6 +575,77 @@ function WQA:CreateRewardOptions()
         }
     }
 
+    --Skyriding Raceing Purses
+    --[[WQA.db.profile.options.reward = WQA.db.profile.options.reward or {}
+    WQA.db.profile.options.reward.racingPurses = WQA.db.profile.options.reward.racingPurses or {}
+    local RPDB = WQA.db.profile.options.reward.racingPurses
+
+    -- Racing Purses top-level group (like Reputation)
+    args.racingPurses = {
+        type = "group",
+        name = "|cffffd700Racing Purses|r",
+        order = -10, -- top of options
+        childGroups = "tree",
+        args = {}
+    }
+
+    for exp, purses in pairs(WQA.RacingPursesByExp) do
+        local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+
+        -- Create expansion group
+        args.racingPurses.args["exp" .. exp] = {
+            type = "group",
+            name = expName,
+            order = exp,
+            args = {}
+        }
+        local groupArgs = args.racingPurses.args["exp" .. exp].args
+
+        -- Master toggle for all purses
+        groupArgs["master_racing_purses_" .. exp] = {
+            type = "toggle",
+            name = "|cffffd700Always Track ALL Racing Purses from " .. expName .. "|r",
+            width = "full",
+            order = 0,
+            get = function()
+                for itemID in pairs(purses) do
+                    if not RPDB[itemID] then
+                        return false
+                    end
+                end
+                return true
+            end,
+            set = function(_, val)
+                for itemID in pairs(purses) do
+                    RPDB[itemID] = val
+                end
+                WQA:RefreshTracking()
+            end
+        }
+
+        groupArgs["header_" .. exp] = {type = "header", name = "", order = -1}
+
+        -- Individual toggles
+        for _, itemID in ipairs(purses) do
+            local purseName = WQA.RacingPursesList[itemID] or ("Purse " .. itemID)
+
+            groupArgs["purse_" .. itemID] = {
+                type = "toggle",
+                name = purseName, -- string ✅
+                width = "full",
+                order = order,
+                get = function()
+                    return RPDB[itemID]
+                end,
+                set = function(_, val)
+                    RPDB[itemID] = val
+                    WQA:RefreshTracking()
+                end
+            }
+            order = order + 1
+        end
+    end
+--]]
     -- Reputation
     args.reputation = {
         type = "group",
@@ -729,7 +813,7 @@ function WQA:CreateRewardOptions()
     end
 
     -- Crafting Reagents
-    if next(WQA.CraftingReagentIDList) then
+    --[[  if next(WQA.CraftingReagentIDList) then
         args.reagents = {
             type = "group",
             name = L["Crafting Reagents"] or "Crafting Reagents",
@@ -777,7 +861,7 @@ function WQA:CreateRewardOptions()
             end
         end
     end
-
+--]]
     -- Emissary Quests
     if next(WQA.EmissaryQuestIDList) then
         args.emissary = {
@@ -868,117 +952,48 @@ function WQA:CreateRewardOptions()
             expTable.items = expTable.items or false
         end
 
-        -- MASTER TOGGLE FOR ALL REWARDS (Top)
+        -------------------------------
+        -- MASTER TOGGLE FOR ENTIRE EXP
+        -------------------------------
         groupArgs["master_all_" .. exp] = {
             type = "toggle",
             name = "|cffffd700Always Track ALL Mission Table Rewards for " .. expName .. "|r",
             width = "full",
             order = 0,
             get = function()
-                -- Gold
-                if not expTable.gold then
+                if not expTable.gold or not expTable.items then
                     return false
                 end
-
-                -- Currencies
                 for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
                     local id = type(v) == "table" and v.id or v
                     if not expTable.currency[id] then
                         return false
                     end
                 end
-
-                -- Reputation
                 for id, tracked in pairs(expTable.reputation) do
                     if not tracked then
                         return false
                     end
                 end
-
-                -- Items
-                if not expTable.items then
-                    return false
-                end
-
                 return true
             end,
             set = function(_, val)
-                -- Gold
                 expTable.gold = val
-
-                -- Currencies
+                expTable.items = val
                 for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
                     local id = type(v) == "table" and v.id or v
                     expTable.currency[id] = val
                 end
-
-                -- Reputation
                 for id, _ in pairs(expTable.reputation) do
                     expTable.reputation[id] = val
                 end
-
-                -- Items
-                expTable.items = val
-
                 WQA:RefreshTracking()
             end
         }
 
-        -- MASTER TOGGLE FOR GOLD
-        groupArgs["master_gold_" .. exp] = {
-            type = "toggle",
-            name = "|cffffd700Always Track GOLD from " .. expName .. "|r",
-            width = "full",
-            order = 0,
-            get = function()
-                return expTable.gold
-            end,
-            set = function(_, val)
-                expTable.gold = val
-                WQA:RefreshTracking()
-            end
-        }
-
-        -- MASTER TOGGLE FOR CURRENCIES
-        groupArgs["master_currency_" .. exp] = {
-            type = "toggle",
-            name = "|cffffd700Always Track Currencies from " .. expName .. "|r",
-            width = "full",
-            order = 1,
-            get = function()
-                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
-                    local id = type(v) == "table" and v.id or v
-                    if not expTable.currency[id] then
-                        return false
-                    end
-                end
-                return true
-            end,
-            set = function(_, val)
-                for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
-                    local id = type(v) == "table" and v.id or v
-                    expTable.currency[id] = val
-                end
-                WQA:RefreshTracking()
-            end
-        }
-
-        -- MASTER TOGGLE FOR MISSION ITEMS
-        groupArgs["master_items_" .. exp] = {
-            type = "toggle",
-            name = "|cffffd700Always Track Mission Items from " .. expName .. "|r",
-            width = "full",
-            order = 2,
-            get = function()
-                return expTable.items
-            end,
-            set = function(_, val)
-                expTable.items = val
-                WQA:RefreshTracking()
-            end
-        }
-
+        -----------------------------------
         -- INDIVIDUAL CURRENCY TOGGLES
+        -----------------------------------
         for _, v in pairs(WQA.CurrencyIDList[exp] or {}) do
             local id = type(v) == "table" and v.id or v
             local faction = type(v) == "table" and v.faction or nil
