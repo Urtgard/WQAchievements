@@ -342,6 +342,11 @@ function WQA:UpdateQTip(tasks)
 end
 
 function WQA:AnnouncePopUp(quests, silent)
+    local inInstance = IsInInstance()
+    if inInstance and not (self.db and self.db.profile and self.db.profile.options and self.db.profile.options.popupShowInInstances) then
+        return
+    end
+
     if not self.PopUp then
         local PopUp = CreateFrame("Frame", "WQAchievementsPopUp", UIParent, "UIPanelDialogTemplate")
         PopUp:SetMovable(true)
@@ -381,6 +386,20 @@ function WQA:AnnouncePopUp(quests, silent)
         self.PopUp = PopUp
         self.PopUp.content = content
         self.PopUp.scroll = scroll
+		
+		-- ensure popup hides when entering instances
+    if not self.popupInstanceHandler then
+        local f = CreateFrame("Frame")
+        f:RegisterEvent("PLAYER_ENTERING_WORLD")
+        f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+        f:SetScript("OnEvent", function()
+            local inInstance = IsInInstance()
+            if inInstance and self.PopUp and self.PopUp:IsShown() then
+                self.PopUp:Hide()
+            end
+        end)
+        self.popupInstanceHandler = f
+    end
     end
 
     if not next(quests) and silent then

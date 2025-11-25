@@ -180,6 +180,7 @@ function WQA:OnInitialize()
                 popupX = 600,
                 popupY = 800,
                 zone = {["*"] = true},
+				popupShowInInstances = false,
                 reward = {
                     gear = {
                         ["*"] = true,
