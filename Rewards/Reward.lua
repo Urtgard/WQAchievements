@@ -3,6 +3,8 @@ local WQA = WQAchievements
 local RewardType = WQA.Rewards.RewardType
 
 ---@param rewardType RewardType
+
+-- May need to add Prey system, will know in future
 function WQA:AddReward(list, rewardType, reward, emissary)
     local l = list
     if emissary == true then

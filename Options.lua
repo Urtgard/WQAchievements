@@ -68,9 +68,32 @@ local FactionIDList = {
             2594, -- The Assembly of the Deeps
             2570, -- Hallowfall Arathi
             2600, -- The Severed Threads
-            2590 -- Council of Dornogal
+            2590, -- Council of Dornogal
+			2688, -- Flame's Radiance
+			2658, -- The K'aresh Trust
+			2653, -- The Cartels of Undermine
+			2673, -- Bilgewater Cartel
+			2675, -- Blackwater Cartel
+			2669, -- Darkfuse Solutions
+			2677, -- Steamwheedle Cartel
+			2671 -- Venture Company
         }
-    }
+    },
+	[12] = {
+		Neutral = {
+		-- Some of these may not be tied to WQ Reputations
+			2696, -- Amani Tribe
+			2712, -- Blood Knights
+			2713, -- Farstriders
+			2704, -- Hara'ti
+			2711, -- Magisters
+			2764, -- Preyseeker's Journey
+			2714, -- Shades of the Row
+			2710, -- Silvermoon Court
+			2770, -- Slayer's Duellum
+			2699 -- The Singularity
+		}
+	}
 }
 
 WQA.CurrencyIDList = {
@@ -91,7 +114,6 @@ WQA.CurrencyIDList = {
         {id = 1716, faction = "Horde"}, -- Honorbound Service Medal
         {id = 1717, faction = "Alliance"}, -- 7th Legion Service Medal
         1721, -- Prismatic Manapearl
-        1602, -- Conquest
         1166 -- Timewarped Badge
     },
     [9] = {
@@ -100,15 +122,21 @@ WQA.CurrencyIDList = {
     },
     [10] = {
         2003, -- Dragon Isles Supplies
-        2123, -- Bloody Tokens
         2657, -- Mysterious Fragment
         2245 -- Flightstones
     },
     [11] = {
         3008, -- Valorstones
         3056, -- Kej
-        2815 -- Resonance Crystals
-    }
+        2815, -- Resonance Crystals
+		-- (PvP Currency may not be tracking currently)
+		2123, -- Bloody Tokens
+		1792, -- Honor
+		1602 -- Conquest
+    },
+	[12] = {
+		-- Add later
+	}
 }
 
 WQA.CraftingReagentIDList = {
