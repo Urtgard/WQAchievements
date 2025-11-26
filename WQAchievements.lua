@@ -219,14 +219,17 @@ function WQA:OnInitialize()
                     }
                 },
                 delay = 5,
-                LibDBIcon = {hide = false}
+                LibDBIcon = {hide = false},
+				popupWidth = 600,
+				popupMaxHeight = 800,
+				popupScale = 1,
             },
             ["achievements"] = {exclusive = {}, ["*"] = "default"},
             ["mounts"] = {exclusive = {}, ["*"] = "default"},
             ["pets"] = {exclusive = {}, ["*"] = "default"},
             ["toys"] = {exclusive = {}, ["*"] = "default"},
             custom = {
-                ["*"] = {["*"] = true}
+				["*"] = {["*"] = true}
             },
             ["*"] = {["*"] = true}
         },
