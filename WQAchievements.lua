@@ -750,7 +750,8 @@ function WQA:CheckWQ(mode)
                 IsActive(questID) or addon:EmissaryIsActive(questID) or addon:isQuestPinActive(questID) or
                     addon:IsQuestFlaggedCompleted(questID)
              then
-                local questLink = addon:GetTaskLink({id = questID, type = "WORLD_QUEST"})
+                local questType = addon:GetTaskQuestType(questID)
+                local questLink = addon:GetTaskLink({id = questID, type = questType})
                 local linkMissing = false -- Track per quest
                 for k, v in pairs(addon.questList[questID].reward) do
                     local link
@@ -841,7 +842,8 @@ function WQA:CheckWQ(mode)
             -- Build tables
             addon.activeTasks = {}
             for id in pairs(activeQuests) do
-                table.insert(addon.activeTasks, {id = id, type = "WORLD_QUEST"})
+                local questType = addon:GetTaskQuestType(id)
+                table.insert(addon.activeTasks, {id = id, type = questType})
             end
             for id in pairs(activeMissions) do
                 table.insert(addon.activeTasks, {id = id, type = "MISSION"})
@@ -854,8 +856,10 @@ function WQA:CheckWQ(mode)
             addon.activeTasks = addon:SortQuestList(addon.activeTasks)
             addon.newTasks = {}
             for id in pairs(newQuests) do
+                local questType = addon:GetTaskQuestType(id)
+
                 addon.watched[id] = true
-                table.insert(addon.newTasks, {id = id, type = "WORLD_QUEST"})
+                table.insert(addon.newTasks, {id = id, type = questType})
             end
             for id in pairs(newMissions) do
                 addon.watchedMissions[id] = true
@@ -938,7 +942,9 @@ function WQA:CheckWQ(mode)
         -- Build tables
         addon.activeTasks = {}
         for id in pairs(activeQuests) do
-            table.insert(addon.activeTasks, {id = id, type = "WORLD_QUEST"})
+            local questType = addon:GetTaskQuestType(id)
+
+            table.insert(addon.activeTasks, {id = id, type = questType})
         end
         for id in pairs(activeMissions) do
             table.insert(addon.activeTasks, {id = id, type = "MISSION"})
@@ -951,8 +957,10 @@ function WQA:CheckWQ(mode)
         addon.activeTasks = addon:SortQuestList(addon.activeTasks)
         addon.newTasks = {}
         for id in pairs(newQuests) do
+            local questType = addon:GetTaskQuestType(id)
+
             addon.watched[id] = true
-            table.insert(addon.newTasks, {id = id, type = "WORLD_QUEST"})
+            table.insert(addon.newTasks, {id = id, type = questType})
         end
         for id in pairs(newMissions) do
             addon.watchedMissions[id] = true
@@ -1105,7 +1113,7 @@ function WQA:AnnounceChat(tasks, silent)
         end
 
         local l
-        if task.type == "WORLD_QUEST" then
+        if task.type == "WORLD_QUEST" or task.type == "QUEST_PIN" or task.type == "IsActive" then
             l = self.questList[task.id]
         elseif task.type == "MISSION" then
             l = self.missionList[task.id]
