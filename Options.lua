@@ -1753,7 +1753,7 @@ function WQA:UpdateCustomQuests()
                 return WQA.db.profile.custom.worldQuest[id]
             end,
             order = newOrder(),
-            width = 1.8
+            width = 1.7
         }
 
         args[id .. "questType"] = {
@@ -1872,7 +1872,7 @@ function WQA:UpdateCustomRewards()
                 return WQA.db.profile.custom.worldQuestReward[id]
             end,
             order = newOrder(),
-            width = 2
+            width = 1.7
         }
         args[id .. "Delete"] = {
             order = newOrder(),
@@ -1929,7 +1929,7 @@ function WQA:UpdateCustomMissions()
                 return WQA.db.profile.custom.mission[id]
             end,
             order = newOrder(),
-            width = 1.2
+            width = 1.7
         }
         args[id .. "Reward"] = {
             name = L["Reward (optional)"],
