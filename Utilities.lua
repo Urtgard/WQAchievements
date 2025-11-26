@@ -3,7 +3,6 @@ local WQA = WQAchievements
 
 local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 
-
 function WQA:GetExpansionByMissionID(missionID)
     return WQA.missionList[missionID].expansion
 end
@@ -76,7 +75,9 @@ function WQA:GetTaskZoneID(task)
 
     if task.type == "WORLD_QUEST" then
         local zoneID = C_TaskQuest.GetQuestZoneID(task.id)
-        if zoneID then return zoneID end
+        if zoneID then
+            return zoneID
+        end
 
         -- Fallback for emissary/bounty quests (Legion/BfA)
         if self.EmissaryQuestIDList then
@@ -85,7 +86,7 @@ function WQA:GetTaskZoneID(task)
                     local id = type(entry) == "table" and entry.id or entry
                     if id == task.id then
                         -- Use a dummy zoneID based on expansion (just for filtering)
-                        return 1000 + exp  -- 1007 = Legion, 1008 = BfA, etc.
+                        return 1000 + exp -- 1007 = Legion, 1008 = BfA, etc.
                     end
                 end
             end
@@ -105,7 +106,7 @@ function WQA:GetMapInfo(mapID)
     if mapID then
         return C_Map.GetMapInfo(mapID)
     else
-        return { name = "Unknown" }
+        return {name = "Unknown"}
     end
 end
 
@@ -116,8 +117,8 @@ function WQA:GetQuestZoneName(questID)
     if not WQA.questList[questID].info then
         WQA.questList[questID].info = {}
     end
-    WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or
-        self:GetMapInfo(self:GetQuestZoneID(questID)).name
+    WQA.questList[questID].info.zoneName =
+        WQA.questList[questID].info.zoneName or self:GetMapInfo(self:GetQuestZoneID(questID)).name
     return WQA.questList[questID].info.zoneName
 end
 

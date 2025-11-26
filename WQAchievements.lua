@@ -180,23 +180,21 @@ function WQA:OnInitialize()
                 popupX = 600,
                 popupY = 800,
                 zone = {["*"] = true},
-				popupShowInInstances = false,
+                popupShowInInstances = false,
                 reward = {
-                    gear = {
-                        ["*"] = true,
+                    general = {
+                        gold = false,
+                        goldMin = 0,
                         itemLevelUpgradeMin = 1,
                         PercentUpgradeMin = 1,
                         unknownSource = false,
                         azeriteTraits = "",
                         conduit = false
                     },
-                    general = {
-                        gold = false,
-                        goldMin = 0,
-                        worldQuestType = {
-                            ["*"] = true
-                        }
+                    worldQuestType = {
+                        ["*"] = true
                     },
+                    --racingPurses = {["*"] = false},
                     reputation = {["*"] = false},
                     currency = {},
                     craftingreagent = {["*"] = false},
@@ -299,12 +297,16 @@ local function AnythingTracked()
     -- General rewards
     if WQA.db.profile.options.reward then
         local r = WQA.db.profile.options.reward
-        -- Gear
-        if r.gear and next(r.gear) then
+        -- World Quest Type
+        if r.worldQuestType and next(r.worldQuestType) then
             return true
         end
-        -- General (gold, worldQuestType)
-        if r.general and (r.general.gold or (r.general.worldQuestType and next(r.general.worldQuestType))) then
+        -- General
+        if r.general and next(r.general) then
+            return true
+        end
+        -- Racing Purses
+        if r.racingPurses and next(r.racingPurses) then
             return true
         end
         -- Reputation
@@ -857,7 +859,6 @@ function WQA:CheckWQ(mode)
             addon.newTasks = {}
             for id in pairs(newQuests) do
                 local questType = addon:GetTaskQuestType(id)
-
                 addon.watched[id] = true
                 table.insert(addon.newTasks, {id = id, type = questType})
             end
@@ -943,7 +944,6 @@ function WQA:CheckWQ(mode)
         addon.activeTasks = {}
         for id in pairs(activeQuests) do
             local questType = addon:GetTaskQuestType(id)
-
             table.insert(addon.activeTasks, {id = id, type = questType})
         end
         for id in pairs(activeMissions) do
@@ -958,7 +958,6 @@ function WQA:CheckWQ(mode)
         addon.newTasks = {}
         for id in pairs(newQuests) do
             local questType = addon:GetTaskQuestType(id)
-
             addon.watched[id] = true
             table.insert(addon.newTasks, {id = id, type = questType})
         end
@@ -1308,7 +1307,7 @@ function WQA:Reward()
     local overallRetry = false
 
     -- Azerite Traits (unchanged)
-    if addon.db.profile.options.reward.gear.azeriteTraits ~= "" then
+    if addon.db.profile.options.reward.general.azeriteTraits ~= "" then
         addon.azeriteTraitsList = {}
         for spellID in string.gmatch(addon.db.profile.options.reward.gear.azeriteTraits, "(%d+)") do
             addon.azeriteTraitsList[tonumber(spellID)] = true
@@ -1366,15 +1365,12 @@ function WQA:Reward()
                     if questTagInfo then
                         worldQuestType = questTagInfo.worldQuestType
                     end
-                    if
-                        addon.questList[questID] and
-                            not addon.db.profile.options.reward.general.worldQuestType[worldQuestType]
-                     then
+                    if addon.questList[questID] and not addon.db.profile.options.reward.worldQuestType[worldQuestType] then
                         addon.questList[questID] = nil
                     end
                     if
                         addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
-                            addon.db.profile.options.reward.general.worldQuestType[worldQuestType]
+                            addon.db.profile.options.reward.worldQuestType[worldQuestType]
                      then
                         -- 100 different World Quests achievements
                         if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
@@ -1459,13 +1455,13 @@ function WQA:Reward()
                         end
                         if
                             addon.questList[questID] and
-                                not addon.db.profile.options.reward.general.worldQuestType[worldQuestType]
+                                not addon.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
                             addon.questList[questID] = nil
                         end
                         if
                             addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
-                                addon.db.profile.options.reward.general.worldQuestType[worldQuestType]
+                                addon.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
                             -- 100 different World Quests achievements
                             if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
@@ -1670,13 +1666,13 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
         local expacID = self:GetExpansionByQuestID(questID)
 
         -- Ask Pawn if this is an Upgrade
-        if PawnIsItemAnUpgrade and self.db.profile.options.reward.gear.PawnUpgrade then
+        if PawnIsItemAnUpgrade and self.db.profile.options.reward.general.PawnUpgrade then
             local Item = PawnGetItemData(itemLink)
             if Item then
                 local UpgradeInfo, BestItemFor, SecondBestItemFor, NeedsEnhancements = PawnIsItemAnUpgrade(Item)
                 if
                     UpgradeInfo and
-                        UpgradeInfo[1].PercentUpgrade * 100 >= self.db.profile.options.reward.gear.PercentUpgradeMin and
+                        UpgradeInfo[1].PercentUpgrade * 100 >= self.db.profile.options.reward.general.PercentUpgradeMin and
                         UpgradeInfo[1].PercentUpgrade < 10
                  then
                     local item = {
@@ -1690,7 +1686,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 
         -- StatWeightScore
         local StatWeightScore = LibStub("AceAddon-3.0"):GetAddon("StatWeightScore", true)
-        if StatWeightScore and self.db.profile.options.reward.gear.StatWeightScore then
+        if StatWeightScore and self.db.profile.options.reward.general.StatWeightScore then
             local slotID = EquipLocToSlot1[itemEquipLoc]
             if slotID then
                 local itemPercentUpgrade = 0
@@ -1750,7 +1746,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                         end
                     end
                 end
-                if itemPercentUpgrade >= self.db.profile.options.reward.gear.PercentUpgradeMin then
+                if itemPercentUpgrade >= self.db.profile.options.reward.general.PercentUpgradeMin then
                     local item = {itemLink = itemLink, itemPercentUpgrade = math.floor(itemPercentUpgrade + .5)}
                     self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
                 end
@@ -1758,7 +1754,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
         end
 
         -- Upgrade by itemLevel
-        if self.db.profile.options.reward.gear.itemLevelUpgrade then
+        if self.db.profile.options.reward.general.itemLevelUpgrade then
             local itemLevel1, itemLevel2
             local slotID = EquipLocToSlot1[itemEquipLoc]
             if slotID then
@@ -1794,7 +1790,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                 retry = true
             else
                 local itemLevelEquipped = math.min(itemLevel1 or 1000, itemLevel2 or 1000)
-                if itemLevel - itemLevelEquipped >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+                if itemLevel - itemLevelEquipped >= self.db.profile.options.reward.general.itemLevelUpgradeMin then
                     local item = {itemLink = itemLink, itemLevelUpgrade = itemLevel - itemLevelEquipped}
                     self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
                 end
@@ -1802,7 +1798,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
         end
 
         -- Azerite Armor Cache
-        if itemID == 163857 and self.db.profile.options.reward.gear.AzeriteArmorCache then
+        if itemID == 163857 and self.db.profile.options.reward.general.AzeriteArmorCache then
             itemLevel = GetDetailedItemLevelInfo(itemLink)
             local AzeriteArmorCacheIsUpgrade = false
             local AzeriteArmorCache = {}
@@ -1815,7 +1811,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                             AzeriteArmorCache[i] = itemLevel - itemLevel1
                             if
                                 itemLevel > itemLevel1 and
-                                    itemLevel - itemLevel1 >= self.db.profile.options.reward.gear.itemLevelUpgradeMin
+                                    itemLevel - itemLevel1 >= self.db.profile.options.reward.general.itemLevelUpgradeMin
                              then
                                 AzeriteArmorCacheIsUpgrade = true
                             end
@@ -1827,7 +1823,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                     end
                 else
                     AzeriteArmorCache[i] = itemLevel
-                    if itemLevel and itemLevel >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+                    if itemLevel and itemLevel >= self.db.profile.options.reward.general.itemLevelUpgradeMin then
                         AzeriteArmorCacheIsUpgrade = true
                     end
                 end
@@ -1840,9 +1836,9 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 
         -- Equipment Cache
         if
-            (weaponCache[itemID] and self.db.profile.options.reward.gear.weaponCache) or
-                (armorCache[itemID] and self.db.profile.options.reward.gear.armorCache) or
-                (jewelryCache[itemID] and self.db.profile.options.reward.gear.jewelryCache)
+            (weaponCache[itemID] and self.db.profile.options.reward.general.weaponCache) or
+                (armorCache[itemID] and self.db.profile.options.reward.general.armorCache) or
+                (jewelryCache[itemID] and self.db.profile.options.reward.general.jewelryCache)
          then
             itemLevel = GetDetailedItemLevelInfo(itemLink)
             local n = 0
@@ -1860,7 +1856,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                             if itemLevel1 then
                                 n = n + 1
                                 upgrade = itemLevel - itemLevel1
-                                if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+                                if upgrade >= self.db.profile.options.reward.general.itemLevelUpgradeMin then
                                     upgradeNum = upgradeNum + 1
                                     if upgrade > upgradeMax then
                                         upgradeMax = upgrade
@@ -1890,7 +1886,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                                 if itemLevel1 then
                                     n = n + 1
                                     upgrade = itemLevel - itemLevel1
-                                    if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+                                    if upgrade >= self.db.profile.options.reward.general.itemLevelUpgradeMin then
                                         upgradeNum = upgradeNum + 1
                                         if upgrade > upgradeMax then
                                             upgradeMax = upgrade
@@ -1917,7 +1913,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                             if itemLevel1 then
                                 n = n + 1
                                 upgrade = itemLevel - itemLevel1
-                                if upgrade >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+                                if upgrade >= self.db.profile.options.reward.general.itemLevelUpgradeMin then
                                     upgradeNum = upgradeNum + 1
                                     if upgrade > upgradeMax then
                                         upgradeMax = upgrade
@@ -1944,7 +1940,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
         end
 
         -- Transmog
-        if self.db.profile.options.reward.gear.unknownAppearance and self:IsTransmogable(itemLink) then
+        if self.db.profile.options.reward.general.unknownAppearance and self:IsTransmogable(itemLink) then
             if itemClassID == 2 or itemClassID == 4 then
                 local transmog
                 if AllTheThings then
@@ -1953,7 +1949,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                         local state = searchForLinkResult[1].collected
                         if not state then
                             transmog = "|TInterface\\Addons\\AllTheThings\\assets\\unknown:0|t"
-                        elseif state == 2 and self.db.profile.options.reward.gear.unknownSource then
+                        elseif state == 2 and self.db.profile.options.reward.general.unknownSource then
                             transmog = "|TInterface\\Addons\\AllTheThings\\assets\\known_circle:0|t"
                         end
                     end
@@ -1965,7 +1961,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
                             transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\UNKNOWN:0|t"
                         elseif
                             not CanIMogIt:PlayerKnowsTransmogFromItem(itemLink) and
-                                self.db.profile.options.reward.gear.unknownSource
+                                self.db.profile.options.reward.general.unknownSource
                          then
                             transmog = "|TInterface\\AddOns\\CanIMogIt\\Icons\\KNOWN_circle:0|t"
                         end
@@ -2020,7 +2016,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 
         -- Azerite Traits
         if
-            self.db.profile.options.reward.gear.azeriteTraits ~= "" and
+            self.db.profile.options.reward.general.azeriteTraits ~= "" and
                 C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(itemLink)
          then
             for _, ring in pairs(C_AzeriteEmpoweredItem.GetAllTierInfoByItemID(itemLink)) do
@@ -2035,7 +2031,7 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
         end
 
         -- Conduit
-        if self.db.profile.options.reward.gear.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
+        if self.db.profile.options.reward.general.conduit and C_Soulbinds.IsItemConduitByItemInfo(itemLink) then
             self:AddRewardToQuest(questID, "ITEM", {itemLink = itemLink}, isEmissary)
         end
     else
