@@ -197,7 +197,59 @@ function WQA:UpdateQTip(tasks)
                 j,
                 "OnMouseDown",
                 function()
-                    HandleModifiedItemClick(link)
+                    if ChatEdit_TryInsertChatLink(link) ~= true then
+                        if
+                            task.type == "WORLD_QUEST" and not WQA.questList[id].isEmissary and
+                                not (self.questPinList[id] or self.questFlagList[id])
+                         then
+                            if WorldQuestTrackerAddon and self.db.profile.options.WorldQuestTracker then
+                                if WorldQuestTrackerAddon.IsQuestBeingTracked(id) then
+                                    WorldQuestTrackerAddon.RemoveQuestFromTracker(id)
+                                    WQA:ScheduleTimer(
+                                        function()
+                                            WorldQuestTrackerAddon:FullTrackerUpdate()
+                                        end,
+                                        .5
+                                    )
+                                else
+                                    local _, _, numObjectives = GetTaskInfo(id)
+                                    local widget = {
+                                        questID = id,
+                                        mapID = self:GetQuestZoneID(id),
+                                        numObjectives = numObjectives
+                                    }
+                                    zoneID = self:GetQuestZoneID(id)
+                                    local x, y = C_TaskQuest.GetQuestLocation(id, zoneID)
+                                    widget.questX, widget.questY = x or 0, y or 0
+                                    widget.IconTexture = GetIconTexture(id)
+                                    local function f(widget)
+                                        if not widget.IconTexture then
+                                            WQA:ScheduleTimer(
+                                                function()
+                                                    widget.IconTexture = GetIconTexture(id)
+                                                    f(widget)
+                                                end,
+                                                1.5
+                                            )
+                                        else
+                                            WorldQuestTrackerAddon.AddQuestToTracker(widget)
+                                            WQA:ScheduleTimer(
+                                                function()
+                                                    WorldQuestTrackerAddon:FullTrackerUpdate()
+                                                end,
+                                                .5
+                                            )
+                                        end
+                                    end
+                                    f(widget)
+                                end
+                            else
+                                if not C_QuestLog.AddWorldQuestWatch(id, 1) then
+                                    C_QuestLog.RemoveWorldQuestWatch(id)
+                                end
+                            end
+                        end
+                    end
                 end
             )
 
