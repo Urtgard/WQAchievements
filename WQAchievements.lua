@@ -34,14 +34,22 @@ function WQA:RefreshTracking()
         self:ScheduleTimer(
         function()
             self.refreshTimer = nil
+
+            self:ScheduleTimer(
+                function()
+                    self:StartScan()
+                end,
+                0.5
+            )
+
             self:CreateQuestList()
             self:Show()
         end,
         120
     )
+
     if WQA.PopUp and WQA.PopUp:IsShown() then
         WQA:AnnouncePopUp(WQA.activeTasks or {}, false)
-    -- UpdateHScroll will be called inside AnnouncePopUp
     end
 end
 
@@ -220,16 +228,16 @@ function WQA:OnInitialize()
                 },
                 delay = 5,
                 LibDBIcon = {hide = false},
-				popupWidth = 600,
-				popupMaxHeight = 800,
-				popupScale = 1,
+                popupWidth = 600,
+                popupMaxHeight = 800,
+                popupScale = 1
             },
             ["achievements"] = {exclusive = {}, ["*"] = "default"},
             ["mounts"] = {exclusive = {}, ["*"] = "default"},
             ["pets"] = {exclusive = {}, ["*"] = "default"},
             ["toys"] = {exclusive = {}, ["*"] = "default"},
             custom = {
-				["*"] = {["*"] = true}
+                ["*"] = {["*"] = true}
             },
             ["*"] = {["*"] = true}
         },
@@ -261,6 +269,14 @@ function WQA:OnInitialize()
     self:UpdateOptions()
     -- Minimap Icon
     icon:Register("WQAchievements", dataobj, self.db.profile.options.LibDBIcon)
+end
+
+WQA.ZoneToExp = WQA.ZoneToExp or {}
+
+for expansion, zones in pairs(WQA.ZoneIDList) do
+    for _, zoneID in pairs(zones) do
+        WQA.ZoneToExp[zoneID] = expansion
+    end
 end
 
 local function ShouldScan()
@@ -345,9 +361,7 @@ function WQA:OnEnable()
     local name, server = UnitFullName("player")
     self.playerName = name .. "-" .. server
 
-    ------------------
     -- Options
-    ------------------
     LibStub("AceConfig-3.0"):RegisterOptionsTable(
         "WQAchievements",
         function()
@@ -1353,39 +1367,34 @@ function WQA:Reward()
         local processed = 0
         local retry = false
         local startTime = GetTime()
+
         while processed < batchSize and currentIndex <= (usingStatic and #questIDsToProcess or #mapIDsToProcess) and
             (GetTime() - startTime) < timeBudget do
-            local questID
             if usingStatic then
-                questID = questIDsToProcess[currentIndex]
+                -- STATIC QUEST LIST MODE
+                local questID = questIDsToProcess[currentIndex]
+
                 if not C_TaskQuest.IsActive(questID) then
                     currentIndex = currentIndex + 1
                     processed = processed + 1
                 else
-                    -- Per-quest logic
                     local questTagInfo = GetQuestTagInfo(questID)
-                    local worldQuestType = 0
-                    if questTagInfo then
-                        worldQuestType = questTagInfo.worldQuestType
-                    end
+                    local worldQuestType = questTagInfo and questTagInfo.worldQuestType or 0
+
                     if addon.questList[questID] and not addon.db.profile.options.reward.worldQuestType[worldQuestType] then
                         addon.questList[questID] = nil
                     end
+
                     if
                         addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
                             addon.db.profile.options.reward.worldQuestType[worldQuestType]
                      then
-                        -- 100 different World Quests achievements
+                        -- 100 DIFFERENT WORLD QUESTS ACHIEVEMENTS
                         if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
                             local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                            local exp = 0
-                            for expansion, zones in pairs(addon.ZoneIDList) do
-                                for _, v in pairs(zones) do
-                                    if zoneID == v then
-                                        exp = expansion
-                                    end
-                                end
-                            end
+                            local exp = addon.ZoneToExp[zoneID] or 0
+
+                            -- Legion
                             if
                                 addon.db.profile.achievements[11189] ~= "disabled" and
                                     not select(4, GetAchievementInfo(11189)) and
@@ -1395,13 +1404,19 @@ function WQA:Reward()
                                     zoneID ~= 882
                              then
                                 addon:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
-                            elseif
+                            end
+
+                            -- BFA
+                            if
                                 addon.db.profile.achievements[13144] ~= "disabled" and
                                     not select(4, GetAchievementInfo(13144)) and
                                     exp == 8
                              then
                                 addon:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
-                            elseif
+                            end
+
+                            -- Shadowlands
+                            if
                                 addon.db.profile.achievements[14758] ~= "disabled" and
                                     not select(4, GetAchievementInfo(14758)) and
                                     exp == 9
@@ -1409,29 +1424,23 @@ function WQA:Reward()
                                 addon:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
                             end
                         end
-                        -- For quest ID 83366...
+
+                        -- Reward data
                         if questID ~= 83366 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
                             C_TaskQuest.RequestPreloadRewardData(questID)
                             retry = true
                         end
+
                         retry = addon:CheckItems(questID) or retry
                         addon:CheckCurrencies(questID)
+
                         -- Profession
-                        local tradeskillLineID
-                        if questTagInfo then
-                            tradeskillLineID = questTagInfo.tradeskillLineID
-                        end
+                        local tradeskillLineID = questTagInfo and questTagInfo.tradeskillLineID
                         if tradeskillLineID then
                             local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(tradeskillLineID)
                             local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                            local exp = 0
-                            for expansion, zones in pairs(addon.ZoneIDList) do
-                                for _, v in pairs(zones) do
-                                    if zoneID == v then
-                                        exp = expansion
-                                    end
-                                end
-                            end
+                            local exp = addon.ZoneToExp[zoneID] or 0
+
                             if
                                 not addon.db.char[exp].profession[tradeskillLineID].isMaxLevel and
                                     addon.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
@@ -1440,59 +1449,61 @@ function WQA:Reward()
                             end
                         end
                     end
+
                     currentIndex = currentIndex + 1
                     processed = processed + 1
                 end
             else
-                -- Fallback map logic
+                -- FALLBACK MAP SCAN MODE  (APPLIED + CLEANED)
                 local mapID = mapIDsToProcess[currentIndex]
                 local quests = C_TaskQuest.GetQuestsOnMap(mapID)
+
                 if quests then
                     for i = 1, #quests do
                         local questID = quests[i].questID
-                        -- (full per-quest logic, same as above)
                         local questTagInfo = GetQuestTagInfo(questID)
-                        local worldQuestType = 0
-                        if questTagInfo then
-                            worldQuestType = questTagInfo.worldQuestType
-                        end
+                        local worldQuestType = questTagInfo and questTagInfo.worldQuestType or 0
+
+                        -- Remove disabled world-quest types
                         if
                             addon.questList[questID] and
                                 not addon.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
                             addon.questList[questID] = nil
                         end
+
                         if
                             addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
                                 addon.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
-                            -- 100 different World Quests achievements
+                            -- 100 DIFFERENT WORLD QUESTS ACHIEVEMENT CHECKS
                             if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
                                 local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                                local exp = 0
-                                for expansion, zones in pairs(addon.ZoneIDList) do
-                                    for _, v in pairs(zones) do
-                                        if zoneID == v then
-                                            exp = expansion
-                                        end
-                                    end
-                                end
+                                local exp = addon.ZoneToExp[zoneID] or 0
+
+                                -- Legion
                                 if
                                     addon.db.profile.achievements[11189] ~= "disabled" and
                                         not select(4, GetAchievementInfo(11189)) and
                                         exp == 7 and
-                                        mapID ~= 830 and
-                                        mapID ~= 885 and
-                                        mapID ~= 882
+                                        zoneID ~= 830 and
+                                        zoneID ~= 885 and
+                                        zoneID ~= 882
                                  then
                                     addon:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
-                                elseif
+                                end
+
+                                -- BFA
+                                if
                                     addon.db.profile.achievements[13144] ~= "disabled" and
                                         not select(4, GetAchievementInfo(13144)) and
                                         exp == 8
                                  then
                                     addon:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
-                                elseif
+                                end
+
+                                -- Shadowlands
+                                if
                                     addon.db.profile.achievements[14758] ~= "disabled" and
                                         not select(4, GetAchievementInfo(14758)) and
                                         exp == 9
@@ -1500,29 +1511,23 @@ function WQA:Reward()
                                     addon:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
                                 end
                             end
-                            -- For quest ID 83366...
+
+                            -- Force load quest reward data
                             if questID ~= 83366 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
                                 C_TaskQuest.RequestPreloadRewardData(questID)
                                 retry = true
                             end
+
                             retry = addon:CheckItems(questID) or retry
                             addon:CheckCurrencies(questID)
-                            -- Profession
-                            local tradeskillLineID
-                            if questTagInfo then
-                                tradeskillLineID = questTagInfo.tradeskillLineID
-                            end
+
+                            -- Profession rewards
+                            local tradeskillLineID = questTagInfo and questTagInfo.tradeskillLineID
                             if tradeskillLineID then
                                 local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(tradeskillLineID)
                                 local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                                local exp = 0
-                                for expansion, zones in pairs(addon.ZoneIDList) do
-                                    for _, v in pairs(zones) do
-                                        if zoneID == v then
-                                            exp = expansion
-                                        end
-                                    end
-                                end
+                                local exp = addon.ZoneToExp[zoneID] or 0
+
                                 if
                                     not addon.db.char[exp].profession[tradeskillLineID].isMaxLevel and
                                         addon.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
@@ -1533,15 +1538,18 @@ function WQA:Reward()
                         end
                     end
                 end
+
                 currentIndex = currentIndex + 1
                 processed = processed + 1
             end
         end
 
+        -- retry logic
         overallRetry = overallRetry or retry
 
         if currentIndex > (usingStatic and #questIDsToProcess or #mapIDsToProcess) then
             frame:SetScript("OnUpdate", nil)
+
             if overallRetry then
                 addon:Debug("|cFFFF0000<<<RETRY>>>|r")
                 addon.start = GetTime()
@@ -1552,6 +1560,7 @@ function WQA:Reward()
                     end,
                     2
                 )
+
                 addon.event:RegisterEvent("QUEST_LOG_UPDATE")
                 addon.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
             else
