@@ -188,7 +188,7 @@ elseif locale == "frFR" then
 	L["Rewards"] = "Récompenses"
 	L["Select where WQA is allowed to post"] = "Choisir où WQA est autorisé à publier"
 	L["Setting is per character"] = "Réglage par personnage"
-	L["Show Minimap Icon"] = "Afficher l'icône sur la minicarte"
+	L["Show Minimap Icon"] = "Afficher l'icône sur la mini-carte"
 	L["Show expansion in chat"] = "Afficher l'extension dans la discussion"
 	L["Show expansion in popup"] = "Afficher l'extension dans le pop-up"
 	L["Show time left in chat"] = "Afficher le temps restant dans la discussion"
