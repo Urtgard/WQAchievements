@@ -3,7 +3,6 @@ local WQA = WQAchievements
 
 local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 
-
 function WQA:GetExpansionByMissionID(missionID)
     return WQA.missionList[missionID].expansion
 end
@@ -71,19 +70,43 @@ end
 
 function WQA:GetTaskZoneID(task)
     if task.type == "MISSION" then
-        return self:GetMissionZoneID(task.id)
-    elseif task.type == "WORLD_QUEST" then
-        return self:GetQuestZoneID(task.id)
-    elseif task.type == "AREA_POI" then
+        return -self:GetExpansionByMissionID(task.id)
+    end
+
+    if task.type == "WORLD_QUEST" then
+        local zoneID = C_TaskQuest.GetQuestZoneID(task.id)
+        if zoneID then
+            return zoneID
+        end
+
+        -- Fallback for emissary/bounty quests (Legion/BfA)
+        if self.EmissaryQuestIDList then
+            for exp, list in pairs(self.EmissaryQuestIDList) do
+                for _, entry in pairs(list) do
+                    local id = type(entry) == "table" and entry.id or entry
+                    if id == task.id then
+                        -- Use a dummy zoneID based on expansion (just for filtering)
+                        return 1000 + exp -- 1007 = Legion, 1008 = BfA, etc.
+                    end
+                end
+            end
+        end
+
+        return 0 -- unknown
+    end
+
+    if task.type == "AREA_POI" then
         return task.mapId
     end
+
+    return 0
 end
 
 function WQA:GetMapInfo(mapID)
     if mapID then
         return C_Map.GetMapInfo(mapID)
     else
-        return { name = "Unknown" }
+        return {name = "Unknown"}
     end
 end
 
@@ -94,8 +117,8 @@ function WQA:GetQuestZoneName(questID)
     if not WQA.questList[questID].info then
         WQA.questList[questID].info = {}
     end
-    WQA.questList[questID].info.zoneName = WQA.questList[questID].info.zoneName or
-        self:GetMapInfo(self:GetQuestZoneID(questID)).name
+    WQA.questList[questID].info.zoneName =
+        WQA.questList[questID].info.zoneName or self:GetMapInfo(self:GetQuestZoneID(questID)).name
     return WQA.questList[questID].info.zoneName
 end
 
@@ -190,8 +213,17 @@ function WQA:GetMissionTimeLeftMinutes(id)
     end
 end
 
+function WQA:GetTaskQuestType(id)
+    local questType = "WORLD_QUEST"
+    if self.db.global.custom.worldQuest[id] then
+        questType = self.db.global.custom.worldQuest[id].questType or "WORLD_QUEST"
+    end
+
+    return questType
+end
+
 function WQA:GetTaskTime(task)
-    if task.type == "WORLD_QUEST" then
+    if task.type == "WORLD_QUEST" or task.type == "QUEST_PIN" then
         return C_TaskQuest.GetQuestTimeLeftMinutes(task.id)
     elseif task.type == "MISSION" then
         return self:GetMissionTimeLeftMinutes(task.id)
@@ -210,6 +242,8 @@ function WQA:GetTaskLink(task)
         --	end
         --	if WQA.questPinList[task.id] or WQA.questFlagList[task.id] then
         return GetQuestLink(task.id) or GetTitleForQuestID(task.id)
+    elseif task.type == "QUEST_PIN" then
+        return "|cffffff00|Hquest:" .. task.id .. ":10|h[" .. GetTitleForQuestID(task.id) .. "]|h|r"
     elseif task.type == "MISSION" then
         return C_Garrison.GetMissionLink(task.id)
     elseif task.type == "AREA_POI" then

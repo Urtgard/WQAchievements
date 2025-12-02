@@ -2,8 +2,9 @@
 local WQA = WQAchievements
 local RewardType = WQA.Rewards.RewardType
 
-
 ---@param rewardType RewardType
+
+-- May need to add Prey system, will know in future
 function WQA:AddReward(list, rewardType, reward, emissary)
     local l = list
     if emissary == true then
@@ -12,7 +13,6 @@ function WQA:AddReward(list, rewardType, reward, emissary)
     if not l.reward then
         l.reward = {}
     end
-
 
     ---@type table <RewardType, any>
     l = l.reward
@@ -27,7 +27,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
             end
         end
 
-        l.achievement[#l.achievement + 1] = { id = reward }
+        l.achievement[#l.achievement + 1] = {id = reward}
     elseif rewardType == RewardType.Chance then
         if not l.chance then
             l.chance = {}
@@ -39,7 +39,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
             end
         end
 
-        l.chance[#l.chance + 1] = { id = reward }
+        l.chance[#l.chance + 1] = {id = reward}
     elseif rewardType == RewardType.Custom then
         if not l.custom then
             l.custom = true
@@ -82,7 +82,7 @@ function WQA:AddReward(list, rewardType, reward, emissary)
                 return
             end
         end
-        l.azeriteTraits[#l.azeriteTraits + 1] = { spellID = reward }
+        l.azeriteTraits[#l.azeriteTraits + 1] = {spellID = reward}
     elseif rewardType == RewardType.Miscellaneous then
         if not l[RewardType.Miscellaneous] then
             ---@type { [string]: boolean }
