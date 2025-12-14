@@ -1,4 +1,7 @@
-local WQA = WQAchievements
+if not WQA or not WQA.data then
+    WQA = WQA or {}
+    WQA.data = WQA.data or {}
+end
 
 WQA.AllWorldQuestIDs = {}
 
