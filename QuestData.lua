@@ -1,10 +1,5 @@
--- QuestData.lua
--- Dynamically build AllWorldQuestIDs from WQA.data (achievements, mounts, pets, toys, miscellaneous)
--- Assumes WQA.data is loaded before this file (per .toc order)
-if not WQA or not WQA.data then
-    WQA = WQA or {}
-    WQA.data = WQA.data or {}
-end
+local WQA = WQAchievements
+
 WQA.AllWorldQuestIDs = {}
 
 local staticUntiedIDs = {
