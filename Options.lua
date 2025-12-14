@@ -242,15 +242,6 @@ local trackingModes = {
     exclusive = L["tracking_exclusive"]
 }
 
-local ExpansionNames = {
-    [6] = "Warlords of Draenor",
-    [7] = "Legion",
-    [8] = "Battle for Azeroth",
-    [9] = "Shadowlands",
-    [10] = "Dragonflight",
-    [11] = "The War Within"
-}
-
 local worldQuestType = {
     ["LE_QUEST_TAG_TYPE_PVP"] = Enum.QuestTagType.PvP,
     ["LE_QUEST_TAG_TYPE_PET_BATTLE"] = Enum.QuestTagType.PetBattle,
@@ -742,7 +733,7 @@ function WQA:CreateRewardOptions()
     }
 
     for exp, purses in pairs(WQA.RacingPursesByExp) do
-        local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+        local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
 
         -- Create expansion group
         args.racingPurses.args["exp" .. exp] = {
@@ -808,7 +799,7 @@ function WQA:CreateRewardOptions()
     }
     for exp = 7, 11 do
         if FactionIDList[exp] then
-            local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+            local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
             args.reputation.args["exp" .. exp] = {
                 type = "group",
                 name = expName,
@@ -893,7 +884,7 @@ function WQA:CreateRewardOptions()
     for exp = 6, 11 do
         local currencyList = WQA.CurrencyIDList[exp]
         if currencyList then
-            local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+            local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
 
             -- Expansion group
             args.currencies.args["exp" .. exp] = {
@@ -970,7 +961,7 @@ function WQA:CreateRewardOptions()
             args = {}
         }
         for exp, list in pairs(WQA.CraftingReagentIDList) do
-            local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+            local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
             args.reagents.args["exp" .. exp] = {
                 type = "group",
                 name = expName,
@@ -1020,7 +1011,7 @@ function WQA:CreateRewardOptions()
             args = {}
         }
         for exp, list in pairs(WQA.EmissaryQuestIDList) do
-            local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+            local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
             args.emissary.args["exp" .. exp] = {
                 type = "group",
                 name = expName,
@@ -1078,7 +1069,7 @@ function WQA:CreateRewardOptions()
 
     for expIndex = 6, 9 do
         local exp = expIndex -- ensures `exp` is a number
-        local expName = ExpansionNames[exp] or ("Expansion " .. exp)
+        local expName = WQA.ExpansionList[exp] or ("Expansion " .. exp)
         args.missionTable.args["exp" .. exp] = {
             type = "group",
             name = expName,
