@@ -70,36 +70,12 @@ end
 
 function WQA:GetTaskZoneID(task)
     if task.type == "MISSION" then
-        return -self:GetExpansionByMissionID(task.id)
-    end
-
-    if task.type == "WORLD_QUEST" then
-        local zoneID = C_TaskQuest.GetQuestZoneID(task.id)
-        if zoneID then
-            return zoneID
-        end
-
-        -- Fallback for emissary/bounty quests (Legion/BfA)
-        if self.EmissaryQuestIDList then
-            for exp, list in pairs(self.EmissaryQuestIDList) do
-                for _, entry in pairs(list) do
-                    local id = type(entry) == "table" and entry.id or entry
-                    if id == task.id then
-                        -- Use a dummy zoneID based on expansion (just for filtering)
-                        return 1000 + exp -- 1007 = Legion, 1008 = BfA, etc.
-                    end
-                end
-            end
-        end
-
-        return 0 -- unknown
-    end
-
-    if task.type == "AREA_POI" then
+        return self:GetMissionZoneID(task.id)
+    elseif task.type == "WORLD_QUEST" then
+        return self:GetQuestZoneID(task.id)
+    elseif task.type == "AREA_POI" then
         return task.mapId
     end
-
-    return 0
 end
 
 function WQA:GetMapInfo(mapID)
