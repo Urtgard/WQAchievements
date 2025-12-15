@@ -594,7 +594,7 @@ function WQA:AddMounts(mounts)
     for i, id in pairs(C_MountJournal.GetMountIDs()) do
         local n, spellID, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
 
-        local track = self:GetEffectiveTracking("mounts", spellID, "Dragonflight") -- Change "Dragonflight" to match your master key if different
+        local track = self:GetEffectiveTracking("mounts", spellID, expansionKey) -- Change "Dragonflight" to match your master key if different
 
         -- Skip if disabled or exclusive belongs to another character I/O
         if track == "disabled" then
@@ -622,7 +622,7 @@ function WQA:AddPets(pets)
     local total = C_PetJournal.GetNumPets()
     for i = 1, total do
         local petID, _, owned, _, _, _, _, _, _, _, companionID = C_PetJournal.GetPetInfoByIndex(i)
-        local track = self:GetEffectiveTracking("pets", companionID, "Dragonflight")
+        local track = self:GetEffectiveTracking("pets", companionID, expansionKey)
 
         if track ~= "disabled" then
             local forced = (track == "always" or track == "exclusive")
@@ -656,7 +656,7 @@ end
 function WQA:AddToys(toys)
     for _, toy in pairs(toys) do
         local itemID = toy.itemID
-        local track = self:GetEffectiveTracking("toys", itemID, "Dragonflight")
+        local track = self:GetEffectiveTracking("toys", itemID, expansionKey)
 
         if track ~= "disabled" then
             local forced = (track == "always" or track == "exclusive")
@@ -741,11 +741,10 @@ function WQA:Show(mode, auto)
 end
 
 function WQA:CheckWQ(mode)
-    local addon = self
-    addon:Debug("CheckWQ")
-    if addon.rewards ~= true or addon.emissaryRewards ~= true then
-        addon:Debug("NoRewards")
-        addon:ScheduleTimer("CheckWQ", 0.4, mode)
+    self:Debug("CheckWQ")
+    if self.rewards ~= true or self.emissaryRewards ~= true then
+        self:Debug("NoRewards")
+        self:ScheduleTimer("CheckWQ", 0.4, mode)
         return
     end
     -- Throttling setup for questList loop
@@ -757,7 +756,7 @@ function WQA:CheckWQ(mode)
     local newQuests = {}
     local overallRetry = false
     -- Flatten questList keys (fast, since questList is likely <100)
-    for questID in pairs(addon.questList) do
+    for questID in pairs(self.questList) do
         table.insert(questIDsToProcess, questID)
     end
     local function CheckUpdate(frame, elapsed)
@@ -766,33 +765,33 @@ function WQA:CheckWQ(mode)
         while processed < batchSize and currentIndex <= #questIDsToProcess do
             local questID = questIDsToProcess[currentIndex]
             if
-                IsActive(questID) or addon:EmissaryIsActive(questID) or addon:isQuestPinActive(questID) or
-                    addon:IsQuestFlaggedCompleted(questID)
+                IsActive(questID) or self:EmissaryIsActive(questID) or self:isQuestPinActive(questID) or
+                    self:IsQuestFlaggedCompleted(questID)
              then
-                local questType = addon:GetTaskQuestType(questID)
-                local questLink = addon:GetTaskLink({id = questID, type = questType})
+                local questType = self:GetTaskQuestType(questID)
+                local questLink = self:GetTaskLink({id = questID, type = questType})
                 local linkMissing = false -- Track per quest
-                for k, v in pairs(addon.questList[questID].reward) do
+                for k, v in pairs(self.questList[questID].reward) do
                     local link
                     if k == "custom" or k == "professionSkillup" or k == "gold" then
                         link = true
                     else
-                        link = addon:GetRewardLinkByID(questID, k, v, 1)
+                        link = self:GetRewardLinkByID(questID, k, v, 1)
                     end
                     if not link then
-                        addon:Debug(questID, k, v, 1)
+                        self:Debug(questID, k, v, 1)
                         batchRetry = true
                     else
-                        addon:SetRewardLinkByID(questID, k, v, 1, link)
+                        self:SetRewardLinkByID(questID, k, v, 1, link)
                     end
                     if k == "achievement" or k == "chance" or k == "azeriteTraits" then
                         for i = 2, #v do
-                            link = addon:GetRewardLinkByID(questID, k, v, i)
+                            link = self:GetRewardLinkByID(questID, k, v, i)
                             if not link then
-                                addon:Debug(questID, k, v, i)
+                                self:Debug(questID, k, v, i)
                                 batchRetry = true
                             else
-                                addon:SetRewardLinkByID(questID, k, v, i, link)
+                                self:SetRewardLinkByID(questID, k, v, i, link)
                             end
                         end
                     end
@@ -801,11 +800,11 @@ function WQA:CheckWQ(mode)
                     end
                 end
                 if not questLink or linkMissing then
-                    addon:Debug(questID, questLink, "link missing")
+                    self:Debug(questID, questLink, "link missing")
                     batchRetry = true
                 else
                     activeQuests[questID] = true
-                    if not addon.watched[questID] then
+                    if not self.watched[questID] then
                         newQuests[questID] = true
                     end
                 end
@@ -817,29 +816,29 @@ function WQA:CheckWQ(mode)
         if currentIndex > #questIDsToProcess then
             frame:SetScript("OnUpdate", nil)
             -- Quests done: Now handle missions (chunk if many; assume <50 for now)
-            local activeMissions = addon:CheckMissions()
+            local activeMissions = self:CheckMissions()
             local newMissions = {}
             local missionsRetry = false
             if type(activeMissions) == "table" then
                 for missionID in pairs(activeMissions) do
                     local linkMissing = false
-                    for k, v in pairs(addon.missionList[missionID].reward) do
+                    for k, v in pairs(self.missionList[missionID].reward) do
                         local link
                         if k == "custom" or k == "professionSkillup" or k == "gold" then
                             link = true
                         else
-                            link = addon:GetRewardLinkByMissionID(missionID, k, v, 1)
+                            link = self:GetRewardLinkByMissionID(missionID, k, v, 1)
                         end
                         if not link then
                             missionsRetry = true
                         else
-                            addon:SetRewardLinkByMissionID(missionID, k, v, 1, link)
+                            self:SetRewardLinkByMissionID(missionID, k, v, 1, link)
                         end
                     end
                     if linkMissing then
                         missionsRetry = true
                     else
-                        if not addon.watchedMissions[missionID] then
+                        if not self.watchedMissions[missionID] then
                             newMissions[missionID] = true
                         end
                     end
@@ -849,66 +848,66 @@ function WQA:CheckWQ(mode)
             end
             overallRetry = overallRetry or missionsRetry
             -- POIs (single call, no chunk)
-            local pois = addon.Criterias.AreaPoi:Check()
+            local pois = self.Criterias.AreaPoi:Check()
             if pois.retry then
                 overallRetry = true
             end
             if overallRetry then
-                addon:Debug("NoLink")
-                addon:ScheduleTimer("CheckWQ", 1, mode)
+                self:Debug("NoLink")
+                self:ScheduleTimer("CheckWQ", 1, mode)
                 return
             end
             -- Build tables
-            addon.activeTasks = {}
+            self.activeTasks = {}
             for id in pairs(activeQuests) do
-                local questType = addon:GetTaskQuestType(id)
-                table.insert(addon.activeTasks, {id = id, type = questType})
+                local questType = self:GetTaskQuestType(id)
+                table.insert(self.activeTasks, {id = id, type = questType})
             end
             for id in pairs(activeMissions) do
-                table.insert(addon.activeTasks, {id = id, type = "MISSION"})
+                table.insert(self.activeTasks, {id = id, type = "MISSION"})
             end
             for poiId, mapIds in pairs(pois.active) do
                 for mapId in pairs(mapIds) do
-                    table.insert(addon.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+                    table.insert(self.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
                 end
             end
-            addon.activeTasks = addon:SortQuestList(addon.activeTasks)
-            addon.newTasks = {}
+            self.activeTasks = self:SortQuestList(self.activeTasks)
+            self.newTasks = {}
             for id in pairs(newQuests) do
-                local questType = addon:GetTaskQuestType(id)
-                addon.watched[id] = true
-                table.insert(addon.newTasks, {id = id, type = questType})
+                local questType = self:GetTaskQuestType(id)
+                self.watched[id] = true
+                table.insert(self.newTasks, {id = id, type = questType})
             end
             for id in pairs(newMissions) do
-                addon.watchedMissions[id] = true
-                table.insert(addon.newTasks, {id = id, type = "MISSION"})
+                self.watchedMissions[id] = true
+                table.insert(self.newTasks, {id = id, type = "MISSION"})
             end
             for poiId, mapIds in pairs(pois.new) do
                 for mapId in pairs(mapIds) do
-                    if not addon.Criterias.AreaPoi.watched[poiId] then
-                        addon.Criterias.AreaPoi.watched[poiId] = {}
+                    if not self.Criterias.AreaPoi.watched[poiId] then
+                        self.Criterias.AreaPoi.watched[poiId] = {}
                     end
-                    addon.Criterias.AreaPoi.watched[poiId][mapId] = true
-                    table.insert(addon.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+                    self.Criterias.AreaPoi.watched[poiId][mapId] = true
+                    table.insert(self.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
                 end
             end
             -- Announce based on mode
             if mode == "new" then
-                addon:AnnounceChat(addon.newTasks, addon.first)
-                if addon.db.profile.options.PopUp == true then
-                    addon:AnnouncePopUp(addon.newTasks, addon.first)
+                self:AnnounceChat(self.newTasks, self.first)
+                if self.db.profile.options.PopUp == true then
+                    self:AnnouncePopUp(self.newTasks, self.first)
                 end
             elseif mode == "popup" then
-                addon:AnnouncePopUp(addon.activeTasks)
+                self:AnnouncePopUp(self.activeTasks)
             elseif mode == "LDB" then
-                addon:AnnounceLDB(addon.activeTasks)
+                self:AnnounceLDB(self.activeTasks)
             else
-                addon:AnnounceChat(addon.activeTasks)
-                if addon.db.profile.options.PopUp == true then
-                    addon:AnnouncePopUp(addon.activeTasks)
+                self:AnnounceChat(self.activeTasks)
+                if self.db.profile.options.PopUp == true then
+                    self:AnnouncePopUp(self.activeTasks)
                 end
             end
-            addon:UpdateLDBText(next(addon.activeTasks), next(addon.newTasks))
+            self:UpdateLDBText(next(self.activeTasks), next(self.newTasks))
         end
     end
     -- Start chunking if quests exist
@@ -916,29 +915,29 @@ function WQA:CheckWQ(mode)
         checkFrame:SetScript("OnUpdate", CheckUpdate)
     else
         -- No quests: Handle missions/pois immediately (rare)
-        local activeMissions = addon:CheckMissions()
+        local activeMissions = self:CheckMissions()
         local newMissions = {}
         local missionsRetry = false
         if type(activeMissions) == "table" then
             for missionID in pairs(activeMissions) do
                 local linkMissing = false
-                for k, v in pairs(addon.missionList[missionID].reward) do
+                for k, v in pairs(self.missionList[missionID].reward) do
                     local link
                     if k == "custom" or k == "professionSkillup" or k == "gold" then
                         link = true
                     else
-                        link = addon:GetRewardLinkByMissionID(missionID, k, v, 1)
+                        link = self:GetRewardLinkByMissionID(missionID, k, v, 1)
                     end
                     if not link then
                         missionsRetry = true
                     else
-                        addon:SetRewardLinkByMissionID(missionID, k, v, 1, link)
+                        self:SetRewardLinkByMissionID(missionID, k, v, 1, link)
                     end
                 end
                 if linkMissing then
                     missionsRetry = true
                 else
-                    if not addon.watchedMissions[missionID] then
+                    if not self.watchedMissions[missionID] then
                         newMissions[missionID] = true
                     end
                 end
@@ -948,66 +947,66 @@ function WQA:CheckWQ(mode)
         end
         overallRetry = overallRetry or missionsRetry
         -- POIs (single call, no chunk)
-        local pois = addon.Criterias.AreaPoi:Check()
+        local pois = self.Criterias.AreaPoi:Check()
         if pois.retry then
             overallRetry = true
         end
         if overallRetry then
-            addon:Debug("NoLink")
-            addon:ScheduleTimer("CheckWQ", 1, mode)
+            self:Debug("NoLink")
+            self:ScheduleTimer("CheckWQ", 1, mode)
             return
         end
         -- Build tables
-        addon.activeTasks = {}
+        self.activeTasks = {}
         for id in pairs(activeQuests) do
-            local questType = addon:GetTaskQuestType(id)
-            table.insert(addon.activeTasks, {id = id, type = questType})
+            local questType = self:GetTaskQuestType(id)
+            table.insert(self.activeTasks, {id = id, type = questType})
         end
         for id in pairs(activeMissions) do
-            table.insert(addon.activeTasks, {id = id, type = "MISSION"})
+            table.insert(self.activeTasks, {id = id, type = "MISSION"})
         end
         for poiId, mapIds in pairs(pois.active) do
             for mapId in pairs(mapIds) do
-                table.insert(addon.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+                table.insert(self.activeTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
             end
         end
-        addon.activeTasks = addon:SortQuestList(addon.activeTasks)
-        addon.newTasks = {}
+        self.activeTasks = self:SortQuestList(self.activeTasks)
+        self.newTasks = {}
         for id in pairs(newQuests) do
-            local questType = addon:GetTaskQuestType(id)
-            addon.watched[id] = true
-            table.insert(addon.newTasks, {id = id, type = questType})
+            local questType = self:GetTaskQuestType(id)
+            self.watched[id] = true
+            table.insert(self.newTasks, {id = id, type = questType})
         end
         for id in pairs(newMissions) do
-            addon.watchedMissions[id] = true
-            table.insert(addon.newTasks, {id = id, type = "MISSION"})
+            self.watchedMissions[id] = true
+            table.insert(self.newTasks, {id = id, type = "MISSION"})
         end
         for poiId, mapIds in pairs(pois.new) do
             for mapId in pairs(mapIds) do
-                if not addon.Criterias.AreaPoi.watched[poiId] then
-                    addon.Criterias.AreaPoi.watched[poiId] = {}
+                if not self.Criterias.AreaPoi.watched[poiId] then
+                    self.Criterias.AreaPoi.watched[poiId] = {}
                 end
-                addon.Criterias.AreaPoi.watched[poiId][mapId] = true
-                table.insert(addon.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
+                self.Criterias.AreaPoi.watched[poiId][mapId] = true
+                table.insert(self.newTasks, {id = poiId, mapId = mapId, type = "AREA_POI"})
             end
         end
         -- Announce based on mode
         if mode == "new" then
-            addon:AnnounceChat(addon.newTasks, addon.first)
-            if addon.db.profile.options.PopUp == true then
-                addon:AnnouncePopUp(addon.newTasks, addon.first)
+            self:AnnounceChat(self.newTasks, self.first)
+            if self.db.profile.options.PopUp == true then
+                self:AnnouncePopUp(self.newTasks, self.first)
             end
         elseif mode == "popup" then
-            addon:AnnouncePopUp(addon.activeTasks)
+            self:AnnouncePopUp(self.activeTasks)
         elseif mode == "LDB" then
-            addon:AnnounceLDB(addon.activeTasks)
+            self:AnnounceLDB(self.activeTasks)
         else
-            addon:AnnounceChat(addon.activeTasks)
-            if addon.db.profile.options.PopUp == true then
-                addon:AnnouncePopUp(addon.activeTasks)
+            self:AnnounceChat(self.activeTasks)
+            if self.db.profile.options.PopUp == true then
+                self:AnnouncePopUp(self.activeTasks)
             end
         end
-        addon:UpdateLDBText(next(addon.activeTasks), next(addon.newTasks))
+        self:UpdateLDBText(next(self.activeTasks), next(self.newTasks))
     end
 end
 
@@ -1309,25 +1308,24 @@ local ReputationCurrencyList = {
 }
 
 function WQA:Reward()
-    local addon = self
-    addon:Debug("Reward")
-    addon.event:UnregisterEvent("QUEST_LOG_UPDATE")
-    addon.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
-    addon.rewards = false
-    addon.retryCount = (addon.retryCount or 0) + 1 -- Track retries
-    if addon.retryCount > 5 then -- Limit to 5 retries to prevent loop
-        addon:Debug("Max retries reached, forcing rewards true")
-        addon.rewards = true
-        addon.retryCount = 0
+    self:Debug("Reward")
+    self.event:UnregisterEvent("QUEST_LOG_UPDATE")
+    self.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+    self.rewards = false
+    self.retryCount = (self.retryCount or 0) + 1 -- Track retries
+    if self.retryCount > 5 then -- Limit to 5 retries to prevent loop
+        self:Debug("Max retries reached, forcing rewards true")
+        self.rewards = true
+        self.retryCount = 0
         return
     end
     local overallRetry = false
 
     -- Azerite Traits (unchanged)
-    if addon.db.profile.options.reward.general.azeriteTraits ~= "" then
-        addon.azeriteTraitsList = {}
-        for spellID in string.gmatch(addon.db.profile.options.reward.gear.azeriteTraits, "(%d+)") do
-            addon.azeriteTraitsList[tonumber(spellID)] = true
+    if self.db.profile.options.reward.general.azeriteTraits ~= "" then
+        self.azeriteTraitsList = {}
+        for spellID in string.gmatch(self.db.profile.options.reward.gear.azeriteTraits, "(%d+)") do
+            self.azeriteTraitsList[tonumber(spellID)] = true
         end
     end
 
@@ -1338,25 +1336,25 @@ function WQA:Reward()
     local questIDsToProcess = {}
     local mapIDsToProcess = {}
     local currentIndex = 1
-    local usingStatic = addon.AllWorldQuestIDs and next(addon.AllWorldQuestIDs) ~= nil -- Check if populated
+    local usingStatic = self.AllWorldQuestIDs and next(self.AllWorldQuestIDs) ~= nil -- Check if populated
 
     if usingStatic then
-        addon:Debug("Using static list: true")
+        self:Debug("Using static list: true")
         -- Flatten questIDs
-        for exp, ids in pairs(addon.AllWorldQuestIDs) do
+        for exp, ids in pairs(self.AllWorldQuestIDs) do
             for _, questID in ipairs(ids) do
                 local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                if zoneID and addon.db.profile.options.zone[zoneID] == true then
+                if zoneID and self.db.profile.options.zone[zoneID] == true then
                     table.insert(questIDsToProcess, questID)
                 end
             end
         end
     else
-        addon:Debug("Using static list: false - falling back to map scan")
+        self:Debug("Using static list: false - falling back to map scan")
         -- Fallback: Flatten mapIDs
-        for i in pairs(addon.ZoneIDList) do
-            for _, mapID in pairs(addon.ZoneIDList[i]) do
-                if addon.db.profile.options.zone[mapID] == true then
+        for i in pairs(self.ZoneIDList) do
+            for _, mapID in pairs(self.ZoneIDList[i]) do
+                if self.db.profile.options.zone[mapID] == true then
                     table.insert(mapIDsToProcess, mapID)
                 end
             end
@@ -1381,47 +1379,47 @@ function WQA:Reward()
                     local questTagInfo = GetQuestTagInfo(questID)
                     local worldQuestType = questTagInfo and questTagInfo.worldQuestType or 0
 
-                    if addon.questList[questID] and not addon.db.profile.options.reward.worldQuestType[worldQuestType] then
-                        addon.questList[questID] = nil
+                    if self.questList[questID] and not self.db.profile.options.reward.worldQuestType[worldQuestType] then
+                        self.questList[questID] = nil
                     end
 
                     if
-                        addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
-                            addon.db.profile.options.reward.worldQuestType[worldQuestType]
+                        self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
+                            self.db.profile.options.reward.worldQuestType[worldQuestType]
                      then
                         -- 100 DIFFERENT WORLD QUESTS ACHIEVEMENTS
-                        if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
+                        if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
                             local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                            local exp = addon.ZoneToExp[zoneID] or 0
+                            local exp = self.ZoneToExp[zoneID] or 0
 
                             -- Legion
                             if
-                                addon.db.profile.achievements[11189] ~= "disabled" and
+                                self.db.profile.achievements[11189] ~= "disabled" and
                                     not select(4, GetAchievementInfo(11189)) and
                                     exp == 7 and
                                     zoneID ~= 830 and
                                     zoneID ~= 885 and
                                     zoneID ~= 882
                              then
-                                addon:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
+                                self:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
                             end
 
                             -- BFA
                             if
-                                addon.db.profile.achievements[13144] ~= "disabled" and
+                                self.db.profile.achievements[13144] ~= "disabled" and
                                     not select(4, GetAchievementInfo(13144)) and
                                     exp == 8
                              then
-                                addon:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
+                                self:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
                             end
 
                             -- Shadowlands
                             if
-                                addon.db.profile.achievements[14758] ~= "disabled" and
+                                self.db.profile.achievements[14758] ~= "disabled" and
                                     not select(4, GetAchievementInfo(14758)) and
                                     exp == 9
                              then
-                                addon:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
+                                self:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
                             end
                         end
 
@@ -1431,21 +1429,21 @@ function WQA:Reward()
                             retry = true
                         end
 
-                        retry = addon:CheckItems(questID) or retry
-                        addon:CheckCurrencies(questID)
+                        retry = self:CheckItems(questID) or retry
+                        self:CheckCurrencies(questID)
 
                         -- Profession
                         local tradeskillLineID = questTagInfo and questTagInfo.tradeskillLineID
                         if tradeskillLineID then
                             local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(tradeskillLineID)
                             local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                            local exp = addon.ZoneToExp[zoneID] or 0
+                            local exp = self.ZoneToExp[zoneID] or 0
 
                             if
-                                not addon.db.char[exp].profession[tradeskillLineID].isMaxLevel and
-                                    addon.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
+                                not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and
+                                    self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
                              then
-                                addon:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
+                                self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
                             end
                         end
                     end
@@ -1466,49 +1464,49 @@ function WQA:Reward()
 
                         -- Remove disabled world-quest types
                         if
-                            addon.questList[questID] and
-                                not addon.db.profile.options.reward.worldQuestType[worldQuestType]
+                            self.questList[questID] and
+                                not self.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
-                            addon.questList[questID] = nil
+                            self.questList[questID] = nil
                         end
 
                         if
-                            addon.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
-                                addon.db.profile.options.reward.worldQuestType[worldQuestType]
+                            self.db.profile.options.zone[C_TaskQuest.GetQuestZoneID(questID)] == true and
+                                self.db.profile.options.reward.worldQuestType[worldQuestType]
                          then
                             -- 100 DIFFERENT WORLD QUESTS ACHIEVEMENT CHECKS
-                            if QuestUtils_IsQuestWorldQuest(questID) and not addon.db.global.completed[questID] then
+                            if QuestUtils_IsQuestWorldQuest(questID) and not self.db.global.completed[questID] then
                                 local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                                local exp = addon.ZoneToExp[zoneID] or 0
+                                local exp = self.ZoneToExp[zoneID] or 0
 
                                 -- Legion
                                 if
-                                    addon.db.profile.achievements[11189] ~= "disabled" and
+                                    self.db.profile.achievements[11189] ~= "disabled" and
                                         not select(4, GetAchievementInfo(11189)) and
                                         exp == 7 and
                                         zoneID ~= 830 and
                                         zoneID ~= 885 and
                                         zoneID ~= 882
                                  then
-                                    addon:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
+                                    self:AddRewardToQuest(questID, "ACHIEVEMENT", 11189)
                                 end
 
                                 -- BFA
                                 if
-                                    addon.db.profile.achievements[13144] ~= "disabled" and
+                                    self.db.profile.achievements[13144] ~= "disabled" and
                                         not select(4, GetAchievementInfo(13144)) and
                                         exp == 8
                                  then
-                                    addon:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
+                                    self:AddRewardToQuest(questID, "ACHIEVEMENT", 13144)
                                 end
 
                                 -- Shadowlands
                                 if
-                                    addon.db.profile.achievements[14758] ~= "disabled" and
+                                    self.db.profile.achievements[14758] ~= "disabled" and
                                         not select(4, GetAchievementInfo(14758)) and
                                         exp == 9
                                  then
-                                    addon:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
+                                    self:AddRewardToQuest(questID, "ACHIEVEMENT", 14758)
                                 end
                             end
 
@@ -1518,21 +1516,21 @@ function WQA:Reward()
                                 retry = true
                             end
 
-                            retry = addon:CheckItems(questID) or retry
-                            addon:CheckCurrencies(questID)
+                            retry = self:CheckItems(questID) or retry
+                            self:CheckCurrencies(questID)
 
                             -- Profession rewards
                             local tradeskillLineID = questTagInfo and questTagInfo.tradeskillLineID
                             if tradeskillLineID then
                                 local professionName = C_TradeSkillUI.GetTradeSkillDisplayName(tradeskillLineID)
                                 local zoneID = C_TaskQuest.GetQuestZoneID(questID)
-                                local exp = addon.ZoneToExp[zoneID] or 0
+                                local exp = self.ZoneToExp[zoneID] or 0
 
                                 if
-                                    not addon.db.char[exp].profession[tradeskillLineID].isMaxLevel and
-                                        addon.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
+                                    not self.db.char[exp].profession[tradeskillLineID].isMaxLevel and
+                                        self.db.profile.options.reward[exp].profession[tradeskillLineID].skillup
                                  then
-                                    addon:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
+                                    self:AddRewardToQuest(questID, "PROFESSION_SKILLUP", professionName)
                                 end
                             end
                         end
@@ -1551,21 +1549,21 @@ function WQA:Reward()
             frame:SetScript("OnUpdate", nil)
 
             if overallRetry then
-                addon:Debug("|cFFFF0000<<<RETRY>>>|r")
-                addon.start = GetTime()
-                addon.timer =
-                    addon:ScheduleTimer(
+                self:Debug("|cFFFF0000<<<RETRY>>>|r")
+                self.start = GetTime()
+                self.timer =
+                    self:ScheduleTimer(
                     function()
-                        addon:Reward()
+                        self:Reward()
                     end,
                     2
                 )
 
-                addon.event:RegisterEvent("QUEST_LOG_UPDATE")
-                addon.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+                self.event:RegisterEvent("QUEST_LOG_UPDATE")
+                self.event:RegisterEvent("GET_ITEM_INFO_RECEIVED")
             else
-                addon.rewards = true
-                addon.retryCount = 0
+                self.rewards = true
+                self.retryCount = 0
             end
         end
     end
@@ -1574,7 +1572,7 @@ function WQA:Reward()
     if (usingStatic and #questIDsToProcess > 0) or (not usingStatic and #mapIDsToProcess > 0) then
         rewardFrame:SetScript("OnUpdate", RewardUpdate)
     else
-        addon.rewards = true
+        self.rewards = true
     end
 end
 
