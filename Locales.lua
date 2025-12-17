@@ -109,6 +109,9 @@ local L = WQA.L
 	L["tracking_exclusive"] = "Only track with this character"
 	L["tracking_other"] = "Only tracked by %s"
 	L["tracking_wasEarnedByMe"] = "Track if not earned by active character"
+	L["Scan_Scheduled"] = "|cff00ff00[WQA] Fresh scan scheduled|r"
+	L["Scan_Skipped"] = "|cffff0000[WQA] Scan skipped - in combat or in instance|r"
+	L["Starting_Scan"] = "|cff00ff00[WQA] Starting scan...|r"
 if locale == "deDE" then
     L["WQChat"] = "Interessante Weltquests verfügbar:"
     L["WQforAch"] = "%s für %s"
