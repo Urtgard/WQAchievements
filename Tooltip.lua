@@ -54,6 +54,11 @@ function WQA:UpdateQTip(tasks)
         return
     end
 
+    tooltip:Clear()
+	tooltip.quests = nil
+    tooltip.missions = nil
+    tooltip.pois = nil
+
     if next(tasks) == nil then
         tooltip:AddLine(L["NO_QUESTS"])
         tooltip:Show()
