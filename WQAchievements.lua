@@ -439,7 +439,7 @@ function WQA:OnEnable()
                     if currentIndex > #questIDsToScan then
                         self:SetScript("OnUpdate", nil)
                         local now = GetTime()
-                        WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+                        WQA:CancelTimer(WQA.timer) 
                         if now - WQA.start > 1 then
                             WQA:Reward()
                         else
@@ -450,7 +450,7 @@ function WQA:OnEnable()
             )
         else
             local now = GetTime()
-            WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+            WQA:CancelTimer(WQA.timer) 
             if now - WQA.start > 1 then
                 WQA:Reward()
             else
@@ -462,7 +462,7 @@ function WQA:OnEnable()
     local function OnEvent(frame, event, questID)
         if event == "PLAYER_ENTERING_WORLD" then
             if WQA.timer then
-                WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+                WQA:CancelTimer(WQA.timer)
             end
             local doScan = AnythingTracked() and not UnitAffectingCombat("player")
             local inInstance, instanceType = IsInInstance()
@@ -477,7 +477,6 @@ function WQA:OnEnable()
 
             if doScan then
                 WQA.timer = WQA:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
-                print(L["Scan_Scheduled"])
             else
                 if not AnythingTracked() then
                     print(L["No_Tracked"])
@@ -488,10 +487,6 @@ function WQA:OnEnable()
 
             if doScan then
                 WQA:ScheduleTimer("Show", (WQA.db.profile.options.delay or 5) + 1, nil, true)
-            end
-
-            if event == "PLAYER_ENTERING_WORLD" then
-                WQA.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
             end
 
             WQA:ScheduleTimer(
