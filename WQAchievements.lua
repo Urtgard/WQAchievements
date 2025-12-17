@@ -389,11 +389,11 @@ function WQA:OnEnable()
 
     local function StartScan()
         if not AnythingTracked() then
-        print(L["No_Tracked"])
+            print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
             return
         end
         if UnitAffectingCombat("player") then
-        print(L["Scan_Skipped"])
+            print("|cffff0000[WQA] Scan skipped - in combat|r")
             return
         end
         local inInstance, instanceType = IsInInstance()
@@ -403,11 +403,11 @@ function WQA:OnEnable()
                     instanceType == "pvp" or
                     instanceType == "arena")
          then
-        print(L["Scan_Skipped"])
+            print("|cffff0000[WQA] Scan skipped - in instance (" .. (instanceType or "unknown") .. ")|r")
             return
         end
 
-        print(L["Starting_Scan"])
+        print("|cff00ff00[WQA] Starting scan...|r")
         self.start = GetTime()
         currentIndex = 1
         questIDsToScan = {}
@@ -477,12 +477,12 @@ function WQA:OnEnable()
 
             if doScan then
                 WQA.timer = WQA:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
-                print(L["Scan_Scheduled"])
+                print("|cff00ff00[WQA] Fresh scan scheduled|r")
             else
                 if not AnythingTracked() then
-                    print(L["No_Tracked"])
+                    print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
                 else
-                    print(L["Scan_Skipped"])
+                    print("|cffff0000[WQA] In instance/combat - scan skipped|r")
                 end
             end
 
@@ -529,13 +529,13 @@ function WQA:slash(input)
 
     -- SKIP SCAN IF IN COMBAT OR INSTANCE
     if not ShouldScan() then
-        print(L["Scan_Skipped"])
+        print("|cffff0000[WQA] Scan skipped - in instance or combat|r")
         return
     end
 
     -- SKIP IF NOTHING TRACKED
     if not AnythingTracked() then
-        print(L["No_Tracked"])
+        print("|cffff0000[WQA] Nothing tracked - no scan|r")
         return
     end
 
