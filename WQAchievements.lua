@@ -1423,7 +1423,8 @@ function WQA:Reward()
                             end
                         end
 
-                        -- Reward data
+                        -- For quest ID 83366, the Blizzard API returns inaccurate or misleading results.
+                        -- See issue #184.
                         if questID ~= 83366 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
                             C_TaskQuest.RequestPreloadRewardData(questID)
                             retry = true
@@ -1463,10 +1464,7 @@ function WQA:Reward()
                         local worldQuestType = questTagInfo and questTagInfo.worldQuestType or 0
 
                         -- Remove disabled world-quest types
-                        if
-                            self.questList[questID] and
-                                not self.db.profile.options.reward.worldQuestType[worldQuestType]
-                         then
+                        if self.questList[questID] and not self.db.profile.options.reward.worldQuestType[worldQuestType] then
                             self.questList[questID] = nil
                         end
 
@@ -1510,7 +1508,8 @@ function WQA:Reward()
                                 end
                             end
 
-                            -- Force load quest reward data
+                            -- For quest ID 83366, the Blizzard API returns inaccurate or misleading results.
+                            -- See issue #184.
                             if questID ~= 83366 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
                                 C_TaskQuest.RequestPreloadRewardData(questID)
                                 retry = true
