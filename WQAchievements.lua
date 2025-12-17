@@ -327,34 +327,14 @@ local function AnythingTracked()
 end
 
 function WQA:RefreshTracking()
-    -- Cancel any pending refresh
     if self.refreshTimer then
         self:CancelTimer(self.refreshTimer)
-        self.refreshTimer = nil
     end
-
-    -- 2 minute rescan — only one scan no matter how many boxes you click
-    self.refreshTimer =
-        self:ScheduleTimer(
-        function()
-            self.refreshTimer = nil
-
-            self:ScheduleTimer(
-                function()
-                    self:StartScan()
-                end,
-                0.5
-            )
-
-            self:CreateQuestList()
-            self:Show()
-        end,
-        120
-    )
-
-    if WQA.PopUp and WQA.PopUp:IsShown() then
-        WQA:AnnouncePopUp(WQA.activeTasks or {}, false)
-    end
+    self.refreshTimer = self:ScheduleTimer(function()
+        self:StartScan()
+        self:CreateQuestList()
+        self:Show()
+    end, 120)
 end
 
 function WQA:OnEnable()
@@ -389,11 +369,11 @@ function WQA:OnEnable()
 
     local function StartScan()
         if not AnythingTracked() then
-            print(L["No_Tracked"])
+        print(L["No_Tracked"])
             return
         end
         if UnitAffectingCombat("player") then
-            print(L["Scan_Skipped"])
+        print(L["Scan_Skipped"])
             return
         end
         local inInstance, instanceType = IsInInstance()
@@ -403,7 +383,7 @@ function WQA:OnEnable()
                     instanceType == "pvp" or
                     instanceType == "arena")
          then
-            print(L["Scan_Skipped"])
+        print(L["Scan_Skipped"])
             return
         end
 
@@ -439,30 +419,30 @@ function WQA:OnEnable()
                     if currentIndex > #questIDsToScan then
                         self:SetScript("OnUpdate", nil)
                         local now = GetTime()
-                        WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
-                        if now - WQA.start > 1 then
+                        self:CancelTimer(self.timer)
+                        if now - self.start > 1 then
                             WQA:Reward()
                         else
-                            WQA:ScheduleTimer("Reward", 1)
+                            self:ScheduleTimer("Reward", 1)
                         end
                     end
                 end
             )
         else
             local now = GetTime()
-            WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
-            if now - WQA.start > 1 then
+            self:CancelTimer(self.timer)
+            if now - self.start > 1 then
                 WQA:Reward()
             else
-                WQA:ScheduleTimer("Reward", 1)
+                self:ScheduleTimer("Reward", 1)
             end
         end
     end
 
     local function OnEvent(frame, event, questID)
         if event == "PLAYER_ENTERING_WORLD" then
-            if WQA.timer then
-                WQA:CancelTimer(WQA.timer) -- ← FIXED: WQA:CancelTimer
+            if self.timer then
+                self:CancelTimer(self.timer) 
             end
             local doScan = AnythingTracked() and not UnitAffectingCombat("player")
             local inInstance, instanceType = IsInInstance()
@@ -476,7 +456,7 @@ function WQA:OnEnable()
             end
 
             if doScan then
-                WQA.timer = WQA:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
+                self.timer = self:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
                 print(L["Scan_Scheduled"])
             else
                 if not AnythingTracked() then
@@ -487,17 +467,13 @@ function WQA:OnEnable()
             end
 
             if doScan then
-                WQA:ScheduleTimer("Show", (WQA.db.profile.options.delay or 5) + 1, nil, true)
+                self:ScheduleTimer("Show", (WQA.db.profile.options.delay or 5) + 1, nil, true)
             end
 
-            if event == "PLAYER_ENTERING_WORLD" then
-                WQA.event:UnregisterEvent("PLAYER_ENTERING_WORLD")
-            end
-
-            WQA:ScheduleTimer(
+            self:ScheduleTimer(
                 function()
-                    WQA:Show("new", true)
-                    WQA:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
+                    self:Show("new", true)
+                    self:ScheduleRepeatingTimer("Show", 30 * 60, "new", true)
                 end,
                 (32 - (date("%M") % 30)) * 60
             )
@@ -506,8 +482,8 @@ function WQA:OnEnable()
         elseif event == "QUEST_TURNED_IN" then
             WQA.db.global.completed[questID] = true
         elseif event == "PLAYER_REGEN_ENABLED" then
-            WQA.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
-            WQA:Show("new", true)
+            self.event:UnregisterEvent("PLAYER_REGEN_ENABLED")
+            self:Show("new", true)
         end
     end
 
