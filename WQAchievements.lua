@@ -389,11 +389,11 @@ function WQA:OnEnable()
 
     local function StartScan()
         if not AnythingTracked() then
-            print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+            print(L["No_Tracked"])
             return
         end
         if UnitAffectingCombat("player") then
-            print("|cffff0000[WQA] Scan skipped - in combat|r")
+            print(L["Scan_Skipped"])
             return
         end
         local inInstance, instanceType = IsInInstance()
@@ -403,11 +403,11 @@ function WQA:OnEnable()
                     instanceType == "pvp" or
                     instanceType == "arena")
          then
-            print("|cffff0000[WQA] Scan skipped - in instance (" .. (instanceType or "unknown") .. ")|r")
+            print(L["Scan_Skipped"])
             return
         end
 
-        print("|cff00ff00[WQA] Starting scan...|r")
+        print(L["Starting_Scan"])
         self.start = GetTime()
         currentIndex = 1
         questIDsToScan = {}
@@ -477,12 +477,12 @@ function WQA:OnEnable()
 
             if doScan then
                 WQA.timer = WQA:ScheduleTimer(StartScan, WQA.db.profile.options.delay or 5)
-                print("|cff00ff00[WQA] Fresh scan scheduled|r")
+                print(L["Scan_Scheduled"])
             else
                 if not AnythingTracked() then
-                    print("|cffff0000[WQA] Nothing tracked - scan skipped|r")
+                    print(L["No_Tracked"])
                 else
-                    print("|cffff0000[WQA] In instance/combat - scan skipped|r")
+                    print(L["Scan_Skipped"])
                 end
             end
 
@@ -529,13 +529,13 @@ function WQA:slash(input)
 
     -- SKIP SCAN IF IN COMBAT OR INSTANCE
     if not ShouldScan() then
-        print("|cffff0000[WQA] Scan skipped - in instance or combat|r")
+        print(L["Scan_Skipped"])
         return
     end
 
     -- SKIP IF NOTHING TRACKED
     if not AnythingTracked() then
-        print("|cffff0000[WQA] Nothing tracked - no scan|r")
+        print(L["No_Tracked"])
         return
     end
 
