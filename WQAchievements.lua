@@ -22,37 +22,6 @@ do
     end
 end
 
-function WQA:RefreshTracking()
-    -- Cancel any pending refresh
-    if self.refreshTimer then
-        self:CancelTimer(self.refreshTimer)
-        self.refreshTimer = nil
-    end
-
-    -- 2 minute rescan — only one scan no matter how many boxes you click
-    self.refreshTimer =
-        self:ScheduleTimer(
-        function()
-            self.refreshTimer = nil
-
-            self:ScheduleTimer(
-                function()
-                    self:StartScan()
-                end,
-                0.5
-            )
-
-            self:CreateQuestList()
-            self:Show()
-        end,
-        120
-    )
-
-    if WQA.PopUp and WQA.PopUp:IsShown() then
-        WQA:AnnouncePopUp(WQA.activeTasks or {}, false)
-    end
-end
-
 WQA.data.custom = {wqID = "", rewardID = "", rewardType = "none", questType = "WORLD_QUEST"}
 WQA.data.custom.mission = {missionID = "", rewardID = "", rewardType = "none"}
 --WQA.data.customReward = 0
@@ -355,6 +324,37 @@ local function AnythingTracked()
     end
 
     return false
+end
+
+function WQA:RefreshTracking()
+    -- Cancel any pending refresh
+    if self.refreshTimer then
+        self:CancelTimer(self.refreshTimer)
+        self.refreshTimer = nil
+    end
+
+    -- 2 minute rescan — only one scan no matter how many boxes you click
+    self.refreshTimer =
+        self:ScheduleTimer(
+        function()
+            self.refreshTimer = nil
+
+            self:ScheduleTimer(
+                function()
+                    self:StartScan()
+                end,
+                0.5
+            )
+
+            self:CreateQuestList()
+            self:Show()
+        end,
+        120
+    )
+
+    if WQA.PopUp and WQA.PopUp:IsShown() then
+        WQA:AnnouncePopUp(WQA.activeTasks or {}, false)
+    end
 end
 
 function WQA:OnEnable()
