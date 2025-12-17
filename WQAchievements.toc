@@ -1,4 +1,4 @@
-## Interface: 110205
+## Interface: 110207
 ## Title: WQAchievements
 ## Author: Urtgard
 ## Version: @project-version@
@@ -37,5 +37,6 @@ Locales.lua
 Utilities.lua
 Tooltip.lua
 
+QuestData.lua 
 WQAchievements.lua
 Options.lua

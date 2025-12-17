@@ -1,5 +1,7 @@
 local WQA = WQAchievements
 
+-- ZoneID Lookup https://wago.tools/db2/UiMap
+
 WQA.ZoneIDList = {
     [7] = {
         619, -- Broken Isles
@@ -67,5 +69,16 @@ WQA.ZoneIDList = {
         2369, -- Siren Isle
         2346, -- Undermine
         2371, -- K'aresh
-    }
+		2472 -- Tazavesh
+    },
+	[12] = {
+	-- Add both Vanilla and Midnight in case WQ show for non Midnight phase
+		94, -- Eversong Woods (Vanilla)
+		2395, -- Eversond Woods (Midnight)
+		122, -- Isle of Quel'Danas (Vanilla)
+		2424, -- Isle of Quel'Danas (Midnight)
+		2537, -- Zul'Aman
+		2405, -- Voidstorm
+		2413 -- Harandar (Not a current WQ zone adding in case)
+	}
 }
