@@ -1,7 +1,7 @@
 ## Interface: 110207
 ## Title: WQAchievements
 ## Author: Urtgard
-## Version: v11.2.7-1
+## Version: @project-version@
 ## SavedVariables: WQADB
 ## X-Curse-Project-ID: 272039
 ## X-WoWI-ID: 24566
