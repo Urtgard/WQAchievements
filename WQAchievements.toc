@@ -1,4 +1,4 @@
-## Interface: 110205
+## Interface: 110207
 ## Title: WQAchievements
 ## Author: Urtgard
 ## Version: @project-version@
