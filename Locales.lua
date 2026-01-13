@@ -332,8 +332,8 @@ elseif locale == "zhCN" then
 	L["World Quest"] = "世界任务"
 	L["World Quests"] = "世界任务"
 	L["WQChat"] = "关注的世界任务正在进行："
-	L["WQforAch"] = "%s（%s）"
-	L["WQforAchTime"] = "%s（%s）%s"
+	L["WQforAch"] = "%s （%s）"
+	L["WQforAchTime"] = "%s（%s） %s"
 	L["Zones"] = "区域"
     L["NO_QUESTS"] = "没有关注的世界任务！"
 elseif locale == "ruRU" then
