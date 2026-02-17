@@ -1048,7 +1048,31 @@ local jewelryCache = {
 
 -- CanIMogIt
 function WQA:IsTransmogable(itemLink)
-	return false 
+	-- Returns whether the item is transmoggable or not.
+
+	-- White items are not transmoggable.
+	local quality = select(3, GetItemInfo(itemLink))
+	if quality == nil then
+		return
+	end
+	if quality <= 1 then
+		return false
+	end
+
+	local itemID, _, _, slotName = GetItemInfoInstant(itemLink)
+
+	-- See if the game considers it transmoggable
+	local transmoggable = select(3, C_TransmogCollection.GetItemInfo(itemID))
+	if transmoggable == false then
+		return false
+	end
+
+	-- See if the item is in a valid transmoggable slot
+	local slot = EquipLocToSlot1[slotName]
+	if slot == nil or slot == 11 or slot == 13 or slot == 2 then
+		return false
+	end
+	return true
 end
 
 function WQA:CheckItems(questID, isEmissary)
