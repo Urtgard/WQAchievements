@@ -1051,7 +1051,7 @@ function WQA:IsTransmogable(itemLink)
 	-- Returns whether the item is transmoggable or not.
 
 	-- White items are not transmoggable.
-	local quality = select(3, GetItemInfo(itemLink))
+	local quality = select(3, C_Item.GetItemInfo(itemLink))
 	if quality == nil then
 		return
 	end
@@ -1059,7 +1059,7 @@ function WQA:IsTransmogable(itemLink)
 		return false
 	end
 
-	local itemID, _, _, slotName = GetItemInfoInstant(itemLink)
+	local itemID, _, _, slotName = C_Item.GetItemInfoInstant(itemLink)
 
 	-- See if the game considers it transmoggable
 	local transmoggable = select(3, C_TransmogCollection.GetItemInfo(itemID))
