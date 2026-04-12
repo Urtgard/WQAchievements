@@ -67,5 +67,15 @@ WQA.ZoneIDList = {
         2369, -- Siren Isle
         2346, -- Undermine
         2371, -- K'aresh
-    }
+    },
+    [12] = {
+        2395, -- Eversong Woods
+        2413, -- Harrandar
+        2437, -- Zul'Aman
+        2405, -- Voidstorm
+        2393, -- Silvermoon City 
+        2424, -- Isle of Quel'Danas
+        2541, -- The Arcantina
+        2444, -- Slayer's Rise
+    },
 }
