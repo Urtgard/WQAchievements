@@ -901,6 +901,16 @@ local ReputationCurrencyList = {
 	[2897] = 2590 -- Council of Dornogal
 }
 
+-- Quests to skip reward data preload due to inaccurate or misleading Blizzard API results
+local SkipRewardDataPreloadQuests = {
+	[83366] = true, -- See issue #184
+	-- Neighborhood weekly quests
+	[95413] = true,
+	[95416] = true,
+	[95440] = true,
+	[95438] = true
+}
+
 function WQA:Reward()
 	self:Debug("Reward")
 
@@ -968,9 +978,8 @@ function WQA:Reward()
 								end
 							end
 
-							-- For quest ID 83366, the Blizzard API returns inaccurate or misleading results.
-							-- See issue #184.
-							if questID ~= 83366 and questID ~= 95413 and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
+							-- Skip reward data preload for quests with inaccurate or misleading Blizzard API results
+							if not SkipRewardDataPreloadQuests[questID] and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
 								C_TaskQuest.RequestPreloadRewardData(questID)
 								retry = true
 							end
