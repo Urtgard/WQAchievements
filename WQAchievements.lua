@@ -1267,34 +1267,38 @@ function WQA:CheckReward(questID, isEmissary, rewardIndex)
 		-- Azerite Armor Cache
 		if itemID == 163857 and self.db.profile.options.reward.gear.AzeriteArmorCache then
 			itemLevel = GetDetailedItemLevelInfo(itemLink)
-			local AzeriteArmorCacheIsUpgrade = false
-			local AzeriteArmorCache = {}
-			for i = 1, 5, 2 do
-				if GetInventoryItemID("player", i) then
-					local itemLink1 = GetInventoryItemLink("player", i)
-					if itemLink1 then
-						local itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
-						if itemLevel1 then
-							AzeriteArmorCache[i] = itemLevel - itemLevel1
-							if itemLevel > itemLevel1 and itemLevel - itemLevel1 >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
-								AzeriteArmorCacheIsUpgrade = true
+			if not itemLevel then
+				retry = true
+			else
+				local AzeriteArmorCacheIsUpgrade = false
+				local AzeriteArmorCache = {}
+				for i = 1, 5, 2 do
+					if GetInventoryItemID("player", i) then
+						local itemLink1 = GetInventoryItemLink("player", i)
+						if itemLink1 then
+							local itemLevel1 = GetDetailedItemLevelInfo(itemLink1)
+							if itemLevel1 then
+								AzeriteArmorCache[i] = itemLevel - itemLevel1
+								if itemLevel > itemLevel1 and itemLevel - itemLevel1 >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+									AzeriteArmorCacheIsUpgrade = true
+								end
+							else
+								retry = true
 							end
 						else
 							retry = true
 						end
 					else
-						retry = true
-					end
-				else
-					AzeriteArmorCache[i] = itemLevel
-					if itemLevel and itemLevel >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
-						AzeriteArmorCacheIsUpgrade = true
+						AzeriteArmorCache[i] = itemLevel
+						if itemLevel and itemLevel >= self.db.profile.options.reward.gear.itemLevelUpgradeMin then
+							AzeriteArmorCacheIsUpgrade = true
+						end
 					end
 				end
-			end
-			if AzeriteArmorCacheIsUpgrade == true then
-				local item = { itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache }
-				self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
+				if AzeriteArmorCacheIsUpgrade == true then
+					local item = { itemLink = itemLink, AzeriteArmorCache = AzeriteArmorCache }
+					self:AddRewardToQuest(questID, "ITEM", item, isEmissary)
+				end
 			end
 		end
 
