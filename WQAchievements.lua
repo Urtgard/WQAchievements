@@ -165,7 +165,7 @@ function WQA:OnEnable()
 			return self:GetOptions()
 		end
 	)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
+	self.optionsFrame, self.optionsID = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
 	local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("WQAProfiles", profiles)
 	self.optionsFrame.Profiles =
@@ -1782,7 +1782,7 @@ function dataobj:OnClick(button)
 	if button == "LeftButton" then
 		WQA:Show("popup")
 	elseif button == "RightButton" then
-		Settings.OpenToCategory("WQAchievements")
+		Settings.OpenToCategory(WQA.optionsID)
 	end
 end
 
