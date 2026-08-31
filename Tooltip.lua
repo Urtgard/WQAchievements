@@ -398,11 +398,16 @@ function WQA:AnnouncePopUp(quests, silent)
             "OnHide",
             function()
                 if WQA.tooltip ~= nil then
-                    LibQTip:Release(WQA.tooltip)
-                    WQA.tooltip.quests = nil
-                    WQA.tooltip.missions = nil
-                    WQA.tooltip = nil
-                end
+					local tooltip = WQA.tooltip
+
+					-- Detach the shared reference before Release(). This makes
+					-- cleanup safe against delayed/recursive UI callbacks.
+					WQA.tooltip = nil
+					tooltip.quests = nil
+					tooltip.missions = nil
+					tooltip.pois = nil
+					LibQTip:Release(tooltip)
+				end
 
                 PopUp.shown = false
             end

@@ -76,17 +76,19 @@ function WQA:TurboRefreshOpenPopup()
 	end
 
 	if self.tooltip then
-		LibQTip:Release(self.tooltip)
+		local tooltip = self.tooltip
+
+		-- Detach first so delayed LibQTip/OnHide callbacks cannot operate on
+		-- a replacement tooltip created by the progressive refresh.
 		self.tooltip = nil
+		tooltip.quests = nil
+		tooltip.missions = nil
+		tooltip.pois = nil
+		LibQTip:Release(tooltip)
 	end
 
 	self:AnnouncePopUp(self.activeTasks or {})
 end
-
----Publish newly enriched reward information without starting another scan.
----
----CheckWQ("new") updates activeTasks/newTasks and only announces genuinely
----new tasks because WQA's watched table de-duplicates notifications.
 function WQA:TurboPublishEnrichment()
 	if not self.questList then
 		return

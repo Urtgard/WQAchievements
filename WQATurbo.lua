@@ -1817,28 +1817,43 @@ function dataobj:OnClick(button)
 end
 
 function WQA:AnnounceLDB(quests)
-	-- Hide PopUp
+	-- Hide LDB tooltip while the persistent popup is open.
 	if PopUpIsShown() then
 		return
 	end
 
 	self:CreateQTip()
-	self.tooltip:SetAutoHideDelay(
+
+	-- Capture the exact tooltip instance owned by this hover. A delayed
+	-- auto-hide callback must not release a tooltip that Turbo created later.
+	local tooltip = self.tooltip
+	if not tooltip then
+		return
+	end
+
+	tooltip:SetAutoHideDelay(
 		.25,
 		anchor,
 		function()
-			if not PopUpIsShown() then
-				LibQTip:Release(WQA.tooltip)
-				WQA.tooltip.quests = nil
-				WQA.tooltip.missions = nil
-				WQA.tooltip = nil
+			-- Ignore stale callbacks. The global reference may now belong to
+			-- another popup/hover tooltip, or may already have been cleared.
+			if PopUpIsShown() or WQA.tooltip ~= tooltip then
+				return
 			end
+
+			-- Detach first. LibQTip:Release() can trigger other UI callbacks,
+			-- so nothing after Release should dereference WQA.tooltip.
+			WQA.tooltip = nil
+			tooltip.quests = nil
+			tooltip.missions = nil
+			tooltip.pois = nil
+			LibQTip:Release(tooltip)
 		end
 	)
-	self.tooltip:SmartAnchorTo(anchor)
+
+	tooltip:SmartAnchorTo(anchor)
 	self:UpdateQTip(quests)
 end
-
 function WQA:UpdateLDBText(activeTasks, newTasks)
 	if newTasks ~= nil then
 		dataobj.text = "New World Quests active"
