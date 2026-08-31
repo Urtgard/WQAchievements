@@ -181,6 +181,7 @@ function WQA:OnEnable()
 			if name == "PLAYER_ENTERING_WORLD" then
 				self:ScheduleTimer(
 					function()
+						local perfStart = self:PerfStart()
 						for i = 1, #self.ZoneIDList do
 							for _, mapID in pairs(self.ZoneIDList[i]) do
 								if self.db.profile.options.zone[mapID] == true then
@@ -197,6 +198,8 @@ function WQA:OnEnable()
 								end
 							end
 						end
+
+						self:PerfStop("StartupRewardPreload", perfStart)
 					end,
 					self.db.profile.options.delay
 				)
@@ -918,7 +921,12 @@ function WQA:Reward()
 	self.event:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
 	self.rewards = false
 	local retry = false
-
+	local perfDiag = {
+    		maps = 0,
+    		quests = 0,
+    		missingRewardData = {},
+    		itemRetries = {}
+	}
 	-- Azerite Traits
 	if self.db.profile.options.reward.gear.azeriteTraits ~= "" then
 		self.azeriteTraitsList = {}
@@ -930,10 +938,12 @@ function WQA:Reward()
 	for i in pairs(self.ZoneIDList) do
 		for _, mapID in pairs(self.ZoneIDList[i]) do
 			if self.db.profile.options.zone[mapID] == true then
+				perfDiag.maps = perfDiag.maps + 1
 				local quests = C_TaskQuest.GetQuestsOnMap(mapID)
 				if quests then
 					for i = 1, #quests do
 						local questID = quests[i].questID
+						perfDiag.quests = perfDiag.quests + 1
 						local questTagInfo = GetQuestTagInfo(questID)
 						local worldQuestType = 0
 						if questTagInfo then
@@ -979,11 +989,23 @@ function WQA:Reward()
 							end
 
 							-- Skip reward data preload for quests with inaccurate or misleading Blizzard API results
-							if not SkipRewardDataPreloadQuests[questID] and HaveQuestData(questID) and not HaveQuestRewardData(questID) then
-								C_TaskQuest.RequestPreloadRewardData(questID)
-								retry = true
+							if
+    								not SkipRewardDataPreloadQuests[questID]
+    								and HaveQuestData(questID)
+    								and not HaveQuestRewardData(questID)
+							then
+    								C_TaskQuest.RequestPreloadRewardData(questID)
+
+    								perfDiag.missingRewardData[questID] = true
+    								retry = true
 							end
-							retry = self:CheckItems(questID) or retry
+
+							local itemRetry = self:CheckItems(questID)
+
+							if itemRetry then
+    								perfDiag.itemRetries[questID] = true
+    								retry = true
+							end
 							self:CheckCurrencies(questID)
 
 							-- Profession
@@ -1017,6 +1039,14 @@ function WQA:Reward()
 			end
 		end
 	end
+
+	self.perf.rewardDiagnostics = self.perf.rewardDiagnostics or {}
+	table.insert(self.perf.rewardDiagnostics, {
+    		maps = perfDiag.maps,
+    		quests = perfDiag.quests,
+    		missingRewardData = perfDiag.missingRewardData,
+    		itemRetries = perfDiag.itemRetries
+	})
 
 	if retry == true then
 		self.Debug("|cFFFF0000<<<RETRY>>>|r")

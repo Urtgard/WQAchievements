@@ -39,4 +39,5 @@ Utilities.lua
 Tooltip.lua
 
 WQAchievements.lua
+Performance.lua
 Options.lua
