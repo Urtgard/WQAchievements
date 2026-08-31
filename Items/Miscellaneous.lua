@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 local CriteriaType = WQA.Criterias.CriteriaType
 local RewardType = WQA.Rewards.RewardType
 

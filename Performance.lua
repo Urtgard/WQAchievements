@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 local unpackResults = table.unpack or unpack
 

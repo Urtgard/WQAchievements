@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 --[[
 WQA Turbo runtime cleanup
@@ -29,9 +29,9 @@ function WQA:OnEnable()
 	self.playerName = name .. "-" .. server
 
 	-- Keep the original option-table identifiers for now so existing option
-	-- code and Settings.OpenToCategory("WQAchievements") continue to work.
+	-- code and Settings.OpenToCategory("WQATurbo") continue to work.
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(
-		"WQAchievements",
+		"WQATurbo",
 		function()
 			return self:GetOptions()
 		end
@@ -39,7 +39,7 @@ function WQA:OnEnable()
 
 	self.optionsFrame =
 		LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
-			"WQAchievements",
+			"WQATurbo",
 			"WQA Turbo"
 		)
 
@@ -98,7 +98,7 @@ function WQA:OnEnable()
 	C_AddOns.LoadAddOn("Blizzard_GarrisonUI")
 end
 
--- Keep the original /wqa command for users migrating from WQAchievements.
+-- Keep the original /wqa command for users migrating from WQATurbo.
 -- Add one compact Turbo command for development and later release use.
 function WQA:TurboSlash(input)
 	local command = string.match(input or "", "^(%S*)")

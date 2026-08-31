@@ -1,4 +1,4 @@
-local WQA = WQAchievements
+local WQA = WQATurbo
 
 -- Shadowlands
 local data = {

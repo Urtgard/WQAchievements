@@ -1,4 +1,4 @@
-local WQA = WQAchievements
+local WQA = WQATurbo
 local L = WQA.L
 
 -- Blizzard
@@ -1171,7 +1171,7 @@ function WQA:UpdateOptions()
 				--		 order = newOrder()
 				--		}
 				--	else
-				--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+				--		--LibStub("AceConfigRegistry-3.0"):NotifyChange("WQATurbo")
 				--	end
 				-- end
 			end
@@ -1379,7 +1379,7 @@ function WQA:CreateGroup(options, data, groupName)
 					optionsTimer =
 						self:ScheduleTimer(
 							function()
-								LibStub("AceConfigRegistry-3.0"):NotifyChange("WQAchievements")
+								LibStub("AceConfigRegistry-3.0"):NotifyChange("WQATurbo")
 							end,
 							2
 						)

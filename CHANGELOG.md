@@ -1,17 +1,29 @@
-# WQAchievements
+# Changelog
 
-## [v11.0.7-1](https://github.com/Urtgard/WQAchievements/tree/v11.0.7-1) (2025-01-12)
-[Full Changelog](https://github.com/Urtgard/WQAchievements/compare/v11.0.5-3...v11.0.7-1) [Previous Releases](https://github.com/Urtgard/WQAchievements/releases)
+## 0.1.0-beta
 
-- toc update 11.0.7  
-- Merge pull request #174 from nanjuekaien1/patch-1  
-    localization/zhCN  
-- Update WarWithin.lua  
-- Update Shadowlands.lua  
-- Update Legion.lua  
-- Update Dragonflight.lua  
-- Update BattleForAzeroth.lua  
-- Update Expansions.lua  
-- Update Tooltip.lua  
-- Update Locales.lua  
-- Update Options.lua  
+Initial WQA Turbo beta.
+
+### Performance architecture
+- Replaced repeated synchronous full-map reward scans with a frame-budgeted
+  incremental scanner.
+- Missing reward data no longer restarts the entire global scan.
+- Dynamic item/currency/profession rewards load in the background.
+- Changed task readiness from global to per-World-Quest, so one unresolved WQ
+  no longer delays other ready results.
+- Added progressive publication of newly available relevant WQs.
+- Reduced repeated Mount Journal and Pet Journal scans with indexed snapshots.
+
+### User interface
+- Minimap popup reads the current cache and does not trigger a full refresh.
+- Open popup refreshes when background enrichment discovers new useful WQs.
+- `/wqat` shows current results immediately.
+- Added explicit `/wqat refresh`.
+- Added `/wqat perf`, `/wqat scan`, and `/wqat cache` diagnostics.
+
+### Project cleanup
+- Rebranded as WQA Turbo.
+- Uses independent `WQATurbo` addon namespace.
+- Uses independent `WQATurboDB` SavedVariables database.
+- Removed original CurseForge/Wago/WoWI project IDs.
+- Updated Retail interface metadata for 12.1.

@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 local LibQTip = LibStub("LibQTip-1.0")
 
@@ -28,7 +28,7 @@ WQA.data.custom.mission = { missionID = "", rewardID = "", rewardType = "none" }
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local dataobj =
 	ldb:NewDataObject(
-		"WQAchievements",
+		"WQATurbo",
 		{
 			type = "data source",
 			text = "WQA",
@@ -131,7 +131,7 @@ function WQA:OnInitialize()
 			}
 		}
 	}
-	self.db = LibStub("AceDB-3.0"):New("WQADB", defaults, true)
+	self.db = LibStub("AceDB-3.0"):New("WQATurboDB", defaults, true)
 
 	-- copy old data
 	if type(self.db.global.custom) == "table" then
@@ -150,7 +150,7 @@ function WQA:OnInitialize()
 	end
 
 	-- Minimap Icon
-	icon:Register("WQAchievements", dataobj, self.db.profile.options.LibDBIcon)
+	icon:Register("WQATurbo", dataobj, self.db.profile.options.LibDBIcon)
 end
 
 function WQA:OnEnable()
@@ -160,16 +160,16 @@ function WQA:OnEnable()
 	-- 	Options
 	------------------
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(
-		"WQAchievements",
+		"WQATurbo",
 		function()
 			return self:GetOptions()
 		end
 	)
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAchievements", "WQAchievements")
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQATurbo", "WQATurbo")
 	local profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("WQAProfiles", profiles)
 	self.optionsFrame.Profiles =
-		LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAProfiles", "Profiles", "WQAchievements")
+		LibStub("AceConfigDialog-3.0"):AddToBlizOptions("WQAProfiles", "Profiles", "WQATurbo")
 
 	self.event = CreateFrame("Frame")
 	self.event:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -1812,7 +1812,7 @@ function dataobj:OnClick(button)
 	if button == "LeftButton" then
 		WQA:Show("popup")
 	elseif button == "RightButton" then
-		Settings.OpenToCategory("WQAchievements")
+		Settings.OpenToCategory("WQATurbo")
 	end
 end
 
@@ -2068,8 +2068,8 @@ end
 
 function WQA:UpdateMinimapIcon()
 	if self.db.profile.options.LibDBIcon.hide then
-		icon:Hide("WQAchievements")
+		icon:Hide("WQATurbo")
 	else
-		icon:Show("WQAchievements")
+		icon:Show("WQATurbo")
 	end
 end

@@ -1,13 +1,13 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 local L = WQA.L
 local LibQTip = LibStub("LibQTip-1.0")
 
 
 function WQA:CreateQTip()
-    if not LibQTip:IsAcquired("WQAchievements") and not self.tooltip then
-        local tooltip = LibQTip:Acquire("WQAchievements", 2, "LEFT", "LEFT")
+    if not LibQTip:IsAcquired("WQATurbo") and not self.tooltip then
+        local tooltip = LibQTip:Acquire("WQATurbo", 2, "LEFT", "LEFT")
         self.tooltip = tooltip
 
         tooltip:SetScript("OnHide", function()

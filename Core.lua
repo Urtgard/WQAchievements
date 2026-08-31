@@ -1,9 +1,9 @@
----@class WQAchievements : AceAddon
+---@class WQATurbo : AceAddon
 ---@field tooltip LibQTip.Tooltip
-WQAchievements = LibStub("AceAddon-3.0"):NewAddon("WQAchievements", "AceConsole-3.0", "AceTimer-3.0")
+WQATurbo = LibStub("AceAddon-3.0"):NewAddon("WQATurbo", "AceConsole-3.0", "AceTimer-3.0")
 
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 WQA.data = {}
 WQA.watched = {}

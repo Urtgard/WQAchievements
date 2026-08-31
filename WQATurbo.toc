@@ -1,11 +1,13 @@
 ## Interface: 120100
 ## Title: WQA Turbo
-## Notes: Performance-first continuation of WQAchievements
+## Notes: Performance-first World Quest achievement and reward tracking
 ## Author: Mused21; based on WQAchievements by Urtgard and contributors
-## Version: 0.0.6-dev
-## SavedVariables: WQADB
+## Version: 0.1.0-beta
+## SavedVariables: WQATurboDB
 ## OptionalDeps: CanIMogIt, AllTheThings
 ## IconTexture: Interface\Icons\INV_Misc_Map06
+## X-Website: https://github.com/Mused21/WQATurbo
+## X-Source: https://github.com/Mused21/WQATurbo
 
 embeds.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
@@ -35,7 +37,7 @@ Locales.lua
 Utilities.lua
 Tooltip.lua
 
-WQAchievements.lua
+WQATurbo.lua
 CollectionCache.lua
 RewardScanner.lua
 TurboRuntime.lua

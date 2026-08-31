@@ -1,12 +1,12 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 local LibQTip = LibStub("LibQTip-1.0")
 
 --[[
 WQA Turbo cached UI
 ===================
 
-Upstream WQAchievements uses WQA:Show() for two different jobs:
+Upstream WQATurbo uses WQA:Show() for two different jobs:
 
   1. rebuild/refresh the entire data model;
   2. display that model in chat, the minimap popup, or the LDB tooltip.

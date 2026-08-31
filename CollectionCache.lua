@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 local IsQuestFlaggedCompleted = C_QuestLog.IsQuestFlaggedCompleted
 
@@ -7,7 +7,7 @@ local IsQuestFlaggedCompleted = C_QuestLog.IsQuestFlaggedCompleted
 Collection cache
 ================
 
-The original WQAchievements AddMounts/AddPets implementation scans the entire
+The original WQATurbo AddMounts/AddPets implementation scans the entire
 Mount Journal / Pet Journal once for every expansion that contains collectible
 data.
 

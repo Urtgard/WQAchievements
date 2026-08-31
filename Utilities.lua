@@ -1,5 +1,5 @@
----@class WQAchievements
-local WQA = WQAchievements
+---@class WQATurbo
+local WQA = WQATurbo
 
 local GetTitleForQuestID = C_QuestLog.GetTitleForQuestID
 

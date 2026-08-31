@@ -1,4 +1,4 @@
-package-as: WQAchievements
+package-as: WQATurbo
 enable-nolib-creation: no
 
 externals:
@@ -14,3 +14,11 @@ externals:
   Libs/LibQTip-1.0: https://repos.wowace.com/wow/libqtip-1-0
   Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
   Libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk
+
+ignore:
+  - .git
+  - .github
+  - tools
+  - dist
+  - RELEASE_CHECKLIST.md
+  - CURSEFORGE_DESCRIPTION.md
