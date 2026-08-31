@@ -10,9 +10,11 @@ local function packResults(...)
 	}
 end
 
-WQA.perf = {
+WQA.perf = WQA.perf or {
 	stats = {}
 }
+
+WQA.perf.stats = WQA.perf.stats or {}
 
 ---Record one measured execution.
 ---@param label string
@@ -53,11 +55,45 @@ function WQA:PerfStop(label, startTime)
 	return elapsed
 end
 
----Clear all collected performance measurements.
+---Clear collected function timings and scanner summary data.
 function WQA:ResetPerf()
 	wipe(self.perf.stats)
-	self.perf.rewardDiagnostics = {}
-	print("|cff00ccffWQA PERF|r measurements reset")
+	self.rewardScannerLastStats = nil
+
+	print("|cff00ccffWQA TURBO PERF|r measurements reset")
+end
+
+local function printRewardScannerSummary(self)
+	local state = self._wqaRewardScan
+	local stats = state and state.stats or self.rewardScannerLastStats
+
+	if not stats then
+		return
+	end
+
+	local phase = state and state.phase or "finished"
+	local pending = state and #state.pending or (stats.pendingRemaining or 0)
+
+	print("|cff00ccffWQA TURBO PERF|r incremental Reward scanner")
+	print(string.format(
+		"phase=%s maps=%d quests=%d pending=%d rewardPending=%d itemPending=%d",
+		phase,
+		stats.mapsScanned or 0,
+		stats.questVisits or 0,
+		pending,
+		stats.rewardPending or 0,
+		stats.itemPending or 0
+	))
+	print(string.format(
+		"retryChecks=%d reissues=%d timedOut=%d slices=%d cpu=%.3fms maxSlice=%.3fms wall=%.0fms",
+		stats.retryChecks or 0,
+		stats.preloadReissues or 0,
+		stats.timedOut or 0,
+		stats.slices or 0,
+		stats.cpuMs or 0,
+		stats.maxSliceMs or 0,
+		stats.wallMs or 0
+	))
 end
 
 ---Print collected measurements ordered by worst single execution.
@@ -65,72 +101,37 @@ function WQA:PrintPerfSummary()
 	local rows = {}
 
 	for label, stat in pairs(self.perf.stats) do
-		table.insert(rows, {
+		rows[#rows + 1] = {
 			label = label,
 			calls = stat.calls,
 			total = stat.total,
 			average = stat.total / stat.calls,
 			max = stat.max
-		})
+		}
 	end
 
 	table.sort(rows, function(a, b)
 		return a.max > b.max
 	end)
 
-	print("|cff00ccffWQA PERF|r summary")
+	print("|cff00ccffWQA TURBO PERF|r summary")
 
 	if #rows == 0 then
-		print("No measurements recorded.")
-		return
-	end
-
-	for _, row in ipairs(rows) do
-		print(string.format(
-			"%-28s calls=%3d total=%8.3fms avg=%7.3fms max=%8.3fms",
-			row.label,
-			row.calls,
-			row.total,
-			row.average,
-			row.max
-		))
-	end
-	if self.perf.rewardDiagnostics then
-		print("|cff00ccffWQA PERF|r Reward diagnostics")
-
-		for run, diag in ipairs(self.perf.rewardDiagnostics) do
-			local missing = {}
-			local itemRetries = {}
-
-			for questID in pairs(diag.missingRewardData) do
-				table.insert(missing, questID)
-			end
-
-			for questID in pairs(diag.itemRetries) do
-				table.insert(itemRetries, questID)
-			end
-
-			table.sort(missing)
-			table.sort(itemRetries)
-
+		print("No function measurements recorded.")
+	else
+		for _, row in ipairs(rows) do
 			print(string.format(
-				"run=%d maps=%d quests=%d missingRewardData=%d itemRetries=%d",
-				run,
-				diag.maps,
-				diag.quests,
-				#missing,
-				#itemRetries
+				"%-28s calls=%3d total=%8.3fms avg=%7.3fms max=%8.3fms",
+				row.label,
+				row.calls,
+				row.total,
+				row.average,
+				row.max
 			))
-
-			if #missing > 0 then
-				print("  missing reward data: " .. table.concat(missing, ", "))
-			end
-
-			if #itemRetries > 0 then
-				print("  item retries: " .. table.concat(itemRetries, ", "))
-			end
 		end
 	end
+
+	printRewardScannerSummary(self)
 end
 
 ---Slash command:
@@ -179,12 +180,23 @@ WrapMethod(WQA, "OnEnable")
 
 -- Main refresh pipeline
 WrapMethod(WQA, "Show")
+WrapMethod(WQA, "ShowCached")
+WrapMethod(WQA, "Refresh")
+WrapMethod(WQA, "TurboPublishEnrichment")
+WrapMethod(WQA, "TurboRefreshOpenPopup")
 WrapMethod(WQA, "CreateQuestList")
 WrapMethod(WQA, "Reward")
 WrapMethod(WQA, "EmissaryReward")
 WrapMethod(WQA, "CheckWQ")
+WrapMethod(WQA, "TurboPrepareWorldQuest")
+WrapMethod(WQA, "TurboPrepareMission")
+
+-- Incremental scanner: this measures one complete per-frame worker slice.
+WrapMethod(WQA, "RewardScannerRunSlice")
 
 -- Collection/database construction
+WrapMethod(WQA, "BuildMountCollectionCache")
+WrapMethod(WQA, "BuildPetCollectionCache")
 WrapMethod(WQA, "AddMounts")
 WrapMethod(WQA, "AddPets")
 WrapMethod(WQA, "AddToys")
@@ -192,12 +204,11 @@ WrapMethod(WQA, "AddCustom")
 WrapMethod(WQA, "Special")
 
 -- Secondary processing
+-- Deliberately do not wrap CheckItems/CheckReward/CheckCurrencies here:
+-- they are hot per-quest functions, and allocating profiler return tables for
+-- every call would distort the very frame-budget test we are trying to run.
 WrapMethod(WQA, "CheckMissions")
 WrapMethod(WQA, "SortQuestList")
-WrapMethod(WQA, "CheckItems")
-WrapMethod(WQA, "CheckReward")
-WrapMethod(WQA, "CheckCurrencies")
-WrapMethod(WQA, "GetExpansionByQuestID")
 
 -- Output/UI
 WrapMethod(WQA, "AnnounceChat")

@@ -1,11 +1,9 @@
-## Interface: 120001
-## Title: WQAchievements
-## Author: Urtgard
-## Version: @project-version@
+## Interface: 120100
+## Title: WQA Turbo
+## Notes: Performance-first continuation of WQAchievements
+## Author: Mused21; based on WQAchievements by Urtgard and contributors
+## Version: 0.0.6-dev
 ## SavedVariables: WQADB
-## X-Curse-Project-ID: 272039
-## X-WoWI-ID: 24566
-## X-Wago-ID: BKpqEXGE
 ## OptionalDeps: CanIMogIt, AllTheThings
 ## IconTexture: Interface\Icons\INV_Misc_Map06
 
@@ -23,7 +21,6 @@ DB\Data\Midnight.lua
 
 DB\Expansions.lua
 DB\Zones.lua
-
 Criterias\CriteriaType.lua
 Criterias\AreaPoi.lua
 
@@ -39,5 +36,10 @@ Utilities.lua
 Tooltip.lua
 
 WQAchievements.lua
+CollectionCache.lua
+RewardScanner.lua
+TurboRuntime.lua
+TurboDisplay.lua
+TurboCheck.lua
 Performance.lua
 Options.lua
